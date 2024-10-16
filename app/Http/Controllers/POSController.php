@@ -644,6 +644,7 @@ class POSController extends Controller
     }
     // hapus item yang sudah ke save
     public function deletemodify(Request $request){
+        
         if(Sentinel::check()){
 
             try{

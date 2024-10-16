@@ -414,7 +414,7 @@
 <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
 <script>
 
-    var currentBillId = 0;
+var currentBillId = 0;
   
     
 
