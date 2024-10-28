@@ -148,12 +148,16 @@
         <p class="text-detail">Rp. {{ number_format($mandiri, 0,',','.') }}</p>
     </div>
     <div class="itm-detail d-flex justify-content-between">
+        <label for="">BRI</label>
+        <p class="text-detail">Rp. {{ number_format($BRI, 0,',','.') }}</p>
+    </div>
+    <div class="itm-detail d-flex justify-content-between">
         <label for="">EDC Refund</label>
         <p class="text-detail">(Rp. {{ number_format($grendRefunEDC, 0,',','.') }})</p>
     </div>
     @php
         $total_EDC = 0;
-        $total_EDC = ( $BCA + $mandiri) - $grendRefunEDC;
+        $total_EDC = ( $BCA + $mandiri + $BRI) - $grendRefunEDC;
     @endphp
     <div class="itm-detail d-flex justify-content-between">
         <label for="">Expected EDC Payment</label>

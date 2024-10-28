@@ -101,6 +101,9 @@ $(() => {
     
     $('.payment-nominal .footer-card .btn-close-part').on('click', function () {
         $('.payment-nominal').fadeOut();
+        var $payment = $('body .pop-payment .content-payment');
+        $payment.find('.part-payment.active').addClass('off').removeClass('active');
+        // console.log('testing get id',xid);
     })
     // $('body').on('click', '.payment-nominal', function(){
     //     $('.payment-nominal').hide();
@@ -109,7 +112,8 @@ $(() => {
     $('body').on('click', '.part-payment', function () {
         var elm = $(this);
         $(elm).toggleClass('active');
-        $('.part-payment').not(elm).removeClass('active');
+        $(elm).removeClass('off');
+        $('.part-payment').not(elm).removeClass('active').addClass('off');
         $('.payment-nominal').fadeIn();
         $('.pop-payment').fadeOut();
     });

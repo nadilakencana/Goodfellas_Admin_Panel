@@ -93,6 +93,7 @@ class CashController extends Controller
        $ovo = Orders::where('id_type_payment', 3)->where('deleted', 0)->whereDate('tanggal', $sift->start_time)->groupBy('tanggal')->sum('total_order');
        $mandiri = Orders::where('id_type_payment', 6)->where('deleted', 0)->whereDate('tanggal', $sift->start_time)->groupBy('tanggal')->sum('total_order');
        $BCA = Orders::where('id_type_payment', 7)->where('deleted', 0)->whereDate('tanggal', $sift->start_time)->groupBy('tanggal')->sum('total_order');
+       $BRI = Orders::where('id_type_payment', 8)->where('deleted', 0)->whereDate('tanggal', $sift->start_time)->groupBy('tanggal')->sum('total_order');
 
        // dd($modal, $endingSift);
      foreach($kas_in as $in){
@@ -146,6 +147,10 @@ class CashController extends Controller
                                $query->where('id_type_payment', 6)
                                    ->whereDate('tanggal', $sift->start_time);
                            })->sum('refund_nominal');
+       $sumTotalBRI = RefundOrderMenu::whereHas('order', function($query) use ($sift) {
+                               $query->where('id_type_payment', 8)
+                                   ->whereDate('tanggal', $sift->start_time);
+                           })->sum('refund_nominal');
         
         //total nominal refund payment Ovo
        $sumTotalOvo = RefundOrderMenu::whereHas('order', function($query) use ($sift) {
@@ -176,6 +181,13 @@ class CashController extends Controller
        $discountTotalBCA = DiscountMenuRefund::whereHas('Refund', function($query) use ($sift){
            $query->whereHas('order', function($query) use ($sift) {    
                 $query->where('id_type_payment', 7)
+               ->whereDate('tanggal', $sift->start_time);
+           });
+       })->sum('nominal_dis');
+
+       $discountTotalBRI = DiscountMenuRefund::whereHas('Refund', function($query) use ($sift){
+           $query->whereHas('order', function($query) use ($sift) {    
+                $query->where('id_type_payment', 0)
                ->whereDate('tanggal', $sift->start_time);
            });
        })->sum('nominal_dis');
@@ -218,7 +230,7 @@ class CashController extends Controller
        $Service = $service->tax_rate / 100;
        
        // EDC
-       $EDCRefund = ($sumTotalBCA + $sumTotalMandiri) - ($discountTotalBCA + $discountTotalMandiri);
+       $EDCRefund = ($sumTotalBCA + $sumTotalMandiri + $sumTotalBRI) - ($discountTotalBCA + $discountTotalMandiri + $discountTotalBRI);
        $nominalPb1EDC =  $EDCRefund * $PB1;
        $nominalServiceEDC = $EDCRefund * $Service;
        
@@ -253,6 +265,7 @@ class CashController extends Controller
            'ovo',
            'mandiri',
            'BCA',
+           'BRI',
            'total_itmRefund',
            'total_itemSold',
            'refund_cash',

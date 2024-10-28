@@ -57,7 +57,7 @@
     <script src="{{ asset('asset/tamplate/plugins/simple-datatables/simple-datatables.js') }}"></script>
     <script src="{{ asset('asset/tamplate/plugins/bs-custom-file-input/bs-custom-file-input.min.js') }}"></script>
     {{-- <script src="http://192.168.88.22:3388/socket.io/socket.io.js"></script> --}}
-    <script src="http://192.168.1.22:8000//socket.io/socket.io.js"></script>
+    {{--  <script src="http://192.168.1.22:8000//socket.io/socket.io.js"></script>  --}}
     <script type="text/javascript" src="{{ asset('asset/assets/js/custom_js.js') }}"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
@@ -77,7 +77,8 @@
               });
     </script>
      {{--  check connetion  --}}
-     <script>
+
+    {{--  <script>
 
         const socket = io('http://192.168.1.22:8000');
         socket.on('connect', () => {
@@ -209,7 +210,7 @@
         console.log(logs)
 
 
-    </script>
+    </script>  --}}
 
 
     {{-- <script>

@@ -289,7 +289,7 @@
                     <div class="act-btn-bill">
                         <div class="act-btn act1">
                             <div class="save-act-btn">Save Bill</div>
-                            <div class="print-act-btn"> 
+                            <div class="print-act-btn print-act"> 
                                 {{-- <a href="">  --}}
                                     Print Bill
                                 {{-- </a> --}}
@@ -301,7 +301,7 @@
                             @if(empty($total))
 
                             @else
-                            <p class="txt-btn-act-bill total">{{ number_format( $total, 0, '.','.') }} </p>
+                            {{-- <p class="txt-btn-act-bill total">{{ number_format( $total, 0, '.','.') }} </p> --}}
                             @endif
                         </div>
 
@@ -414,7 +414,7 @@
 <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
 <script>
 
-var currentBillId = 0;
+    var currentBillId = 0;
   
     
 
@@ -587,14 +587,14 @@ var currentBillId = 0;
             var url = "{{ route('print-bill' ,'') }}"+'/'+ xid ;
 
             // $('.act-btn.act1 .print-act-btn a').attr('href', url);
-            $('.act-btn.act1 .print-act-btn.split-bill').attr('data-xid', xid);
+            $('.act-btn.act1 .split-bill').attr('data-xid', xid);
 
             currentBillId = xid;
             getBill(xid);
 
         });
 
-        $('.act-btn.act1 .print-act-btn').on('click', function(e){
+        $('.act-btn.act1 .print-act').on('click', function(e){
             var xid = $('.act-btn.act2').attr('data-xid');
             Bill(xid, 'Bill');
             Tiket(xid, 'Tiket');
@@ -645,6 +645,7 @@ var currentBillId = 0;
 
         $('body').on('click', `.act-edit .check-edit`, function(e){
            splitBill($(this), 1);
+           $('.pop-up.additional').hiden();
         });
 
         $('.popup-qty').on('click', '.oke', function(){
@@ -704,7 +705,7 @@ var currentBillId = 0;
         });
 
         
-        //function payment post
+            //function payment post
         function payment($elment, type){
             var $targetpayment = $('.pop-payment');
             var paymentId = $targetpayment.find('.content-payment .part-payment.active').attr('xid');
@@ -749,19 +750,7 @@ var currentBillId = 0;
                             $('.payment-nominal .card-payment-nominal').val('');
                             $('.form-cash input.change-input').val('');
                             $('.payment-nominal').hide();
-                            $('.popup-name-bill input.nameBill').val('');
-                            $('.popup-name-bill .total-payment').text('');
-                            $('.act-2 .total').text('');
-                            Bill(xidOrder, 'Bill');
-                            Tiket(xidOrder, 'Tiket');
-                            $targetpayment.find('.content-payment .part-payment.active').removeClass('active');
-                            var $detaiOrder = $('.detail-order');
-                            $detaiOrder.find('.view-detail-ord').empty();
-                            currentBillId = 0;
-                            // $('.card-popup').attr('id-x','');
-                            // $('.card-popup .btn-add').attr('x-id','');
-                            // var $target1= $('.card-popup').attr('id-x');
-                            // var $target2 =$('.card-popup .btn-add').attr('x-id');
+                           
                             clearSession()
                             console.log($target1, $target2);
 
@@ -833,14 +822,31 @@ var currentBillId = 0;
                 url: URL,
                 method: 'GET',
                 success: function(result){
+                    var $detaiOrder = $('.detail-order');
+                    var $payment = $('body .pop-payment .content-payment');
+                    var $actBtn1 = $('.act-btn.act1');
+                    var $popUpSplit = $('.popup-qty');
+                    var $paymentNominal = $('.payment-nominal');
+                    
+                    currentBillId = 0;
                     console.log('clear session')
+
                      $('.popup-name-bill input.nameBill').val('');
                      $('.popup-name-bill .total-payment').text('');
-                     $('.act-2 .total').text('');
+                     $('.act-2 .txt-btn-act-bill.total').text('');
                      $('.act-btn-bill .act-btn.act2').attr('data-xid','');
-                     var $detaiOrder = $('.detail-order');
                      $detaiOrder.find('.view-detail-ord').empty();
-                    currentBillId = 0;
+                     $payment.find('.part-payment.active').addClass('off').removeClass('active');
+                     $actBtn1.find('.print-act-btn.split-bill').attr('data-xid', '');
+                     $popUpSplit.find('.cotent-detail').empty();
+                     $popUpSplit.find('.txt-tittle').empty();
+                     $popUpSplit.find('.total-payment').empty();
+                     $paymentNominal.find('.nominal').attr('data-nominal', '');
+                     $paymentNominal.find('.nm-payment').empty();
+                     $paymentNominal.find('input.convert-cash').val('');
+                     $paymentNominal.find('input.cash-nominal-input').val('');
+
+
                 }
             }).fail(function(result){
                 console.log(result);
@@ -1136,7 +1142,7 @@ var currentBillId = 0;
                     additional: Adds,
                     discount: dis,
                     catatan : catatan,
-                    id_type_sales: id_type_sales, 
+                    id_type_sales: id_type_sales,
                     sales_name: type_sales,
                     total_dis: parseInt(total_discount),
 
@@ -1252,8 +1258,7 @@ var currentBillId = 0;
                                 }
                             });
                             getSessionOrder()
-                            //$(this).attr('data-notify', data['count']);
-                            //location.reload();
+                           
                         }
                 }).fail(function(data){
                         console.log('error', data);
@@ -1285,7 +1290,6 @@ var currentBillId = 0;
             }
              
         }
-
         function checkSelesTypeSelection() {
        
             // Cek apakah ada opsi varian yang aktif
@@ -1495,15 +1499,15 @@ var currentBillId = 0;
                 }, 1000);
         }, 1000);
           
-        function GetPrint(type, FileName){
-            var URL = 'http://192.168.1.22:8000/print-file?type='+type+'&filename='+FileName;
-            $.get(URL, function(result){
-                console.log(result.stdout);
+        // function GetPrint(type, FileName){
+        //     var URL = 'http://192.168.88.22:3377/print-file?type='+type+'&filename='+FileName;
+        //     $.get(URL, function(result){
+        //         console.log(result.stdout);
                
-            }).fail(function(result){
-                console.log(result);
-            })
-        }
+        //     }).fail(function(result){
+        //         console.log(result);
+        //     })
+        // }
 
         //post Order
         function POSorder(){
@@ -1574,12 +1578,6 @@ var currentBillId = 0;
                     },1000)
                     // alert('order is processed and has been update');
                      $('.popup-name-bill').hide();
-                     $('.popup-name-bill input.nameBill').val('');
-                     $('.popup-name-bill .total-payment').text('');
-                     $('.act-2 .total').text('');
-                     var $detaiOrder = $('.detail-order');
-                     $detaiOrder.find('.view-detail-ord').empty();
-                    //location.reload();
                     currentBillId = 0;
                     const xid = data.data.id;
                     Tiket(xid, 'Tiket');
@@ -1609,15 +1607,16 @@ var currentBillId = 0;
                     }
                     LogActivity('order post', data)
                    
-                    setTimeout(function(){
-                            $('.popup-print .form-group p').text('order is processed');
-                            $('.popup-print').fadeIn();
-                        },1000)
+                    //setTimeout(function(){
+                    //        $('.popup-print .form-group p').text('order is processed');
+                    //        $('.popup-print').fadeIn();
+                    //    },1000)
                     $('.popup-name-bill').hide();
-                    $('.popup-name-bill input.nameBill').val('');
-                    $('.popup-name-bill .total-payment').text('');
-                    var $detaiOrder = $('.detail-order');
-                    $detaiOrder.find('.view-detail-ord').empty();
+                    //$('.popup-name-bill input.nameBill').val('');
+                    //$('.popup-name-bill .total-payment').text('');
+                    //$('.act-2 .total').text('');
+                    //var $detaiOrder = $('.detail-order');
+                    //$detaiOrder.find('.view-detail-ord').empty();
                   
                     if(paymentId !== undefined && paymentId !== null && paymentId !== ""){
                         // alert('Done');
@@ -1628,7 +1627,6 @@ var currentBillId = 0;
                         $('.pop-payment').hide();
                         $('.payment-nominal').hide();
                         const id = data.data.order.id;
-                        $targetpayment.find('.content-payment .part-payment.active').removeClass('active');
                         Bill(id,'Bill')
                         Tiket(id, 'Tiket');
                         // getBill(id);
@@ -1678,7 +1676,6 @@ var currentBillId = 0;
                 LogActivity('error print bill', result)
             })
         }
-
         function Tiket(id, type){
             var URL = '{{route("print-ticket-thermal", "")}}' +'/' + id;
             const data = {
@@ -2108,7 +2105,6 @@ var currentBillId = 0;
                     if(data.success === 0){
                         alert(data.message);
                     }else{
-                        // addLogLocalStorage('splitBill', 'splitBill', data)
                         if(data.error){
                             console.log(data.error);
                             return;
@@ -2116,14 +2112,17 @@ var currentBillId = 0;
                         }
 
                         LogActivity('splitBill', data);
+                        $('.popup-name-bill').hide();
+                        $('.pop-payment').hide();
+                        $('.payment-nominal').hide()
 
                         const id = data.data.new_order.id;
-                        $('.act-btn.act2').attr('data-xid',id);
+                        currentBillId = 0;
 
                         Bill(id, 'Bill');
                         Tiket(id, 'Tiket');
-                        Kitchen(id, 'Kitchen');
-                        getBill(id);
+                        // Kitchen(id, 'Kitchen');
+                        clearSession()
                         
                     }
                 }).fail(function(data){
