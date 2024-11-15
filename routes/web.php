@@ -199,6 +199,7 @@ Route::get('/data-print-server/{id}', [POSController::class, 'printTodataServer'
 Route::get('/data-menu-kategori/{id}', [POSController::class, 'partMenuKat'])->name('menu-kategori-pos');
 Route::get('/data-session-order', [POSController::class, 'dataDetailOrder'])->name('view_detail_session');
 Route::get('/data-bill', [POSController::class, 'DataBill'])->name('dataBill');
+Route::get('pos/data-discount', [POSController::class, 'getDiscount'])->name('dataDiscount');
 
 // });
 // data Vocher

@@ -282,7 +282,7 @@ li.nav-item.d-flex.justify-content-between.align-content-center {
 }
 
 /* daftar bill */
-.pop-daftar-bill {
+.pop-daftar-bill, .pop-daftar-discount {
     position: fixed;
     display: flex;
     z-index: 10000;
@@ -293,7 +293,8 @@ li.nav-item.d-flex.justify-content-between.align-content-center {
     justify-content: center;
     align-items: center;
 }
-.pop-daftar-bill .card-list-bill {
+.pop-daftar-bill .card-list-bill, 
+.pop-daftar-discount .card-list-discount  {
     display: flex;
     margin-top: 30px;
     flex-direction: column;
@@ -303,7 +304,8 @@ li.nav-item.d-flex.justify-content-between.align-content-center {
     border-radius: 10px;
     padding: 10px 20px;
 }
-.pop-daftar-bill .card-list-bill .header-card {
+.pop-daftar-bill .card-list-bill .header-card, 
+.pop-daftar-discount .card-list-discount .header-card {
     display: flex;
     justify-content: space-between;
     font-size: 20px;
@@ -312,7 +314,8 @@ li.nav-item.d-flex.justify-content-between.align-content-center {
 tr.item-bill.local {
     color: black;
 }
-.pop-daftar-bill .card-list-bill .content-list-bill {
+.pop-daftar-bill .card-list-bill .content-list-bill,
+.pop-daftar-discount .card-list-discount .content-list-discount {
     width: 100%;
 }
 .serach {

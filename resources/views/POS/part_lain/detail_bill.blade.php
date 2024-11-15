@@ -68,7 +68,7 @@
                     @endif
 
                     @if(!@empty($cart['id_sales_type']))
-                    <small class="option status_order" idx="{{ $cart['id_sales_type'] }}">
+                    <small class="option status_order type_order" idx="{{ $cart['id_sales_type'] }}">
                         {{ $cart->salesType->name }}
                     </small>
                     @else

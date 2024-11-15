@@ -211,7 +211,7 @@
 
                                 @php
 
-                                $additional = App\Models\AdditionalRefund ::where('id_menu', $menu->id_menu)->get();
+                                $additional = App\Models\AdditionalRefund ::where('id_menu', $menu->id_menu)->where('id_refund_menu', $menu->id)->get();
                                 $discount = App\Models\DiscountMenuRefund::where('id_refund_menu',
                                 $menu->id)->where('id_menu', $menu->id_menu)->get();
                                 
@@ -376,7 +376,7 @@
                                 </div>
 
                                 @php
-                                $additional = App\Models\AdditionalRefund ::where('id_menu', $menu->id_menu)->get();
+                                $additional = App\Models\AdditionalRefund ::where('id_menu', $menu->id_menu)->where('id_refund_menu', $menu->id)->get();
                                 $discount = App\Models\DiscountMenuRefund::where('id_refund_menu',$menu->id)->where('id_menu', $menu->id_menu)->get();
                                 
 
@@ -706,9 +706,18 @@
                 Adds.push(objadds);
 
             })
+
             console.log(Adds);
+            
+            //var total_adds = 0 ;
+            //Adds.each(function(){
+            //    var hargaAdds = Adds.addHarga;
+            //    total_adds += parseInt(hargaAdds);
+            //});
 
             var itm_detail = [];
+
+            
 
             $itm.each(function(){
                 var $chacked = $(this);
@@ -718,22 +727,31 @@
                 var $target = $chacked.closest('.part-list');
                 var harga_menu = $target.find('.card-text.harga-menu').attr('data-harga');
                 var qty = $target.find('input.qty').val();
-                var $adds = $target.find('.detail-itm .option.add-op .harga-adds');
+                var $adds = $target.find('.detail-itm .option.add-op');
                 var varian = $target.find('.detail-itm .option.varian-op').attr('id-varian');
                 var $dis_ref = $target.find('.detail-itm .option.discount');
                 var note = $target.find('.detail-itm .option.note').text();
                 var $tgt_alasan =$('.pop-ex-refund .isi-excuse-refund');
                 var alasan = $tgt_alasan.find('.itm-ex-refund.active').text();
-                var nominal = harga_menu * qty;
+               
 
                 console.log(alasan);
 
                 var arAdds=[];
                 $adds.each(function(){
                     var $tgtAds = $(this);
-                    var hargaAds = $tgtAds.attr('nominal');
+                    var hargaAds = $tgtAds.find('.harga-adds').attr('nominal');
+                    var xid_adds = $tgtAds.attr('id_adds');
+                    var orderId = $tgtAds.closest('.card-body.data').attr('data-id');
+                    var id = $tgtAds.closest('.part-list').attr('idx');
+                    var Total = hargaAds * qty;
+
                     var objAds = {
-                            nominal:hargaAds
+                            nominal:hargaAds,
+                            id_menu: id,
+                            id_add: xid_adds,
+                            qty: qty,
+                            Total_adds: Total,
                         };
 
                     arAdds.push(objAds);
@@ -747,17 +765,22 @@
 
                 }
 
+                console.log('total adds' + totalAds);
+
+                var nominal_itm = (parseInt(harga_menu) + parseInt(totalAds)) * parseInt(qty);
+                console.log('nominal item: '+ nominal_itm);
+                
                 var disRef =[];
                 $dis_ref.each(function(){
                     var $tgtDisRef = $(this);
                     var dis = $tgtDisRef.attr('dis');
-                    var xid_dis = $tgtDisRef.attr('xid');
+                    var xid_dis = $tgtDisRef.attr('idx');
                     var orderId = $tgtDisRef.closest('.card-body.data').attr('data-id');
                     var id = $tgtDisRef.closest('.part-list').attr('idx');
-                    var total = nominal + totalAds;
+                    
 
                     var disRate = dis / 100;
-                    var nominal_dis = total * disRate;
+                    var nominal_dis = nominal_itm * disRate;
 
                     var objDis = {
                         id_menu:id,
@@ -768,6 +791,8 @@
                     };
 
                     disRef.push(objDis);
+
+                    nominal_itm -= nominal_dis ;
                 });
 
                 
@@ -781,10 +806,11 @@
                     qty: qty,
                     varian: varian,
                     alasan: alasan,
-                    nominal: nominal,
+                    nominal: nominal_itm,
                     adds : totalAds,
                     catatan: note,
-                    discount: disRef
+                    discount: disRef,
+                    additional: arAdds,
 
 
                 };

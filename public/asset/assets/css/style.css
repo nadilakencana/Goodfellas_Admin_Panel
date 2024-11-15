@@ -201,7 +201,7 @@ object-fit: cover;
     margin-bottom: 10px;
     justify-content: space-between;
 }
-.header-part .menu-icon-list-bil, .header-part .menu-delete{
+.header-part .menu-icon-list-bil, .header-part .menu-delete, .menu-discount{
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -213,7 +213,7 @@ object-fit: cover;
     padding: 8px;
     cursor: pointer;
 }
-.header-part .menu-icon-list-bil img , .header-part .menu-delete img{
+.header-part .menu-icon-list-bil img , .header-part .menu-delete img, .header-part .menu-discount img{
     width: 56%;
     height: auto;
     object-fit: cover;

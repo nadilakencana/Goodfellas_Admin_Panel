@@ -1,6 +1,7 @@
 $(() => {
     $('.pop-up.additional').hide();
     $('.pop-daftar-bill').hide();
+    $('.pop-daftar-discount').hide();
     $('.pop-payment').hide();
     $('.payment-nominal').hide();
     $('.popup-name-bill').hide();
@@ -9,7 +10,14 @@ $(() => {
     $('.menu-icon-list-bil').on('click', function () {
         $('.popup-daftar-bill').fadeIn();
         getDataBills();
-    })
+    });
+
+    $('.menu-discount').on('click', function () {
+        $('.pop-daftar-discount').fadeIn();
+        getDataDiscount();
+        console.log('data discount')
+    });
+
     $('body').on('click', ".pop-daftar-bill .header-card .close",function () {
         var $tgtPopUp = $('.popup-daftar-bill');
          $tgtPopUp.empty();
@@ -17,7 +25,18 @@ $(() => {
      }).on('click', '.popup-daftar-bill', function(){
         $(this).fadeOut();
      });
-
+    $('body').on('click', ".pop-daftar-discount .header-card .close",function () {
+        var $tgtPopUp = $('.popup-daftar-discount');
+        $tgtPopUp.empty();
+        $tgtPopUp.fadeOut();
+        $('.option-discount input:checked').prop('checked', false);
+     });
+     $(".popup-daftar-discount").click(function(event){
+        if(!$(event.target).closest('.card-list-discount').length) {
+            $(this).fadeOut();
+            $('.option-discount input:checked').prop('checked', false);
+        }
+    });
     $('.pop-up .header-card-popup .close').on('click', function () {
         $('.pop-up.additional').fadeOut();
         $('.option-varian').removeClass('active');
@@ -74,17 +93,38 @@ $(() => {
         $(elm).toggleClass('active');
         $('.option-varian').not(elm).removeClass('active');
     });
+
     $('body').on('click', '.option-menu-additional', function () {
         //var $elm = $(this).addClass('active');
-        var elm = $(this);
-        $(elm).toggleClass('active');
-        //$('.option-menu-additional').not(elm).removeClass('active');
+        const $elm = $(this);
+
+        // Periksa apakah elemen memiliki kelas 'active'
+        if (!$elm.hasClass('active')) {
+            // Jika tidak memiliki kelas 'active', tambahkan 'active' dan hapus 'delete'
+            $elm.addClass('active').removeClass('delete');
+        } else {
+            // Jika sudah memiliki kelas 'active', hapus 'active' dan tambahkan 'delete'
+            $elm.removeClass('active').addClass('delete');
+        }
     });
+
     $('body').on('click', '.option-type', function () {
         //var $elm = $(this).addClass('active');
         var elm = $(this);
         $(elm).toggleClass('active');
         $('.option-type').not(elm).removeClass('active');
+    });
+
+    var $popUpAdd = $('body .pop-up.additional');
+    $popUpAdd.on('click', '.option-discount input[type="checkbox"]', function() {
+        const $elm = $(this);
+        
+        if ($elm.prop('checked')) {
+            $elm.removeClass('delete').addClass('active');
+        } 
+        else {
+            $elm.addClass('delete').removeClass('active');
+        }
     });
 
     //end pop up additional part
@@ -486,6 +526,18 @@ function getDataBills(){
     let URL = "http://192.168.1.22:8000/data-bill";
     $.get(URL, function(result){
          var $tgtBill = $('.popup-daftar-bill');
+         $tgtBill.fadeIn();
+       
+        $tgtBill.empty();
+        $(result).appendTo($tgtBill);
+    }).fail(function(result){
+        console.log(result);
+    });
+}
+function getDataDiscount(){
+    let URL = "http://192.168.1.22:8000/pos/data-discount";
+    $.get(URL, function(result){
+         var $tgtBill = $('.popup-daftar-discount');
          $tgtBill.fadeIn();
        
         $tgtBill.empty();

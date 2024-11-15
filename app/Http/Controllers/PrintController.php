@@ -163,6 +163,9 @@ class PrintController extends Controller
 			//dd($itemToPrint);
 			
 			$printer->printBill(true, $taxesInfo, $paymentInfo, $bookInfo);
+			if($order->id_type_payment !== null){
+				$printer->printBill(true, $taxesInfo, $paymentInfo, $bookInfo);
+			}
 			return response()->json([
 				'success' => 1,
 				'message' => 'succesfully print bill',

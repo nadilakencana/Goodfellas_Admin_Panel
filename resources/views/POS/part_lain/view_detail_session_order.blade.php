@@ -52,15 +52,14 @@
 
                 @if(!@empty($cart['additional']))
                 @foreach ( $cart['additional'] as $adds )
-                <small class="option add-op" id_adds="{{ $adds['id']  }}">{{ $adds['nama'] }} -
-                    {{ $adds['harga'] }}</small>
+                <small class="option add-op" id_adds="{{ $adds['id']  }}">{{ $adds['nama'] }} - {{ $adds['harga'] }}</small>
                 @endforeach
                 @else
                 @endif
 
 
                 @if(!@empty($cart['type_name']))
-                <small class="option status_order" idx="{{ $cart['type_id'] }}">{{
+                <small class="option status_order type_order" idx="{{ $cart['type_id'] }}">{{
                     $cart['type_name'] }}</small>
                 @else
                 @endif
@@ -72,10 +71,11 @@
                         $nominalDis = 0;
                         $nominalDis = $discounts['nominal'];
                         $total_dis += $nominalDis;
-                        // dd($total_dis);
+                        
                         @endphp
                     @endif
-                    <small class="option status_order discount" idx="{{ $discounts['id'] }}">Discount {{$discounts['percent'] }}% - {{ $discounts['nominal'] }}</small>
+                    <small class="option status_order discount" idx="{{ $discounts['id'] }}" 
+                    dis="{{ $discounts['percent'] }}">Discount {{$discounts['percent'] }}% - {{ $discounts['nominal'] }}</small>
                 @endforeach
                 @endif
 

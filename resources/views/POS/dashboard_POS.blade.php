@@ -5,6 +5,9 @@
 <div class="popup-daftar-bill" style="display: none">
 
 </div>
+<div class="popup-daftar-discount" style="display: none">
+
+</div>
 <section class="content-header">
     <div class="container-fluid">
         <div class="row">
@@ -147,6 +150,10 @@
                             <img src="{{ asset('asset/assets/image/icon/Delete.png') }}" alt="">
                             <small class="txt-icon">Delete Order</small>
                         </div>
+                        <div class="menu-discount">
+                            <img src="{{ asset('asset/assets/image/icon/Discount.png') }}" alt="">
+                            <small class="txt-icon">Daftar Discount</small>
+                        </div>
                         <div class="act-btn-add">
                             Display Order
                         </div>
@@ -212,7 +219,7 @@
 
 
                                         @if(!@empty($cart['type_name']))
-                                        <small class="option status_order" idx="{{ $cart['type_id'] }}">{{
+                                        <small class="option status_order type_order" idx="{{ $cart['type_id'] }}">{{
                                             $cart['type_name'] }}</small>
                                         @else
                                         @endif
@@ -224,10 +231,10 @@
                                                 $nominalDis = 0;
                                                 $nominalDis = $discounts['nominal'];
                                                 $total_dis += $nominalDis;
-                                                // dd($total_dis);
+                                                 //dd($total_dis);
                                                 @endphp
                                             @endif
-                                            <small class="option status_order discount" idx="{{ $discounts['id'] }}">Discount {{$discounts['percent'] }}% - {{ $discounts['nominal'] }}</small>
+                                            <small class="option status_order discount" idx="{{ $discounts['id'] }}" dis="{{ $discounts['percent'] }}">Discount {{$discounts['percent'] }}% - {{ $discounts['nominal'] }}</small>
                                         @endforeach
                                         @endif
 
@@ -410,13 +417,12 @@
 @stop
 @section('script')
 
-<script src="{{ asset("asset/assets/js/function_POS.js") }}"></script>
+<script src="{{ asset('asset/assets/js/function_POS.js') }}"></script>
 <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
+<script src="{{ asset('asset/assets/js/idle timer check.js') }}"></script>
 <script>
 
     var currentBillId = 0;
-  
-    
 
  $(()=>{
 
@@ -450,6 +456,7 @@
             $('.pop-up.additional').fadeIn();
            
         });
+
         $('body').on('click', '.add-custom',  function(){
            
             //menampilkan pop up additional untuk menu custom
@@ -542,10 +549,16 @@
             })
 
             var opType = $popup.find('.option-type');
+            var typeActive = $popup.find('.option-type[idx="4"]').attr('idx');
             opType.each(function(){
                 var xid = $(this).attr('idx');
-                if(xid == typeSales){
+                
+                if(xid == typeSales && typeSales !== typeActive){
                     $(this).addClass('active');
+                    $popup.find('.option-type[idx="4"]').removeClass('active');
+                }
+                if(xid == typeSales == typeActive){
+                    $popup.find('.option-type[idx="4"]').addClass('active');
                 }
             });
 
@@ -705,6 +718,17 @@
         });
 
         
+        var $disBill = $('body .popup-daftar-discount');
+        var $tgtDisBill = $disBill.find('.option-discount input[type="checkbox"]');
+        console.log($tgtDisBill);
+        
+        $disBill.on('click','.option-discount input[type="checkbox"]', function(){
+            discountBill()
+            console.log('get dis')
+        });
+
+
+
             //function payment post
         function payment($elment, type){
             var $targetpayment = $('.pop-payment');
@@ -750,7 +774,8 @@
                             $('.payment-nominal .card-payment-nominal').val('');
                             $('.form-cash input.change-input').val('');
                             $('.payment-nominal').hide();
-                           
+                            //Bill(id,'Bill')
+                            //Bill(id,'Bill')
                             clearSession()
                             console.log($target1, $target2);
 
@@ -920,19 +945,19 @@
 
                         if(type == 'edit'){
                           
-                             var $elm = $('body .itm-bil[xid="' + key + '"]');
-                             var varian = $elm.find('.detail-itm .varian-op').attr('id_var');
-                             var opVar = $target.find('.option-varian');
-                                console.log(opVar, 'varian',varian);
-                                opVar.each(function(){
-                                    var idx = $(this).attr('idx');
-                                    console.log(idx)
-                                    if(idx == varian){
-                                        $(this).addClass('active');
-                                        checkVariantSelection()
+                            var $elm = $('body .itm-bil[xid="' + key + '"]');
+                            var varian = $elm.find('.detail-itm .varian-op').attr('id_var');
+                            var opVar = $target.find('.option-varian');
+                            console.log(opVar, 'varian',varian);
+                            opVar.each(function(){
+                                var idx = $(this).attr('idx');
+                                console.log(idx)
+                                if(idx == varian){
+                                    $(this).addClass('active');
+                                    checkVariantSelection()
                                         
-                                    }
-                                });
+                                }
+                            });
                         }
                     }
 
@@ -1048,24 +1073,27 @@
                     'id': id,
                     'nama' : name,
                     'harga' : harga,
-                    'id_detail': idDetail
+                    'id_detail': idDetail,
+                    'qty':qty
                 };
                 Adds.push(objAdds);
             });
 
             
-            
             // menghitung additional yang sudah dipilih lalu di hapus
             $add_delete.each(function(){
                 var $tgt = $(this);
                 var id = $tgt.attr('idx');
+                var harga = $tgt.find('.harga').attr('harga');
                 var objAddsDel = {
                     'id' : id,
-                    'id_detail' : idDetail
+                    'id_detail' : idDetail,
+                    'harga': harga
                 };
 
                 Add_delete.push(objAddsDel);
             });
+
             // menghitung discount yang sudah di pilih lalu di hapus
             $dis_delete.each(function(){
                 var $tgt = $(this);
@@ -1079,6 +1107,7 @@
             });
 
             console.log('ini additional', Adds);
+            console.log('ini discount delete', dis_delete);
             console.log('ini discount', dis);
 
             // menghitung total additional 
@@ -1129,29 +1158,32 @@
             }
             console.log('total discount ',total_discount);
 
+            console.log('data dis', dis);
 
             var postData ={
-                    _token: "{{ csrf_token() }}",
-                    id : idx,
-                    key: key,
-                    qty : parseInt(qty),
-                    harga: parseInt(harga_menu),
-                    harga_addtotal: parseInt(totalHarga),
-                    variasi: var_id,
-                    var_name: var_name,
-                    additional: Adds,
-                    discount: dis,
-                    catatan : catatan,
-                    id_type_sales: id_type_sales,
-                    sales_name: type_sales,
-                    total_dis: parseInt(total_discount),
+                _token: "{{ csrf_token() }}",
+                id : idx,
+                key: key,
+                qty : parseInt(qty),
+                harga: parseInt(harga_menu),
+                harga_addtotal: parseInt(totalHarga),
+                variasi: var_id,
+                var_name: var_name,
+                additional: Adds,
+                discount: dis,
+                catatan : catatan,
+                id_type_sales: id_type_sales,
+                sales_name: type_sales,
+                total_dis: parseInt(total_discount),
 
             }
-            console.log(postData);
+            console.log("Data Add item: "+postData);
+
             if(currentBillId){
                 // ini untuk masukin product ke bill yang sudah ada
                 postData["target_order"] = currentBillId;
                 // jika item yang di edit maka yang di eksekusi adalah edit
+                
                 if(type == 'edit'){
                     postData["target_detail"] = idDetail;
                     postData["adds_delete"] = Add_delete;
@@ -1163,7 +1195,6 @@
                     $.post("{{ route('billModify') }}", postData).done(function(data){
                         if(data.success === 0){
                                 alert(data.message);
-                            
                             }else{
                                 if(data.error){
                                     console.log(data.error);
@@ -1172,8 +1203,8 @@
                                 }
                             
                             
-                                LogActivity('modify bill add item', data)
-                                // POSorder() ;                           //location.reload();
+                                LogActivity('modify bill add item', data);
+
                                 var $viewDetail = $('.view-detail-ord');
                                 $viewDetail.find('.drop-down').remove();
                                 $viewDetail.find('.detil-bil').remove();
@@ -1212,11 +1243,13 @@
             }else{
                 var url='';
 
-                if(type == 'add'){
+                if(type == 'add') {
                     url = "{{ route('addOrder') }}";
-                 }else{
+                }else{
                     url = "{{ route('edit-item') }}";
-                 }
+                }
+
+
                 $.post(url, postData).done(function(data){
                         if(data.success === 0){
                             alert(data.message);
@@ -1290,6 +1323,7 @@
             }
              
         }
+
         function checkSelesTypeSelection() {
        
             // Cek apakah ada opsi varian yang aktif
@@ -1499,15 +1533,7 @@
                 }, 1000);
         }, 1000);
           
-        // function GetPrint(type, FileName){
-        //     var URL = 'http://192.168.88.22:3377/print-file?type='+type+'&filename='+FileName;
-        //     $.get(URL, function(result){
-        //         console.log(result.stdout);
-               
-        //     }).fail(function(result){
-        //         console.log(result);
-        //     })
-        // }
+        
 
         //post Order
         function POSorder(){
@@ -1580,7 +1606,7 @@
                      $('.popup-name-bill').hide();
                     currentBillId = 0;
                     const xid = data.data.id;
-                    Tiket(xid, 'Tiket');
+                    //Tiket(xid, 'Tiket');
                     clearSession()
 
                 }).fail(function(err){
@@ -1597,7 +1623,8 @@
                     postData['cash'] = cash;
                     postData['change_'] = change_;
 
-                 }
+                }
+
                 $.post(URL, postData).done(function(data){
                     console.log(data);
                     if(data.error){
@@ -1612,11 +1639,7 @@
                     //        $('.popup-print').fadeIn();
                     //    },1000)
                     $('.popup-name-bill').hide();
-                    //$('.popup-name-bill input.nameBill').val('');
-                    //$('.popup-name-bill .total-payment').text('');
-                    //$('.act-2 .total').text('');
-                    //var $detaiOrder = $('.detail-order');
-                    //$detaiOrder.find('.view-detail-ord').empty();
+                 
                   
                     if(paymentId !== undefined && paymentId !== null && paymentId !== ""){
                         // alert('Done');
@@ -1627,8 +1650,9 @@
                         $('.pop-payment').hide();
                         $('.payment-nominal').hide();
                         const id = data.data.order.id;
-                        Bill(id,'Bill')
-                        Tiket(id, 'Tiket');
+                        //Bill(id,'Bill')
+                        //Bill(id,'Bill')
+                        //Tiket(id, 'Tiket');
                         // getBill(id);
                         clearSession();
                        
@@ -1636,7 +1660,7 @@
                     }else{
                         const id = data.data.order.id;
                         // $('.act-btn.act2').attr('data-xid',id);
-                        Tiket(id, 'Tiket');
+                        //Tiket(id, 'Tiket');
                         // getBill(id);
                         currentBillId = 0;
                         clearSession();
@@ -1676,6 +1700,7 @@
                 LogActivity('error print bill', result)
             })
         }
+
         function Tiket(id, type){
             var URL = '{{route("print-ticket-thermal", "")}}' +'/' + id;
             const data = {
@@ -1775,7 +1800,6 @@
         }  
 
 
-
         //print bill
         function printBill(id){
             var url = "{{ route('print-bill' ,'') }}"+'/'+id ;
@@ -1837,6 +1861,7 @@
                 console.log(result);
             });
         }
+
         function getDataDetailSplitServer(idx){
             let URL = "{{ route('bill-split-server', '') }}" +'/'+ idx;
             $.ajax({
@@ -2374,7 +2399,7 @@
                                     html+='" data-total="'+sisaBayar+'">'+sisaBayar.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')+'</div>'+
                                 '</div>';
                         }
-                   html+='</div>';
+                    html+='</div>';
 
             $target.append(html);
         }
@@ -2398,7 +2423,7 @@
         }
         
         function convertToRupiah(stringValue) {
-        // Hapus karakter selain angka
+            // Hapus karakter selain angka
             var numberValue = parseInt(stringValue.replace(/[^0-9]/g, ''), 10);
 
             // Format angka ke dalam format Rupiah
@@ -2432,47 +2457,7 @@
             }
             return result;
         }
-
-        // function addLogLocalStorage(dataStream, fromAction, result){
-        //     let logStream = localStorage.getItem('data_log_action');
         
-        //     let uid = localStorage.getItem('pcguid');
-        //     let newLog = {
-        //         'data-stream': dataStream,
-        //         'timestamp':new Date().toISOString(), 
-        //         'Date_Time': formatDate(new Date()), 
-        //         'from-action': fromAction,
-        //         'result': result
-        //     };
-
-        
-        //     if (!logStream) {
-        //         // Jika logStream belum ada, buat objek baru
-        //         logStream = {
-        //             'date': newLog.timestamp,
-        //             'uid': uid,
-        //             'logList': [newLog]
-        //         };
-        //     } else {
-        //         // Jika logStream sudah ada, parse string JSON menjadi objek
-        //         logStream = JSON.parse(logStream);
-
-        //         if (logStream.uid === uid) {
-        //             // Jika UID sama, tambahkan log baru ke logList dan update date
-        //             logStream.logList.push(newLog);
-        //             logStream.date = newLog.timestamp;
-        //         } else {
-        //             // Jika UID berbeda, buat objek baru (ini skenario yang jarang terjadi)
-        //             logStream = {
-        //                 'date': newLog.timestamp,
-        //                 'uid': uid,
-        //                 'logList': [newLog]
-        //             };
-        //         }
-        //     }
-        //     localStorage.setItem('data_log_action', JSON.stringify(logStream));
-        // }
-    
         function formatDate(date) {
             let day = ("0" + date.getDate()).slice(-2);
             let month = ("0" + (date.getMonth() + 1)).slice(-2);
@@ -2483,35 +2468,6 @@
 
             return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
         }
-
-        // function getLocalstorage() {
-        //     let logStream = localStorage.getItem('data_log_action');
-        //     if(!logStream){
-        //         logStream = [];
-        //     }else{
-        //         logStream = JSON.parse(logStream);
-        //     }
-        //     return logStream
-        // }
-
-        // function RemoveLocalStorageAction() {
-        //     let logStream = localStorage.getItem('data_log_action');
-        //     if(logStream){
-        //         logStream = JSON.parse(logStream);
-        //         let newDate =  new Date().getTime();
-        //         logStream = logStream.filter(log => {
-        //             let logDate = new Date(log.timestamp).getTime();
-        //            return (now - logDate) < (2 * 86400000);
-        //         });
-        //         localStorage.setItem('data_log_action', JSON.stringify(logStream));
-        //     }
-        // }
-
-        // RemoveLocalStorageAction();
-
-        // let logs_activity = getLocalstorage();
-        // console.log(logs_activity)
-
         function LogActivity(fromAction, result) {
             const Url = "{{route('action-log')}}";
             const Data = {
@@ -2533,7 +2489,7 @@
         }
 
         function updateSalesType() {
-            const Url = '{{route('update_sales_type')}}';
+            const Url = '{{route("update_sales_type")}}';
             const Data = {
                 _token : "{{ csrf_token() }}"
             }
@@ -2549,6 +2505,262 @@
                 console.log('error update', result)
             });
         }
+
+       
+
+        function discountBill() {
+
+            var $popDisTgt = $('.popup-daftar-discount');
+            var $tgtDis = $popDisTgt.find('.option-discount input:checked');
+
+            var Discount = [];
+            $tgtDis.each(function() {
+                const id_dis = $(this).attr('id');
+                const rate = parseFloat($(this).attr('rate'));
+
+                Discount.push({ id_dis, rate });
+            });
+
+            var $tgtView = $('.view-detail-ord');
+            var $items = $tgtView.find('.itm-bil');
+
+            $items.each(function() {
+
+                var $tgt = $(this);
+                var id_detail = $tgt.attr('id_item_detail');
+                var id_menu = $tgt.attr('idx');
+                var key = $tgt.attr('xid');
+                var hargaAwal = parseFloat($tgt.find('.itm .price').text().replace(/\./g, ''));
+                var hargaSaatIni = hargaAwal;
+                var $detail_dis = $tgt.find('.detail-itm .option.discount');
+                var JmlDis_old = [];
+
+                $detail_dis.each(function() {
+
+                    var rate_old = $(this).attr('dis');
+                    var nominal_old = hargaSaatIni * (rate_old / 100);
+                    hargaSaatIni -= nominal_old
+                    JmlDis_old.push({'nom': nominal_old});
+                    console.log('nominalDis', nominal_old)
+                });
+                console.log('nominalDis objek', JmlDis_old)
+
+                Discount.forEach(function(discount) {
+                    var id_dis = discount.id_dis;
+                    var rate = discount.rate;
+                    var diskonAda = false;
+                    
+                    $detail_dis.each(function() {
+                        if ($(this).attr('idx') === id_dis) {
+                            diskonAda = true;
+                        }
+                    
+                    })
+                    
+                    if (!diskonAda) {
+                        var nominal = hargaSaatIni * (rate / 100);
+                        hargaSaatIni -= nominal;
+
+                        HendelAddDiscount($tgt, id_dis, rate, nominal);
+                        console.log('Diskon diterapkan:', $tgt, id_dis, rate, nominal);
+                    } else {
+                        console.log('Diskon dengan id yang sama sudah ada:', id_dis);
+                    }
+                });
+
+                HendelOrderUpdateDiscount($tgt, key, id_menu, hargaSaatIni, id_detail);
+
+                console.log('Harga akhir setelah semua diskon:', hargaSaatIni);
+            });
+        }
+
+        function HendelAddDiscount ($tgt, id, rate, total){
+            var $tgtItm = $tgt ;
+            var $detail = $tgtItm.find('.detail-itm');
+            var Dis = '<small class="option status_order discount"'+
+                        'idx='+id+' dis='+rate+'>'+
+                       'Discount '+rate+'%'+' - '+ total +
+                       '</small>';
+            $detail.append(Dis);
+            console.log('add discount hendle');
+        }
+
+        function HendelOrderUpdateDiscount($tgt, key, id_menu,nominal, id_detail) {
+
+            var $tgtItm = $tgt;
+            var key = $tgtItm.attr('xid');
+            var hargaMenu = $tgt.find('.itm .price').attr('price');
+            var $tgtharga = $tgt.find('.itm .price').text();
+            var harga = $tgtharga.replace(/\./g,'');
+            var qty = $tgt.find('.itm .jumlah').text();
+            var $detail_dis = $tgt.find('.detail-itm .option.discount');
+            var $add = $tgt.find('.detail-itm .option.add-op');
+            const $type_order = $tgt.find('.detail-itm .option.type_order');
+            const $variasi = $tgt.find('.detail-itm .option.varian-op');
+            const id_type = $type_order.attr('idx');
+            const name_type = $type_order.text();
+            const var_id = $variasi.attr('id_var');
+            const var_name = $variasi.text();
+            const catatan = $tgt.find('.detail-itm .option.note').text();
+           
+            var ObjDis = [];
+            var AddObj = [];
+
+            $detail_dis.each(function(){
+                var $targetdis = $(this);
+                const id_dis = $targetdis.attr('idx');
+                const rate = $targetdis.attr('dis');
+
+                var nominal = harga * (rate / 100);
+                harga -= nominal;
+
+                var objDiscount = {
+                    id: id_dis,
+                    percent: rate,
+                    id_detail: id_detail,
+                    nominal: nominal
+                };
+
+                ObjDis.push(objDiscount);
+
+               
+            });
+
+            var total_discount = 0;
+            for (var i = 0; i < ObjDis.length; i++) {
+                var rate = ObjDis[i].percent;
+                total_discount += parseInt(rate)
+            }
+
+            $add.each(function(){
+                const $tgt_add = $(this);
+                const Id_add = $tgt_add.attr('id_adds');
+                var txt_add = $tgt_add.text().trim();
+            
+                var nameMatch = txt_add.match(/^(.+?)\s*-\s*(\d+)/);
+                
+                if (nameMatch) {
+                    var name = nameMatch[1].trim();
+                    var nominal_add = nameMatch[2].trim();
+                } 
+
+                AddObj.push({
+                    'id': Id_add,
+                    'nama': name,
+                    'harga': nominal_add,
+                    'id_detail': id_detail
+                });
+                
+            });
+
+            var totalHarga = 0;
+            for (var i = 0; i < AddObj.length; i++) {
+                var harga = AddObj[i].harga;
+                totalHarga += parseInt(harga)
+            }
+
+            console.log("additional:"+ AddObj)
+
+            var postData = {
+                _token : "{{ csrf_token() }}",
+                id: id_menu,
+                key: key,
+                discount: ObjDis,
+                qty : parseInt(qty),
+                harga: parseInt(hargaMenu),
+                harga_addtotal: parseInt(totalHarga),
+                variasi: var_id,
+                var_name: var_name,
+                additional: AddObj,
+                catatan : catatan,
+                id_type_sales: id_type,
+                sales_name: name_type,
+                total_dis: parseInt(total_discount),
+
+            };
+            
+            console.log("objekDis" , ObjDis);
+            url = "{{ route('edit-item') }}";
+            console.log(currentBillId);
+            console.log('data edit: '+ postData);
+
+
+            if(currentBillId){
+                postData["target_order"] = currentBillId;
+                postData["target_detail"] = id_detail;
+                console.log('data edit: '+ postData);
+                
+                $.post("{{ route('billModify') }}", postData).done(function(data){
+                    if(data.success === 0){
+                            alert(data.message);
+                        
+                    }else{
+                            if(data.error){
+                                console.log(data.error);
+                                return;
+                                LogActivity('Error modify bill add item', data)
+                            }
+                        
+                        
+                            LogActivity('modify bill add item', data)
+                            
+                            var $viewDetail = $('.view-detail-ord');
+                            $viewDetail.empty();
+                            $('.option-varian').removeClass('active');
+                            $('.option-menu-additional').removeClass('active');
+                            $('.option-discount input:checked').prop('checked', false);
+                            $('.jml-menu input.qty').val('1');
+                            $('.catatan-menu textarea').val('')
+                            $('.card-popup').attr('id-x','').attr('key-id', '');
+                            $('.btn-add').attr('x-id','').attr('key','').attr('id_detail', '').text('add');
+                            var Option = $('.option-type');
+                            $('.option-type.active').removeClass('active');
+                            $('.popup-name-bill input.nameBill').val('');
+                            Option.each(function() {
+                                if ($(this).attr('idx') === '4') {
+                                    // Add 'active' class to the element with idx '4'
+                                    $(this).addClass('active');
+                                }
+                            });
+                            getBill(currentBillId);
+                        
+                    }
+                }).fail(function(data){
+                        console.log('error', data);
+                         console.log('data edit: '+ postData)
+                        LogActivity('error modify bill add item', data)
+                });
+            }else{
+                $.post(url, postData).done(function(data){
+                    if(data.success === 0){
+                        alert(data.message);
+                    }else{
+                        if(data.error){
+                            console.log(data.error)
+                            return;
+                            LogActivity('error edit item', data)
+                        }
+                        LogActivity('edit item', data)
+
+                        var $viewDetail = $('.view-detail-ord');
+                        $viewDetail.empty();
+                        getSessionOrder()
+
+                    }
+                }).fail(function(data){
+                    console.log('error', data);
+                    
+                    LogActivity('error edit item', data)
+                    
+                            
+                });
+            }
+
+           
+          
+        }
+
+        
 
     
 });   
