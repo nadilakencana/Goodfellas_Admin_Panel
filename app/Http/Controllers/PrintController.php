@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Session;
 use Sentinel;
-
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
 use Symfony\Component\Process\Process;
@@ -261,67 +261,76 @@ class PrintController extends Controller
 			// 		array_push($itemToPrint, $obj);
 			// 	}
 			// }
-			
-			if (count($itemToPrint) !== 0){
-				$printer = new ReceiptPrinter;
-				$printer->init(
-					config('receiptprinter.connector_type'), // network 
-					'192.168.1.37' // ke ip printer kasir
-				);
-				// $printer->init(
-				// 	config('receiptprinter.connector_type'), // network 
-				// 	'192.168.0.89' // ke ip printer kasir
-				// );
-			
-				$printer->setStore(
-					$mid, 
-					$store_name, 
-					$store_address, 
-					$store_phone, 
-					$store_email, 
-					$store_website, 
-					$receiptNo, 
-					$tableNo,
-					$subtotal, 
-					$pb1, 
-					$service, 
-					$total,
-					$printLoc
-				);
-				
-				foreach ($itemToPrint as $item) {
-					$printer->addItem(
-						$item['name'],
-						$item['qty'],
-						$item['price'],
-						$item['addition'],
-						$item['type'],
-						$item['note'],
-						$item['varian'],
-						$item['discount']
+			try{
+				if (count($itemToPrint) !== 0){
+
+					$printer = new ReceiptPrinter;
+					$printer->init(
+						config('receiptprinter.connector_type'), // network 
+						'192.168.1.37' // ke ip printer kasir
 					);
-				}
+					// $printer->init(
+					// 	config('receiptprinter.connector_type'), // network 
+					// 	'192.168.0.89' // ke ip printer kasir
+					// );
 				
-				if(count($totalDetail) !== count($detail)){
-				
-					$printer->printAdditional();
+					$printer->setStore(
+						$mid, 
+						$store_name, 
+						$store_address, 
+						$store_phone, 
+						$store_email, 
+						$store_website, 
+						$receiptNo, 
+						$tableNo,
+						$subtotal, 
+						$pb1, 
+						$service, 
+						$total,
+						$printLoc
+					);
 					
+					foreach ($itemToPrint as $item) {
+						$printer->addItem(
+							$item['name'],
+							$item['qty'],
+							$item['price'],
+							$item['addition'],
+							$item['type'],
+							$item['note'],
+							$item['varian'],
+							$item['discount']
+						);
+					}
+					
+					if(count($totalDetail) !== count($detail)){
+					
+						$printer->printAdditional();
+						
+					}else{
+						$printer->printAdditional();
+					}
+					
+					return response()->json([
+						'success' => 1,
+						'message' => 'succesfully print ticket',
+						'data' => $itemToPrint
+					], 200);
 				}else{
-					$printer->printAdditional();
+					return response()->json([
+						'success' => 1,
+						'message' => 'Tidak Ada Order Update untuk di print',
+						
+					], 501);
 				}
-				
+			} catch(\Exception $e){
 				return response()->json([
-					'success' => 1,
-					'message' => 'succesfully print ticket',
-					'data' => $itemToPrint
-				]);
-			}else{
-				return response()->json([
-					'success' => 1,
-					'message' => 'Tidak Ada Order Update untuk di print',
-					
-				]);
+					'success' => 0,
+					'message' => 'Something Error',
+					'data' => $e->getMessage()
+				], 500);
 			}
+			
 			
 			
 			
@@ -506,67 +515,73 @@ class PrintController extends Controller
 				array_push($itemToPrint, $obj);
 			}
 			
-			if(count($itemToPrint) == 0){
-				return response()->json([
-					'success' => 1,
-					'message' => 'tidak ada data kitchen',
-				]);
-			}else{
-				$printer = new ReceiptPrinter;
-				$printer->init(
-					config('receiptprinter.connector_type'),
-					'192.168.1.37'
-				);
-				// $printer->init(
-				// 	config('receiptprinter.connector_type'),
-				// 	'192.168.0.78'
-				// );
-				$printer->setStore(
-					$mid, 
-					$store_name, 
-					$store_address, 
-					$store_phone, 
-					$store_email, 
-					$store_website, 
-					$receiptNo, 
-					$tableNo,
-					$subtotal, 
-					$pb1, 
-					$service, 
-					$total,
-					$printLoc
-				);
-			
-				foreach ($itemToPrint as $item) {
-					$printer->addItem(
-						$item['name'],
-						$item['qty'],
-						$item['price'],
-						$item['addition'],
-						$item['type'],
-						$item['note'],
-						$item['varian'],
-						$item['discount']
-					);
-				}
-				
-				if(count($totalDetail) !== count($details)){
-					$printer->printKitchen();
+
+			try{
+				if(count($itemToPrint) == 0){
+					return response()->json([
+						'success' => 1,
+						'message' => 'tidak ada data kitchen',
+					]);
 				}else{
-					$printer->printKitchen();
-				}
+					$printer = new ReceiptPrinter;
+					$printer->init(
+						config('receiptprinter.connector_type'),
+						'192.168.1.37'
+					);
+					// $printer->init(
+					// 	config('receiptprinter.connector_type'),
+					// 	'192.168.0.78'
+					// );
+					$printer->setStore(
+						$mid, 
+						$store_name, 
+						$store_address, 
+						$store_phone, 
+						$store_email, 
+						$store_website, 
+						$receiptNo, 
+						$tableNo,
+						$subtotal, 
+						$pb1, 
+						$service, 
+						$total,
+						$printLoc
+					);
 				
+					foreach ($itemToPrint as $item) {
+						$printer->addItem(
+							$item['name'],
+							$item['qty'],
+							$item['price'],
+							$item['addition'],
+							$item['type'],
+							$item['note'],
+							$item['varian'],
+							$item['discount']
+						);
+					}
+					
+					if(count($totalDetail) !== count($details)){
+						$printer->printKitchen();
+					}else{
+						$printer->printKitchen();
+					}
+					
+					return response()->json([
+						'success' => 1,
+						'message' => 'succesfully print kitchen order',
+						'data' => $itemToPrint
+					]);
+				}
+			}catch(\Exception $e){
 				return response()->json([
-					'success' => 1,
-					'message' => 'succesfully print kitchen order',
-					'data' => $itemToPrint
+						'success' => 0,
+						'message' => 'Something Error',
+						'data' => $e->getMessage()
 				]);
 			}
+		
 			
-			
-			
-			//$items = new Array();
-
         }else{
              return redirect()->route('login');
         }

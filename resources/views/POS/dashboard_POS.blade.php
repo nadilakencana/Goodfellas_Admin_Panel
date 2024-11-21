@@ -1402,9 +1402,7 @@
                                 })
                                 
                               
-                                //var nameFile = data.data;
-                                
-                                //GetPrint('item_delete', nameFile, );
+                               
 
                                 $('.option-varian').removeClass('active');
                                 $('.option-menu-additional').removeClass('active');
@@ -1598,14 +1596,15 @@
                     }
 
                     LogActivity('edit order post', data)
-                    setTimeout(function(){
-                            $('.popup-print .form-group p').text('order is processed and has been update');
-                            $('.popup-print').fadeIn();
-                    },1000)
+                    //setTimeout(function(){
+                    //        $('.popup-print .form-group p').text('order is processed and has been update');
+                    //        $('.popup-print').fadeIn();
+                    //},1000)
                     // alert('order is processed and has been update');
                      $('.popup-name-bill').hide();
                     currentBillId = 0;
                     const xid = data.data.id;
+                    //Tiket(xid, 'Tiket');
                     //Tiket(xid, 'Tiket');
                     clearSession()
 
@@ -1654,6 +1653,7 @@
                         //Bill(id,'Bill')
                         //Tiket(id, 'Tiket');
                         // getBill(id);
+                        //Tiket(id, 'Tiket');
                         clearSession();
                        
                         
@@ -1662,6 +1662,7 @@
                         // $('.act-btn.act2').attr('data-xid',id);
                         //Tiket(id, 'Tiket');
                         // getBill(id);
+                        //Tiket(id, 'Tiket');
                         currentBillId = 0;
                         clearSession();
                         
@@ -1701,27 +1702,57 @@
             })
         }
 
-        function Tiket(id, type){
+        function Tiket(id, type, retryCount = 0, maxRetries = 3){
             var URL = '{{route("print-ticket-thermal", "")}}' +'/' + id;
             const data = {
                 _token: "{{csrf_token()}}",
                 type: type
             }
             $.post(URL, data).done(function(result){
+
                 setTimeout(function(){
                     $('.popup-print  p').text('Print in prosess...');
                     $('popup-print').fadeIn();
                 },1000)
                 console.log('print tiket', result)
+
+
                 throttledButtonClick();
-                    //console.log(type);
+                  
                 updateLastPrint(id, type);
-                Kitchen(id, 'Kitchen');
-               
+                
+                //Kitchen(id, 'Kitchen');
+                Kitchen(id, 'Kitchen', retryCount + 1, maxRetries);
+
                 LogActivity('print tiket', result)
             }).fail(function(result){
-                LogActivity('error print tiket', result)
+                LogActivity('error print tiket', result);
                 console.log('error tiket', result);
+                const Satatus = result.success;
+
+                if(Satatus == 0){
+                    if (retryCount < maxRetries) {
+                        console.log(`Retrying print... Attempt ${retryCount + 1} of ${maxRetries}`);
+                        setTimeout(function(){
+                            $('.popup-print  p').text('Retrying print...');
+                            $('popup-print').fadeIn();
+                            Tiket(id, type, retryCount + 1, maxRetries);
+                        },3000)
+
+                         // Retry callback
+                    } else {
+                         setTimeout(function(){
+
+                            $('.popup-print p').text('Print failed. Please check the Lan Cabel.');
+                            $('.popup-print').fadeIn();
+                           
+                        },3000)
+                       
+
+                        console.log('Max retry attempts reached. Aborting.');
+                    }
+                }
+                
             })
         }
 
@@ -1740,11 +1771,14 @@
                 throttledButtonClick();
                     //console.log(type);
                 updateLastPrint(id, type)
-                // addLogLocalStorage('print kitchen', 'delete item', result);
+
                 LogActivity('print kitchen', result)
             }).fail(function(result){
+
                 LogActivity('error print kitchen', result)
                 console.log('error kitchen', result);
+
+               
             })
         }
 
