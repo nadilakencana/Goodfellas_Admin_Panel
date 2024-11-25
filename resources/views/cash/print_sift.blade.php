@@ -52,7 +52,7 @@
             {{-- //sales --}}
             <div class="part-title">Sales</div>
             @foreach ($menu->sortBy('menu.nama_menu')->groupBy(function ($item) {
-                return $item->menu->nama_menu . ($item->varian ? ' (' . $item->varian->nama . ')' : '');
+                return ($item->menu->nama_menu ?? '-') . ($item->varian ? ' (' . $item->varian->nama . ')' : '');
             }) as $namaMenu => $items)
                 <div class="itm-detail d-flex justify-content-between">
                     <label for="">{{ $namaMenu }}</label>
@@ -72,7 +72,7 @@
             </div>
 
             @foreach ($menu_retur->sortBy('menu.nama_menu')->groupBy(function ($item) {
-                return $item->menu->nama_menu . ($item->varian ? ' (' . $item->varian->nama . ')' : '');
+                return ($item->menu->nama_menu ?? '-') . ($item->varian ? ' (' . $item->varian->nama . ')' : '');
             }) as $namaMenu => $items)
                 <div class="itm-detail d-flex justify-content-between">
                     <label for="">{{ $namaMenu }}</label>

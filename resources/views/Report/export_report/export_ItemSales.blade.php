@@ -32,7 +32,14 @@
             @if (count($menu['Variants']) > 0)
                     @foreach ($menu['Variants'] as $variant)
                         <tr class="body-data">
-                            <td class="data-item list-nama">{{ $menu['Name'] }} - {{ $variant}}</td>
+                            <td class="data-item list-nama">
+                                @if(!empty($menu['Name'])) 
+                                    {{ $menu['Name'] }} 
+                                    @if(!empty($variant)) - {{ $variant }} @endif 
+                                @else 
+                                    Menu Not available 
+                                @endif
+                            </td>
                             <td class="data-item">{{ $menu['itemSold'] }}</td>
                             <td class="data-item">{{ $menu['itemrefund'] }}</td>
                             <td class="data-item">Rp. {{ number_format($menu['GrossSalse'], 0, ',', '.') }}</td>

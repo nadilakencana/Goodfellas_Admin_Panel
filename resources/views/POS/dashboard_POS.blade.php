@@ -673,6 +673,7 @@
         $('.card-popup .btn-add').on('click', function(){
             var idx = $(this).attr('x-id');
             var key = $(this).attr('key');
+            console.log('id menu ' + idx);
             if (key == '') {
                 additional(idx, 'add');
                     
@@ -1177,7 +1178,7 @@
                 total_dis: parseInt(total_discount),
 
             }
-            console.log("Data Add item: "+postData);
+            console.log("Data Add item: "+ postData);
 
             if(currentBillId){
                 // ini untuk masukin product ke bill yang sudah ada
@@ -1251,6 +1252,7 @@
 
 
                 $.post(url, postData).done(function(data){
+                    
                         if(data.success === 0){
                             alert(data.message);
                         }else{
@@ -1270,6 +1272,8 @@
                                 }
                                 LogActivity('edit item', data)
                             }
+
+                            console.log('data item add '+ data);
                             var $viewDetail = $('.view-detail-ord');
                             $viewDetail.empty();
                             $('.option-varian').removeClass('active');

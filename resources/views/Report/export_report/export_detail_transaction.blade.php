@@ -28,7 +28,14 @@
                 <td class="data-item list-nama">{{ $menu['Kode_Pesanan'] }}</td>
                 <td class="data-item">{{ $menu['create'] }}</td>
                 <td class="data-item">{{ $menu['Tanggal'] }}</td>
-                <td class="data-item">{{ $menu['Name'] }} @if(!empty($menu->varian->nama)) - {{ $menu->varian->nama }}@else @endif</td>
+                <td class="data-item">
+                    @if(!empty($menu['Name'])) 
+                        {{ $menu['Name'] }} 
+                        @if(!empty($menu->varian->nama)) - {{ $menu->varian->nama }} @endif 
+                    @else 
+                        Menu Not available 
+                    @endif
+                </td>
                 <td class="data-item">{{ $menu['itemSold'] }}</td>
                 <td class="data-item">Rp. {{ number_format($menu['GrossSalse'] ?? 0, 0, ',', '.') }}</td>
                 <td class="data-item">(Rp. {{ number_format($menu['Discount'] ?? 0, 0, ',', '.') }})</td>

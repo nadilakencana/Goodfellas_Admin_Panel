@@ -300,8 +300,10 @@ class POSController extends Controller
                 );
 
                 Session::put('cart', $cart);
+                
                 Session::save();
                 $cart = Session::get('cart');
+                //dd($cart);
                 $count = count($cart);
                 return response()->json([
                     'success' => 1,
@@ -1119,9 +1121,11 @@ class POSController extends Controller
                 $order->save();
 
                 $carts = Session::get('cart');
+                //dd($carts);
                 $id_order = $order->id;
 
                 foreach ($carts as $cart) {
+                    
                     $detail = new DetailOrder;
                     $detail->id_order = $id_order;
                     $detail->id_menu = $cart['id'];

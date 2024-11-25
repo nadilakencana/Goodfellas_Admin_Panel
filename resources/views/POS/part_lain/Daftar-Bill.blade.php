@@ -11,6 +11,7 @@
             <div class="list-bill">
                 <table class="list-bill-table">
                     <thead class="label-tabel">
+                        <th>Date & Time</th>
                         <th>No Meja</th>
                         <th>Kode Pesanan</th>
                         <th>Nama Customer</th>
@@ -20,6 +21,7 @@
                         @foreach ($billOrder as $bill )
                         
                         <tr class="item-bill local" idx="{{ $bill->id }}">
+                            <td>{{$bill->created_at}}</td>
                             <td>
                                 @if(!empty($bill->no_meja))
                                 {{ $bill->no_meja }}

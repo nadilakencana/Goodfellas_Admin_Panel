@@ -4,6 +4,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DetailOrder;
 use App\Models\GroupModifier;
 use Illuminate\Http\Request;
 use App\Models\Menu;
@@ -18,7 +19,7 @@ class MenuController extends Controller
 
     public function indexMenu(){
         if(Sentinel::check()){
-            $menu = Menu::where('custom', false)->orderBy('id', 'DESC')->get();
+            $menu = Menu::where('custom', false)->where('delete_menu', 0)->orderBy('id', 'DESC')->get();
             return view('Menu.index', compact('menu'));
         }else{
             return redirect()->route('login');
@@ -232,18 +233,23 @@ class MenuController extends Controller
             $dec = decrypt($id);
             // dd($dec);
             $menu = Menu::findOrFail($dec);
-            $menu->delete();
 
-                // $localServerUrl = 'https://admin.goodfellas.id/api/delete-menu';
+            if($menu){
+                $detailOrder = DetailOrder::where('id_menu', $menu->id)->get();
+                if($detailOrder){
+                    return redirect()->back()->with('error', 'Menu ini tidak bisa di hapus karena sudah memiliki penjualan');
+                }else{
 
-                // $menu_tgt = Menu::findOrFail($dec);
+                    $menu->delete_menu = 1;
+                    $menu->save();
 
-                // $response = Http::post($localServerUrl, [
-                //     'id' => $dec,
+                    return redirect()->back()->with('Success', 'Menu berhasil di hapus');
 
-                // ]);
-                // dd($response->body());
-            return redirect()->back()->with('Success', 'Menu berhasil di hapus');
+                }
+            }
+           
+
+          
         }else{
             return redirect()->route('login');
         }
