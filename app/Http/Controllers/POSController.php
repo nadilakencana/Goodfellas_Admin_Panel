@@ -458,7 +458,7 @@ class POSController extends Controller
 
                     if (empty($order->id_type_payment)) {
 
-                        $detail->id_order = $detail->id_order;
+                        $detail->id_order = $order->id;
                         $detail->id_menu = $menu->id;
                         $detail->qty = $request->qty;
                         $detail->harga = $request->harga;

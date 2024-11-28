@@ -189,17 +189,17 @@
                 <label for="">Grab</label>
                 <p class="text-detail">Rp. {{ number_format($grab, 0,',','.') }}</p>
             </div>
-            {{-- <div class="itm-detail d-flex justify-content-between">
-                <label for="">Gojek</label>
-                <p class="text-detail">Name</p>
-            </div> --}}
+            <div class="itm-detail d-flex justify-content-between">
+                <label for="">Refund Grab</label>
+                <p class="text-detail">Rp. {{ number_format($grendGrab, 0,',','.') }}</p>
+            </div>
             @php
             $total_online = 0;
-            $total_online = $grab;
+            $total_online = $grab - $grendGrab;
             @endphp
             <div class="itm-detail d-flex justify-content-between">
                 <label for="">Expected Online Delivery</label>
-                <p class="text-detail">Rp. {{ number_format($grab, 0,',','.') }}</p>
+                <p class="text-detail">Rp. {{ number_format($total_online, 0,',','.') }}</p>
             </div>
             {{-- //EDC --}}
             <div class="part-title">EDC</div>

@@ -120,57 +120,65 @@ class PrintController extends Controller
 				$paymentInfo['change'] = $order->change_;
 			}
 			
-			
-			$printer = new ReceiptPrinter;
-			$printer->init(
-				config('receiptprinter.connector_type'),
-				'192.168.1.37'
-			);
-			// $printer->init(
-			// 	config('receiptprinter.connector_type'),
-			// 	'192.168.0.89'
-			// );
-			
-			$printer->setStore(
-				$mid, 
-				$store_name, 
-				$store_address, 
-				$store_phone, 
-				$store_email, 
-				$store_website, 
-				$receiptNo, 
-				$tableNo, 
-				$subtotal, 
-				$pb1, 
-				$service, 
-				$total,
-				$printLoc
-			);
-			
-			foreach ($itemToPrint as $item) {
-				$printer->addItem(
-					$item['name'],
-					$item['qty'],
-					$item['price'],
-					$item['addition'],
-					$item['type'],
-					$item['note'],
-					$item['varian'],
-					$item['discount']
+			try{
+				$printer = new ReceiptPrinter;
+				$printer->init(
+					config('receiptprinter.connector_type'),
+					'192.168.0.37'
 				);
-			}
+				// $printer->init(
+				// 	config('receiptprinter.connector_type'),
+				// 	'192.168.0.89'
+				// );
 			
-			//dd($itemToPrint);
+				$printer->setStore(
+					$mid, 
+					$store_name, 
+					$store_address, 
+					$store_phone, 
+					$store_email, 
+					$store_website, 
+					$receiptNo, 
+					$tableNo, 
+					$subtotal, 
+					$pb1, 
+					$service, 
+					$total,
+					$printLoc
+				);
+				
+				foreach ($itemToPrint as $item) {
+					$printer->addItem(
+						$item['name'],
+						$item['qty'],
+						$item['price'],
+						$item['addition'],
+						$item['type'],
+						$item['note'],
+						$item['varian'],
+						$item['discount']
+					);
+				}
+				
+				//dd($itemToPrint);
 			
-			$printer->printBill(true, $taxesInfo, $paymentInfo, $bookInfo);
-			if($order->id_type_payment !== null){
 				$printer->printBill(true, $taxesInfo, $paymentInfo, $bookInfo);
+				if($order->id_type_payment !== null){
+					$printer->printBill(true, $taxesInfo, $paymentInfo, $bookInfo);
+				}
+				return response()->json([
+					'success' => 1,
+					'message' => 'succesfully print bill',
+					'data' => $itemToPrint
+				]);
+			}catch(\Exception $e){
+				return response()->json([
+					'success' => 0,
+					'message' => 'Something Error',
+					'data' => $e->getMessage()
+				], 500);
 			}
-			return response()->json([
-				'success' => 1,
-				'message' => 'succesfully print bill',
-				'data' => $itemToPrint
-			]);
+			
 			
 		}else{
 			return redirect()->route('login');
@@ -267,7 +275,7 @@ class PrintController extends Controller
 					$printer = new ReceiptPrinter;
 					$printer->init(
 						config('receiptprinter.connector_type'), // network 
-						'192.168.1.37' // ke ip printer kasir
+						'192.168.0.37' // ke ip printer kasir
 					);
 					// $printer->init(
 					// 	config('receiptprinter.connector_type'), // network 
@@ -397,7 +405,7 @@ class PrintController extends Controller
 				$printer = new ReceiptPrinter;
 				$printer->init(
 					config('receiptprinter.connector_type'),
-					'192.168.1.37'
+					'192.168.0.37'
 				);
 				// $printer->init(
 				// 	config('receiptprinter.connector_type'),
@@ -526,7 +534,7 @@ class PrintController extends Controller
 					$printer = new ReceiptPrinter;
 					$printer->init(
 						config('receiptprinter.connector_type'),
-						'192.168.1.37'
+						'192.168.0.37'
 					);
 					// $printer->init(
 					// 	config('receiptprinter.connector_type'),
@@ -914,7 +922,7 @@ class PrintController extends Controller
 			$printer = new ReceiptPrinter;
 			$printer->init(
 				config('receiptprinter.connector_type'),
-				'192.168.1.37',
+				'192.168.1.12',
 			);
 			// $printer->init(
 			// 	config('receiptprinter.connector_type'),

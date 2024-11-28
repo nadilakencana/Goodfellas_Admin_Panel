@@ -158,6 +158,12 @@ class CashController extends Controller
                                ->whereDate('tanggal', $sift->start_time);
                        })->sum('refund_nominal');
         
+        //total nominal refund payment grab
+       $sumTotalGrab = RefundOrderMenu::whereHas('order', function($query) use ($sift) {
+                           $query->where('id_type_payment', 4)
+                               ->whereDate('tanggal', $sift->start_time);
+                       })->sum('refund_nominal');
+        
         //total nominal refund payment Bank Transfer
        $sumTotalbankTf = RefundOrderMenu::whereHas('order', function($query) use ($sift) {
                                $query->where('id_type_payment', 5)
@@ -243,6 +249,11 @@ class CashController extends Controller
        $other_Refund =  ($sumTotalOvo +  $sumTotalbankTf) - ($discountTotalTF + $discountTotalOvo);
        $nominalPb1Other = $other_Refund * $PB1;
        $nominalServiceOther = $other_Refund * $Service ;
+       
+       // grab
+       $grab_Refund =  ($sumTotalGrab) - ($discountTotalGrab);
+       $nominalPb1Grab = $grab_Refund * $PB1;
+       $nominalServiceGrab = $grab_Refund * $Service ;
 
 
        $total_itemSold = $itmsum + $SumRefund ;
@@ -250,6 +261,7 @@ class CashController extends Controller
        $grendRefunEDC = $EDCRefund + $nominalPb1EDC + $nominalServiceEDC;
        $grendRefundCash = $refund_cash +  $nominalPb1Cash +  $nominalServiceCash;
        $grendOther = $other_Refund +  $nominalPb1Other +  $nominalServiceOther;
+       $grendGrab = $grab_Refund + $nominalPb1Grab + $nominalServiceGrab;
 
        return view('cash.detailSift', compact(
            'sift', 
@@ -274,7 +286,9 @@ class CashController extends Controller
            'menu_retur',
            'grendRefunEDC',
            'grendRefundCash',
-           'grendOther'
+           'grendOther',
+           'grendGrab',
+           'grab_Refund'
            ));
         }else{
         return redirect()->route('login');         
