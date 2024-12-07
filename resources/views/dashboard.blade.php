@@ -219,9 +219,10 @@
 
 @endsection
 @section('script')
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<script src="{{ asset('asset/tamplate/plugins/chart.js/chartjs-plugin-datalabels.min.js') }}"></script>
 <script>
   $(()=>{
+
     // top sales item
       // const chartData = @json( $chartData );
       // const ctx = document.getElementById('topSellingItemsChart').getContext('2d');
@@ -236,7 +237,6 @@
       //         }
       //     }
       // });
-
       // daily report gross
       const chartDataGrossDaily = @json( $chartDailyGrossSales );
       const ctx_grossDaily = document.getElementById('grossSales').getContext('2d');
@@ -409,148 +409,150 @@
         });
       @endforeach
       
-  @if(request()->has('daterange'))
-    $('input[name="daterange"]').daterangepicker({
-      locale: {
-          format: 'YYYY-MM-DD',
-          separator: " / "
-        },
-        startDate: '{{$startDate}}',
-        endDate: '{{$endDate}}'
-    });
-  @else
-      var DateTime = luxon.DateTime;
-      var dt = DateTime.now();
-      var current = dt.toFormat('yyyy-MM-dd');
-        $('.date_search #date').val(current);
-        
-        $('input[name="daterange"]').daterangepicker({
+    @if(request()->has('daterange'))
+      $('input[name="daterange"]').daterangepicker({
         locale: {
-          format: 'YYYY-MM-DD',
-          separator: " / "
-        },
-        startDate: '{{$startDate}}',
-        endDate: '{{$endDate}}'
+            format: 'YYYY-MM-DD',
+            separator: " / "
+          },
+          startDate: '{{$startDate}}',
+          endDate: '{{$endDate}}'
       });
-  @endif
+    @else
+        var DateTime = luxon.DateTime;
+        var dt = DateTime.now();
+        var current = dt.toFormat('yyyy-MM-dd');
+          $('.date_search #date').val(current);
+          
+          $('input[name="daterange"]').daterangepicker({
+          locale: {
+            format: 'YYYY-MM-DD',
+            separator: " / "
+          },
+          startDate: '{{$startDate}}',
+          endDate: '{{$endDate}}'
+        });
+    @endif
 
 
-    $('.filter').click(function(e){
-        e.preventDefault();
-        filterReportDate();
-    });
+      $('.filter').click(function(e){
+          e.preventDefault();
+          filterReportDate();
+      });
 
-  // top sales item
-    // function updateChart(startDate, endDate) {
-    //   fetch(`/Dashboard?startDate=${startDate}&endDate=${endDate}`)
-    //       .then(response => response.json())
-    //       .then(data => {
-    //           const ctx = document.getElementById('topSellingItemsChart').getContext('2d');
-    //           if (window.myChart) {
-    //               window.myChart.destroy();
-    //           }
-    //           window.myChart = new Chart(ctx, {
-    //               type: 'bar',
-    //               data: @json($chartData),
-    //               options: {
-    //                   scales: {
-    //                       y: {
-    //                           beginAtZero: true
-    //                       }
-    //                   }
-    //               }
-    //           });
-    //       });
-    // }
+      // top sales item
+        // function updateChart(startDate, endDate) {
+        //   fetch(`/Dashboard?startDate=${startDate}&endDate=${endDate}`)
+        //       .then(response => response.json())
+        //       .then(data => {
+        //           const ctx = document.getElementById('topSellingItemsChart').getContext('2d');
+        //           if (window.myChart) {
+        //               window.myChart.destroy();
+        //           }
+        //           window.myChart = new Chart(ctx, {
+        //               type: 'bar',
+        //               data: @json($chartData),
+        //               options: {
+        //                   scales: {
+        //                       y: {
+        //                           beginAtZero: true
+        //                       }
+        //                   }
+        //               }
+        //           });
+        //       });
+        // }
     
-    // gross daily sales
-    function updateChartGrossDaily(startDate, endDate) {
-          fetch(`/Dashboard?startDate=${startDate}&endDate=${endDate}`)
-          .then(response => response.json())
-          .then(data => {
-              const ctx_grossDaily = document.getElementById('grossSales').getContext('2d');
-              if (window.myChart2) {
-                  window.myChart2.destroy();
-              }
-              window.myChart2 = new Chart(ctx_grossDaily, {
-                  type: 'line',
-                  data: @json($chartDailyGrossSales),
-                  options: {
-                      scales: {
-                          y: {
-                              beginAtZero: true
+      // gross daily sales
+      function updateChartGrossDaily(startDate, endDate) {
+            fetch(`/Dashboard?startDate=${startDate}&endDate=${endDate}`)
+            .then(response => response.json())
+            .then(data => {
+                const ctx_grossDaily = document.getElementById('grossSales').getContext('2d');
+                if (window.myChart2) {
+                    window.myChart2.destroy();
+                }
+                window.myChart2 = new Chart(ctx_grossDaily, {
+                    type: 'line',
+                    data: @json($chartDailyGrossSales),
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+      }
+
+        // gross weekly sales
+        function updateChartGrossDailyWeek(startDate, endDate) {
+              fetch(`/Dashboard?startDate=${startDate}&endDate=${endDate}`)
+              .then(response => response.json())
+              .then(data => {
+                  const ctx_grossDailyWeek = document.getElementById('grossSalesWeek').getContext('2d');
+                  if (window.myChart3) {
+                      window.myChart3.destroy();
+                  }
+                  window.myChart3 = new Chart(ctx_grossDailyWeek, {
+                      type: 'bar',
+                      data: @json($chartDayOfWeekGrossSales),
+                      options: {
+                          scales: {
+                              y: {
+                                  beginAtZero: true
+                              }
                           }
                       }
-                  }
+                  });
               });
-          });
-    }
-
-    // gross weekly sales
-    function updateChartGrossDailyWeek(startDate, endDate) {
-          fetch(`/Dashboard?startDate=${startDate}&endDate=${endDate}`)
-          .then(response => response.json())
-          .then(data => {
-              const ctx_grossDailyWeek = document.getElementById('grossSalesWeek').getContext('2d');
-              if (window.myChart3) {
-                  window.myChart3.destroy();
-              }
-              window.myChart3 = new Chart(ctx_grossDailyWeek, {
-                  type: 'bar',
-                  data: @json($chartDayOfWeekGrossSales),
-                  options: {
-                      scales: {
-                          y: {
-                              beginAtZero: true
+        }
+        // gross Hour sales
+        function updateChartGrossHour(startDate, endDate) {
+              fetch(`/Dashboard?startDate=${startDate}&endDate=${endDate}`)
+              .then(response => response.json())
+              .then(data => {
+                  const ctx_grossDailyWeek = document.getElementById('grossSalesHour').getContext('2d');
+                  if (window.myChart4) {
+                      window.myChart4.destroy();
+                  }
+                  window.myChart4 = new Chart(ctx_grossDailyHour, {
+                      type: 'line',
+                      data: @json($chartHourlyGrossSales),
+                      options: {
+                          scales: {
+                              y: {
+                                  beginAtZero: true
+                              }
                           }
                       }
-                  }
+                  });
               });
-          });
-    }
-    // gross Hour sales
-    function updateChartGrossHour(startDate, endDate) {
-          fetch(`/Dashboard?startDate=${startDate}&endDate=${endDate}`)
-          .then(response => response.json())
-          .then(data => {
-              const ctx_grossDailyWeek = document.getElementById('grossSalesHour').getContext('2d');
-              if (window.myChart4) {
-                  window.myChart4.destroy();
-              }
-              window.myChart4 = new Chart(ctx_grossDailyHour, {
-                  type: 'line',
-                  data: @json($chartHourlyGrossSales),
-                  options: {
-                      scales: {
-                          y: {
-                              beginAtZero: true
-                          }
-                      }
-                  }
-              });
-          });
-    }
+        }
 
-    function filterReportDate(){
-        var daterange = $('input[name="daterange"]').val();
-        var daterange = daterange.split(" / ");
-        var startDate = daterange[0];
-        var endDate = daterange[1];
-        var url = "{{route('Dashboard')}}";
-        url = url+'?startDate='+startDate+'&endDate='+endDate;
-        // updateChart(startDate, endDate);
-        updateChartGrossDaily(startDate, endDate)
-        updateChartGrossDailyWeek(startDate, endDate)
-        updateChartGrossHour(startDate, endDate)
-        window.location = url;
-    }
+        function filterReportDate(){
+            var daterange = $('input[name="daterange"]').val();
+            var daterange = daterange.split(" / ");
+            var startDate = daterange[0];
+            var endDate = daterange[1];
+            var url = "{{route('Dashboard')}}";
+            url = url+'?startDate='+startDate+'&endDate='+endDate;
+            // updateChart(startDate, endDate);
+            updateChartGrossDaily(startDate, endDate)
+            updateChartGrossDailyWeek(startDate, endDate)
+            updateChartGrossHour(startDate, endDate)
+            window.location = url;
+        }
 
-    // updateChart('{{ $startDate }}', '{{ $endDate }}');
-    updateChartGrossDaily('{{ $startDate }}', '{{ $endDate }}');
-    updateChartGrossDailyWeek('{{ $startDate }}', '{{ $endDate }}');
-    updateChartGrossHour('{{ $startDate }}', '{{ $endDate }}');
+      // updateChart('{{ $startDate }}', '{{ $endDate }}');
+      updateChartGrossDaily('{{ $startDate }}', '{{ $endDate }}');
+      updateChartGrossDailyWeek('{{ $startDate }}', '{{ $endDate }}');
+      updateChartGrossHour('{{ $startDate }}', '{{ $endDate }}');
+     
 
 })
   
 </script>
+
 @endsection

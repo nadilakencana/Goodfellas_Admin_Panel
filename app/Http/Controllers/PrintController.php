@@ -174,7 +174,7 @@ class PrintController extends Controller
 			}catch(\Exception $e){
 				return response()->json([
 					'success' => 0,
-					'message' => 'Something Error',
+					'message' => 'Something Error Bill',
 					'data' => $e->getMessage()
 				], 500);
 			}
@@ -334,7 +334,7 @@ class PrintController extends Controller
 			} catch(\Exception $e){
 				return response()->json([
 					'success' => 0,
-					'message' => 'Something Error',
+					'message' => 'Something Error Tiket',
 					'data' => $e->getMessage()
 				], 500);
 			}
@@ -584,7 +584,7 @@ class PrintController extends Controller
 			}catch(\Exception $e){
 				return response()->json([
 						'success' => 0,
-						'message' => 'Something Error',
+						'message' => 'Something Error Kitchen',
 						'data' => $e->getMessage()
 				]);
 			}

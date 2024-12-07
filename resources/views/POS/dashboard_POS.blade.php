@@ -415,10 +415,10 @@
         </div>
 </div>
 @stop
+
 @section('script')
 
 <script src="{{ asset('asset/assets/js/function_POS.js') }}"></script>
-<script src="https://js.pusher.com/7.2/pusher.min.js"></script>
 <script src="{{ asset('asset/assets/js/idle timer check.js') }}"></script>
 <script>
 
@@ -1698,8 +1698,8 @@
                     //console.log(type);
                 updateLastPrint(id, type)
                 console.log('print bill', result)
-                // addLogLocalStorage('PrintBill', 'delete item', result);
-                LogActivity('print bill ', result)
+                LogActivity('print bill ', result);
+
             }).fail(function(xhr, status, error){
                 LogActivity('error print bill', error)
                
@@ -1731,8 +1731,6 @@
                             $('.popup-print').fadeOut();
                            
                         },3000)
-                       
-
                         console.log('Max retry attempts reached. Aborting.');
                 }
                 
