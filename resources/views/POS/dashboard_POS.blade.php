@@ -658,14 +658,51 @@
 
         $('body').on('click', `.act-edit .check-edit`, function(e){
            splitBill($(this), 1);
-           $('.pop-up.additional').hiden();
+           $('.pop-up.additional').fadeOut();
         });
 
         $('.popup-qty').on('click', '.oke', function(){
              $('.popup-qty').fadeOut();
              splitBill($(this), 2);
         }).on('click', '.header-card .close', function(){
-             $('.popup-qty').fadeOut();
+            let $popupQty = $('.popup-qty');
+            let $detail = $popupQty.find('.detil-bil');
+            if($detail.length > 0){
+                var $item = $detail.find('.itm-bil');
+                var $itm  = $item.find('.act-edit input:checked').prop('checked', true);
+                if ($itm.length > 0) {
+                    // Mengubah statusnya menjadi tidak dicentang
+                    $itm.each(function () {
+                        let $elm = $(this);
+                        $elm.prop('checked', false); // Mengubah menjadi tidak dicentang
+                    });
+                }
+
+
+            }
+            var subTotal = $('.footer-sub-total .txt-price-total.subtotal ').attr('subtotal');
+            var $elm_pb = $('.txt-price-total.PB1');
+            var $elm_service = $('.txt-price-total.Service');
+            var total = $('.footer-sub-total .txt-price-total.total ').attr('total');
+            
+            var pb1 = 0.1;
+            var service = 0.05;
+            var nominalPb = subTotal * pb1 ;
+            var nominalService = subTotal * service;
+            var Totalreset = subTotal + nominalPb + nominalService;
+             
+            var convertPb1 = nominalPb.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            var convertService = nominalService.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            var ConSub = subTotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            var ConTotal = total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+            $elm_pb.text(convertPb1);
+            $elm_service.text(convertService);
+            $('.footer-sub-total .txt-price-total.subtotal').text(ConSub);
+            $('.footer-sub-total .txt-price-total.total').text(ConTotal);
+             
+            $('.popup-qty').fadeOut();
+
         })
 
         
@@ -776,9 +813,10 @@
                             $('.form-cash input.change-input').val('');
                             $('.payment-nominal').hide();
                             //Bill(id,'Bill')
-                            //Bill(id,'Bill')
+                            Bill(xidOrder,'Bill')
                             clearSession()
-                            console.log($target1, $target2);
+
+                            //console.log($target1, $target2);
 
                             if(data.error){
                                 console.log(data.error)
@@ -792,21 +830,21 @@
                                 LogActivity('error payment', data)
                         });
 
-                    if(type == 'server'){
-                        var idAdmin = $('.main-sidebar .info.admin').attr('data-admin');
-                        console.log('idAdmin');
-                        postData['idUser'] = idAdmin;
-                        $.post("https://admin.goodfellas.id/api/payment-POS", postData).done(function(data){
-                        // alert('Done');
-                        setTimeout(function(){
-                            $('.popup-print .form-group p').text('order is processed and has been update');
-                            $('popup-print').fadeIn();
-                        },1000)
-                            getDetailBillServer(xidOrder, 'detailprint_bil');
-                        }).fail(function(data){
-                                console.log('error', data);
-                        });
-                    }
+                        if(type == 'server'){
+                            var idAdmin = $('.main-sidebar .info.admin').attr('data-admin');
+                            console.log('idAdmin');
+                            postData['idUser'] = idAdmin;
+                            $.post("https://admin.goodfellas.id/api/payment-POS", postData).done(function(data){
+                            // alert('Done');
+                            setTimeout(function(){
+                                $('.popup-print .form-group p').text('order is processed and has been update');
+                                $('popup-print').fadeIn();
+                            },1000)
+                                getDetailBillServer(xidOrder, 'detailprint_bil');
+                            }).fail(function(data){
+                                    console.log('error', data);
+                            });
+                        }
                 }
                
 
@@ -1654,7 +1692,7 @@
                         $('.pop-payment').hide();
                         $('.payment-nominal').hide();
                         const id = data.data.order.id;
-                        //Bill(id,'Bill')
+                        Bill(id,'Bill')
                         // getBill(id);
                         Tiket(id, 'Tiket');
                         clearSession();
@@ -2753,7 +2791,8 @@
                     'id': Id_add,
                     'nama': name,
                     'harga': nominal_add,
-                    'id_detail': id_detail
+                    'id_detail': id_detail,
+                    'qty': qty
                 });
                 
             });

@@ -520,7 +520,7 @@ class POSController extends Controller
                                     }
                                     $additional->id_detail_order = $detail->id;
                                     $additional->id_option_additional = $adds['id'];
-                                    $additional->qty = $detail->qty;
+                                    $additional->qty = $adds['qty'];
                                     $additional->total = $adds['harga'] * $detail->qty;
 
 

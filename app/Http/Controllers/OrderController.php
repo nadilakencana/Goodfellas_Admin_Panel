@@ -47,23 +47,29 @@ class OrderController extends Controller
 
             $tanggal_mulai = Carbon::now()->isoFormat('MM');
 
-            $order_new = Orders::where('id_status', 1)->where('tanggal', '>=', $startDate)->where('tanggal', '<=', $endDate)->where('deleted', 0)->orderBy('created_at', 'desc')->whereNotNull('id_user')->get();
-            $order_new_nonUser = Orders::where('id_status', 1)->where('tanggal', '>=', $startDate)->where('tanggal', '<=', $endDate)->where('id_user', null)->where('deleted', 0)->orderBy('created_at', 'desc')->get();
+            $order_new = Orders::where('id_status', 1)->whereBetween('tanggal', [$startDate, $endDate])->where('deleted', 0)->orderBy('created_at', 'desc')->whereNotNull('id_user')->get();
+            $order_new_nonUser = Orders::where('id_status', 1)->whereBetween('tanggal', [$startDate, $endDate])->where('id_user', null)->where('deleted', 0)->orderBy('created_at', 'desc')->get();
             // dd($order_new_nonUser);
-            $order_selesai = Orders::where('id_status', 2)->where('tanggal', '>=', $startDate)->where('tanggal', '<=', $endDate)->where('deleted', 0)->orderBy('created_at', 'desc')->get();
-            $order_batal = Orders::where('deleted', 1)->where('tanggal', '>=', $startDate)->where('tanggal', '<=', $endDate)->orderBy('created_at', 'desc')->get();
-            $orderCount = Orders::where('id_status', 2)->where('tanggal', '>=', $startDate)->where('tanggal', '<=', $endDate)->where('deleted', 0)->count();
-            $orderSumTotal = Orders::where('id_status', 2)->where('tanggal', '>=', $startDate)->where('tanggal', '<=', $endDate)->where('deleted', 0)->sum('total_order');
-            $orderSumSubTotal = Orders::where('id_status', 2)->where('deleted', 0)->where('tanggal', '>=', $startDate)->where('tanggal', '<=', $endDate)->sum('subtotal');
+            $order_selesai = Orders::where('id_status', 2)->whereBetween('tanggal', [$startDate, $endDate])->where('deleted', 0)->orderBy('created_at', 'desc')->get();
+            $order_batal = Orders::where('deleted', 1)->whereBetween('tanggal', [$startDate, $endDate])->orderBy('created_at', 'desc')->get();
+            $orderCount = Orders::where('id_status', 2)->whereBetween('tanggal', [$startDate, $endDate])->where('deleted', 0)->count();
+            $orderSumTotal = Orders::where('id_status', 2)->whereBetween('tanggal', [$startDate, $endDate])->where('deleted', 0)->sum('total_order');
+            $orderSumSubTotal = Orders::where('id_status', 2)->where('deleted', 0)->whereBetween('tanggal', [$startDate, $endDate])->sum('subtotal');
             //dd($orderSumTotal);
-            $SumDiscount = Discount_detail_order::where('created_at', '>=', $startDate)->where('created_at', '<=', $endDate)->whereHas('Detail_order.order', function($query){
+            $SumDiscount = Discount_detail_order::whereBetween(
+                        DB::raw('DATE(created_at)'), 
+                        [$startDate, $endDate]
+                    )->whereHas('Detail_order.order', function($query){
                 $query->where('id_status',2)->where('deleted', 0);
             })->sum('total_discount');
 
 
-            $refundItemSum = RefundOrderMenu::where('created_at', '>=', $startDate)->where('created_at', '<=', $endDate)->sum('refund_nominal');
-            $refundAddsSum = AdditionalRefund::where('created_at', '>=', $startDate)->where('created_at', '<=', $endDate)->sum('total_');
-            $refundDisCountSum = DiscountMenuRefund::where('created_at', '>=', $startDate)->where('created_at', '<=', $endDate)->sum('nominal_dis');
+            $refundItemSum = RefundOrderMenu::whereBetween('tanggal', [$startDate, $endDate])->sum('refund_nominal');
+            $refundAddsSum = AdditionalRefund::whereBetween('tanggal', [$startDate, $endDate])->sum('total_');
+            $refundDisCountSum = DiscountMenuRefund::whereBetween(
+                                    DB::raw('DATE(created_at)'), 
+                                    [$startDate, $endDate]
+                                )->sum('nominal_dis');
             // dd($refundDisCountSum);
 
             $taxpb1 = Taxes::where('nama', 'PB1')->first();
@@ -416,43 +422,46 @@ class OrderController extends Controller
                $itmRefund->tanggal = Carbon::now()->toDateTimeString();
                $itmRefund->save();
                
-               // dd($refund['discount']);
-               if (isset($refund['discount'])) {
-                   $disRefund = $refund['discount'];
-                   foreach ($disRefund as $dis) {
-                       $discount = new DiscountMenuRefund();
-                       $discount->id_refund_menu  = $itmRefund->id;
-                       $discount->id_menu = $dis['id_menu'];
-                       $discount->id_discount = $dis['idDiscount'];
-                       $discount->nominal_dis = $dis['nominalDis'];
-                       $discount->id_admin = $admin;
-                       $discount->save();
-                   }
-               }
-
-               if (isset($request->additionalRef)) {
-                    $addRef = $request->additionalRef;
-                    foreach ($addRef as $add) {
-                        $additional = new AdditionalRefund();
-                        $additional->id_refund_menu  = $itmRefund->id;
-                        $additional->id_menu = $add['id_menu'];
-                        $additional->id_option_additional = $add['id_add'];
-                        $additional->harga = $add['addHarga'];
-                        $additional->qty = $add['qty'];
-                        $additional->total_ = $add['Total'];
-                        $additional->tanggal = Carbon::now()->toDateTimeString();
-                        $additional->id_admin = $admin;
-
-                        $additional->save();
+               if($itmRefund){
+                    if (isset($refund['discount'])) {
+                        $disRefund = $refund['discount'];
+                        foreach ($disRefund as $dis) {
+                            $discount = new DiscountMenuRefund();
+                            $discount->id_refund_menu  = $itmRefund->id;
+                            $discount->id_menu = $dis['id_menu'];
+                            $discount->id_discount = $dis['idDiscount'];
+                            $discount->nominal_dis = $dis['nominalDis'];
+                            $discount->id_admin = $admin;
+                            $discount->save();
+                        }
                     }
-                }
+
+                    if (isset($refund['additional'])) {
+                        $addRef = $refund['additional'];
+                        foreach ($addRef as $add) {
+                            $additional = new AdditionalRefund();
+                            $additional->id_refund_menu  = $itmRefund->id;
+                            $additional->id_menu = $add['id_menu'];
+                            $additional->id_option_additional = $add['id_add'];
+                            $additional->harga = $add['nominal'];
+                            $additional->qty = $add['qty'];
+                            $additional->total_ = $add['Total_adds'];
+                            $additional->tanggal = Carbon::now()->toDateTimeString();
+                            $additional->id_admin = $admin;
+
+                            $additional->save();
+                        }
+                    }
+               }
+               // dd($refund['discount']);
+               
            }
 
            foreach($menuDetail as $item){
                $detail_menu = DetailOrder::where('id', $item["id_detail"])->first();
 
                if ($detail_menu) {
-               // Jika detail menu memiliki ID yang sama dengan item refund
+                    // Jika detail menu memiliki ID yang sama dengan item refund
                    if ($detail_menu->id_order == $item['id_order'] && $detail_menu->id_menu == $item['id_menu']) {
                        // Kurangi qty detail menu dengan qty item refund
                        $detail_menu->qty -= $item['qty'];

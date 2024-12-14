@@ -30,6 +30,15 @@
 
             @endphp
           @foreach ($kategori as $kat)
+                @php
+                    $netSales = ($kat['GrossSalse'] - $kat['Refund']) - $kat['Discount'];
+                    $totalItemSoldMenu += $kat['itemSold'];
+                    $totalItemRefundMenu += $kat['itemrefund'];
+                    $totalGrossMenu += $kat['GrossSalse'];
+                    $totalDiscountMenu += $kat['Discount'];
+                    $totalRefundMenu += $kat['Refund'];
+                    $totalNetMenu += $netSales;
+                @endphp
 
                 <tr class="body-data">
                     <td class="data-item list-nama">{{ $kat['Name']->sub_kategori }}</td>
@@ -38,18 +47,11 @@
                     <td class="data-item">Rp. {{number_format( $kat['GrossSalse'], 0, ',','.')}}</td>
                     <td class="data-item">(Rp. {{ number_format( $kat['Discount'], 0, ',','.')  }})</td>
                     <td class="data-item">(Rp. {{ number_format( $kat['Refund'], 0, ',','.')  }} )</td>
-                    <td class="data-item">Rp. {{number_format( $kat['NetSales'], 0, ',','.')}}</td>
-                    <td class="data-item">Rp. {{number_format( $kat['NetSales'], 0, ',','.')}}</td>
+                    <td class="data-item">Rp. {{number_format( $netSales, 0, ',','.')}}</td>
+                    <td class="data-item">Rp. {{number_format( $netSales, 0, ',','.')}}</td>
                 </tr>
 
-                @php
-                    $totalItemSoldMenu += $kat['itemSold'];
-                    $totalItemRefundMenu += $kat['itemrefund'];
-                    $totalGrossMenu += $kat['GrossSalse'];
-                    $totalDiscountMenu += $kat['Discount'];
-                    $totalRefundMenu += $kat['Refund'];
-                    $totalNetMenu += $kat['NetSales'];
-                @endphp
+                
           @endforeach
           @foreach ($modifier as $mod)
             <tr class="body-data">

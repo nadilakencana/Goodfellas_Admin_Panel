@@ -38,6 +38,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Log;
 use App\Models\VarianMenu;
 use App\Exports\DetailTransactionItemsExport;
+use DB;
 
 class ExportLaporanController extends Controller
 {
@@ -101,7 +102,8 @@ class ExportLaporanController extends Controller
             $service = Taxes::where('nama', 'Service Charge')->first();
 
 
-            $allGrandDis =  $totalDiscount - $refundDisCountSum;
+            $sumDiscountTotal =  $totalDiscount + $refundDisCountSum;
+            $allGrandDis =  $sumDiscountTotal - $refundDisCountSum;
             $allGrandRefund = $hargaRefund;
             $allGrandSales =   $items + $hargaRefund;
             $allGrandNet =  $allGrandSales -  $allGrandDis -  $allGrandRefund;
@@ -200,7 +202,8 @@ class ExportLaporanController extends Controller
             $service = Taxes::where('nama', 'Service Charge')->first();
 
             $allGrandSales =   $items + $hargaRefund;
-            $allGrandDis =  $totalDiscount - $refundDisCountSum;
+            $sumDiscountTotal =  $totalDiscount + $refundDisCountSum;
+            $allGrandDis =  $sumDiscountTotal - $refundDisCountSum;
             $allGrandRefund =  $hargaRefund;
             $allGrandNet =  $allGrandSales -  $allGrandDis -  $allGrandRefund;
 
@@ -494,7 +497,14 @@ class ExportLaporanController extends Controller
 
 
 
-                $harga = ($itmsum + $SumRefund) * $items;
+                $sumSold = $itmsum + $SumRefund;
+
+                if($items == 0){
+                    $harga = $sumSold * $hargaRefund ;
+                }else{
+                    $harga = $sumSold * $items ;
+                }
+
                 $totalRefund = $hargaRefund * $SumRefund;
 
                 $disTotal = $totalDiscount - $refundDisCountSum;
@@ -502,7 +512,7 @@ class ExportLaporanController extends Controller
 
                 $itemSalesMenu[] = [
                     'Name' => $itm->nama_menu,
-                    'itemSold' => $itmsum + $SumRefund,
+                    'itemSold' => $sumSold,
                     'itemrefund' => $SumRefund,
                     'GrossSalse' => $harga,
                     'Discount' => $disTotal,
@@ -536,14 +546,19 @@ class ExportLaporanController extends Controller
                     });
                 })->where('id_option_additional', $adds->id)->value('harga');
 
-                $grosSale = $itmAdsSold * $adds->harga;
+
+                $AddsTotalSum = $itmAdsSold + $refundSum;
+               
+                $grosSale = $AddsTotalSum * $adds->harga;
+                
+
                 $grosRefund = $refund * $refundSum;
 
                 $NetSales = $grosSale  - $grosRefund;
 
                 $itemSalesAdss[] = [
                     'Name' => $adds,
-                    'item Sold' => $itmAdsSold,
+                    'item Sold' => $AddsTotalSum,
                     'item refund' => $refundSum,
                     'Gross Salse' => $grosSale,
                     'Refund' => $grosRefund,
@@ -702,11 +717,14 @@ class ExportLaporanController extends Controller
 
             foreach ($Discount as $dis) {
 
-                $countDis = Discount_detail_order::whereBetween('created_at', [$startDate, $endDate])->where('id_discount', $dis->id)->count();
+                $countDis = Discount_detail_order::whereBetween( DB::raw('DATE(created_at)'), 
+                    [$startDate, $endDate])->where('id_discount', $dis->id)->count();
 
-                $grossDis = Discount_detail_order::whereBetween('created_at', [$startDate, $endDate])->where('id_discount', $dis->id)->sum('total_discount');
+                $grossDis = Discount_detail_order::whereBetween( DB::raw('DATE(created_at)'), 
+                    [$startDate, $endDate])->where('id_discount', $dis->id)->sum('total_discount');
 
-                $refundDisCount = DiscountMenuRefund::whereBetween('created_at', [$startDate, $endDate])->where('id_discount', $dis->id)->sum('nominal_dis');
+                $refundDisCount = DiscountMenuRefund::whereBetween( DB::raw('DATE(created_at)'), 
+                    [$startDate, $endDate])->where('id_discount', $dis->id)->sum('nominal_dis');
 
                 $netDis = $grossDis - $refundDisCount;
 
@@ -849,67 +867,80 @@ class ExportLaporanController extends Controller
 
                 $hargaMenu = DetailOrder::whereHas('menu.subKategori', function ($query) use ($idCat) {
                     $query->where('id', $idCat);
-                })->whereBetween('created_at', [$startDate, $endDate])
-                    ->get();
+                })->whereBetween(DB::raw('DATE(created_at)'), 
+                    [$startDate, $endDate])
+                ->sum('harga');
 
-                foreach ($hargaMenu as $data) {
+                // foreach ($hargaMenu as $data) {
 
-                    $subTotal = 0;
-                    $harga = $data->harga;
-                    $qty = $data->qty;
-                    $total = $harga * $qty;
-                    $subTotal += $total;
-                    $hargaData[] = [
-                        'harga' => $subTotal
-                    ];
-                }
+                //     $subTotal = 0;
+                //     $harga = $data->harga;
+                //     $qty = $data->qty;
+                //     $total = $harga * $qty;
+                //     $subTotal += $total;
+                //     $hargaData[] = [
+                //         'harga' => $subTotal
+                //     ];
+                // }
 
                 // $hargaData = collect($hargaData);
 
                 $qtySold = DetailOrder::whereHas('menu.subKategori', function ($query) use ($idCat) {
                     $query->where('id', $idCat);
-                })->whereBetween('created_at', [$startDate, $endDate])
+                })->whereBetween(DB::raw('DATE(created_at)'), 
+                    [$startDate, $endDate])
                     ->sum('qty');
 
                 $discount = Discount_detail_order::whereHas('Detail_order.menu.subKategori', function ($query) use ($idCat) {
                     $query->where('id', $idCat);
-                })->whereBetween('created_at', [$startDate, $endDate])
+                })->whereBetween(DB::raw('DATE(created_at)'), 
+                    [$startDate, $endDate])
                     ->sum('total_discount');
 
                 $qtyRefund = RefundOrderMenu::whereHas('menu.subKategori', function ($query) use ($idCat) {
                     $query->where('id', $idCat);
-                })->whereBetween('created_at', [$startDate, $endDate])
+                })->whereBetween(DB::raw('DATE(created_at)'), 
+                    [$startDate, $endDate])
                     ->sum('qty');
 
                 $hargaRefund = RefundOrderMenu::whereHas('menu.subKategori', function ($query) use ($idCat) {
                     $query->where('id', $idCat);
-                })->whereBetween('created_at', [$startDate, $endDate])
+                })->whereBetween(DB::raw('DATE(created_at)'), 
+                    [$startDate, $endDate])
                     ->sum('refund_nominal');
 
                 $discountRef = DiscountMenuRefund::whereHas('menu.subKategori', function ($query) use ($idCat) {
                     $query->where('id', $idCat);
-                })->whereBetween('created_at', [$startDate, $endDate])
+                })->whereBetween(DB::raw('DATE(created_at)'), 
+                    [$startDate, $endDate])
                     ->sum('nominal_dis');
 
                 // $harga = $qtySold * $hargaMenu;
                 // $totalRefund = $hargaRefund * $qtyRefund;
 
-                $disTotal = $discount - $discountRef;
-                // $netSales = $hargaMenu - $disTotal - $hargaRefund;
-                $hargaTotal = 0;
-                foreach ($hargaData as $data) {
-                    $hargaTotal += $data['harga'];
+                //menghitung discount sales dengan discount refund
+                $discountNominalSum =  $discount + $discountRef;
+                //hasil discount total di kurangi dengan discount refund
+                $disTotal = $discountNominalSum - $discountRef;
+                //total qty yang terjual di hitung dari total sales qty dengan refund qty
+                $sumTotalqty = $qtySold + $qtyRefund;
+
+
+                if($hargaMenu == 0){
+                    $harga = $sumTotalqty * $hargaRefund ;
+                }else{
+                    $harga = $sumTotalqty * $hargaMenu ;
                 }
-                $netSales = $hargaTotal - $disTotal - $hargaRefund;
+
                 $kategori[] = [
                     'Name' => $cat,
-                    'itemSold' => $qtySold,
+                    'itemSold' => $sumTotalqty,
                     'itemrefund' => $qtyRefund,
-                    'GrossSalse' => $hargaTotal,
+                    'GrossSalse' => $harga,
                     'Discount' => $disTotal,
                     'Refund' => $hargaRefund,
-                    'data Harga' => $hargaTotal,
-                    'NetSales' => $netSales
+                    'data Harga' => $hargaMenu,
+                    'NetSales' => 0
                 ];
             }
 
@@ -957,7 +988,6 @@ class ExportLaporanController extends Controller
                 $kategori,
                 $modifier,
                 $hargaData,
-                $subTotal,
                 $totalNominalKat,
                 $totalItemSoldMenu ,
                 $totalItemRefundMenu ,
