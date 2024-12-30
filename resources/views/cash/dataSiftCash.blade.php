@@ -28,7 +28,7 @@
               <div class="btn btn-success mb-2 start_sift" data-type="start_sift">
                 Start Sift
               </div>
-              
+
             </div>
           </div>
           <!-- /.card-header -->
@@ -69,16 +69,16 @@
                   </td>
                   <td>
                     Rp.{{number_format( $sift->total_actual, 0,',','.')}}
-                    
+
                   </td>
                   <td>
                     Rp.{{number_format( $sift->difference, 0,',','.')}}
-                    
+
                   </td>
                   <td>
                     <a href="{{ route('print_sift', $sift->id) }}" class="btn btn-primary">Print</a>
                     @if(empty($sift->end_time))
-                    <div  class="btn btn-danger end_sift" data-type="end_sift" xid="{{ $sift->id }}">
+                    <div class="btn btn-danger end_sift" data-type="end_sift" xid="{{ $sift->id }}">
                       End Sift
                     </div>
                     @endif
@@ -109,24 +109,24 @@
       </div>
       <div class="form-group">
         <label for="" class="form-label">Modal Sift</label>
-        {{--  //input deskrip kas  --}}
+        {{-- //input deskrip kas --}}
         <input type="text" class="form-control deskripsi mb-2" placeholder="Description Kas" style="display: none">
-        <input type="text" placeholder="nominal" class="form-control cash-nominal-input" value=""
+        <input type="text" placeholder="nominal" class="form-control cash-nominal-input"
           oninput="formatRupiah(this)">
 
         <input type="text" class="modal modal_sift" style="display: none">
-        {{--  nominal kas  --}}
+        {{-- nominal kas --}}
         <input type="text" class="kas" style="display: none">
       </div>
-      {{--  action kas  --}}
+      {{-- action kas --}}
       <div class="btn-acction-kas  mb-2" style="display: none">
-        <div class="btn act-kas btn-danger out-kas" data-type="out-kas" >Out</div>
-        <div class="btn act-kas btn-primary in-kas" data-type="in-kas" >In</div>
+        <div class="btn act-kas btn-danger out-kas" data-type="out-kas">Out</div>
+        <div class="btn act-kas btn-primary in-kas" data-type="in-kas">In</div>
       </div>
-      {{--  all save   --}}
-      <div class="btn-selesai" xid="" data-type="">
-        <p class="text-btn-act save-bill" style="margin: 0px; text-align: center; ">Selesai</p>
-      </div>
+      {{-- all save --}}
+      <button class="btn btn-selesai" xid="" data-type="" disabled>
+        Selesai
+      </button>
 
     </div>
   </div>
@@ -140,7 +140,7 @@
         <div class="close-card">X</div>
       </div>
       <div class="body-card-01">
-      
+
       </div>
     </div>
   </div>
@@ -149,6 +149,8 @@
 
 @section('script')
 <script>
+  let loadPhase = false;
+
   $(()=>{
     const dropdown = $('.dropdown');
     dropdown.on('click', function(){
@@ -158,7 +160,7 @@
   $('.start_sift[data-type="start_sift"]').on('click', function(){
     var $tgt = $('.popup-name-bill');
     $tgt.show();
-
+     //CekCashNominal()
     $tgt.find('.form-group .form-label').text('Modal Sift');
     $tgt.find('input.modal').attr('placeholder', 'nominal modal sift')
     .addClass('modal_sift').removeClass('endSift');
@@ -171,7 +173,7 @@
     var $tgt = $('.popup-name-bill');
     var xid =$(this).attr('xid');
     $tgt.show();
-
+    //CekCashNominal()
     $tgt.find('.form-group .form-label').text('End Sift');
     $tgt.find('input.modal').attr('placeholder', 'nominal actual end sift')
     .addClass('endSift').removeClass('modal_sift');
@@ -204,11 +206,19 @@
   $('.btn-selesai').on('click', function(){
     var type = $(this).attr('data-type');
     var xid = $(this).attr('xid');
+    if(loadPhase){
+        console.log('Process is already running. Please wait.');
+        return;
+    }
+    loadPhase = true;
+    const $button = $(this);
+    $button.prop('disabled', true).text('Processing...');
+
     console.log(type)
     if(type == 'kas'){
-      kas(xid)
+      kas(xid, $button)
     }else{
-       postSift(type);
+       postSift(type, $button);
     }
    
   })
@@ -224,7 +234,7 @@
     //mengambil id dari dta sift
     var idx = $(this).attr('dt-id');
     $tgt.show();
-
+    //CekCashNominal()
     $tgt.find('.form-group .form-label').text('Kas');
     $tgt.find('input.cash-nominal-input').attr('placeholder', 'nominal kas');
     $tgt.find('input.form-control.deskripsi').show();
@@ -259,6 +269,9 @@
     }
     //$('.btn-selesai').attr('data-type', type);
   })
+
+
+
 })
 
 function detailSift(id){
@@ -281,7 +294,7 @@ function detailSift(id){
    
 }
 
-function postSift(type){
+function postSift(type, $button){
 
   var nominal = $('.cash-nominal-input').val();
   var convert = nominal.replace(/\D/g, '');
@@ -323,14 +336,18 @@ function postSift(type){
     console.log(data)
   }).fail(function(data){
     console.log('error', data)
-  })
+  }).always(function () {
+     // Reset loadPhase and button state
+      loadPhase = false;
+      $button.prop('disabled', false).text('Selesai');
+  });
   
 
 
 }
 
 
-function kas(id){
+function kas(id, $button){
   var $tgt = $('.popup-name-bill');
   var deskripsi = $tgt.find('input.deskripsi').val();
   var nominal = $('.cash-nominal-input').val();
@@ -362,7 +379,11 @@ function kas(id){
     detailSift(id)
   }).fail(function(data){
     console.log('error', data);
-  })
+  }).always(function () {
+     // Reset loadPhase and button state
+      loadPhase = false;
+      $button.prop('disabled', false).text('Selesai');
+  });
 }
 
 function formatRupiah(input) {
@@ -375,11 +396,26 @@ function formatRupiah(input) {
         minimumFractionDigits: 0,
     });
     // Update nilai input dengan format Rupiah
-    input.value = formatter.format(nominal);
-    var Nominal = $('input.cash-nominal-input').val();
-    console.log(Nominal)
+    const formattedValue = nominal === '' ? '' : formatter.format(nominal); // Handle nilai kosong
+    input.value = formattedValue;
+    
+    // Cek nominal dengan fungsi tambahan
+    CekCashNominal(input);
+
+    // Log nilai nominal (menggunakan nilai yang telah diformat)
+    console.log(input.value);
 }
 
+function CekCashNominal(input){
+    console.log(input.value)
+    if (input.value === "Rp0" || input.value.trim() === "" || input.value === "0") {
+        // Nonaktifkan tombol
+        $('.btn-selesai').prop('disabled', true);
+    } else {
+        // Aktifkan tombol
+        $('.btn-selesai').prop('disabled', false);
+    }
+}
 
 
 

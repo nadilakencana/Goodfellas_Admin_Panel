@@ -53,36 +53,18 @@
 
                 
           @endforeach
-          @foreach ($modifier as $mod)
-            <tr class="body-data">
-                <td class="data-item list-nama">{{ $mod['Name']->name }}</td>
-                <td class="data-item">{{ $mod['itemSold'] }}</td>
-                <td class="data-item">{{ $mod['itemrefund'] }}</td>
-                <td class="data-item">Rp. {{number_format( $mod['Gross Salse'], 0, ',','.')}}</td>
-                <td class="data-item">(0)</td>
-                <td class="data-item">(Rp. {{number_format( $mod['Refund'], 0, ',','.')}})</td>
-                <td class="data-item">Rp. {{number_format( $mod['NetSales'] , 0, ',','.')}}</td>
-                <td class="data-item">Rp. {{number_format( $mod['NetSales'] , 0, ',','.')}}</td>
-            </tr>
-             @php
-                $totalItemSoldAdds += $mod['itemSold'];
-                $totalItemRefundAdds +=$mod['itemrefund'];
-                $totalGrossAdds += $mod['Gross Salse'];
-                $totalRefundAdds += $mod['Refund'];
-                $totalNetAdds += $mod['NetSales'];
-            @endphp
-          @endforeach
+         
         </tbody>
         <tfoot>
             <tr>
                 <td class="data-item list-nama">Total</td>
-                <td>{{ $totalItemSoldMenu + $totalItemSoldAdds}}</td>
-                <td>{{ $totalItemRefundMenu + $totalItemRefundAdds}}</td>
-                <td>Rp. {{number_format( $totalGrossMenu + $totalGrossAdds , 0, ',','.')}}</td>
+                <td>{{ $totalItemSoldMenu }}</td>
+                <td>{{ $totalItemRefundMenu }}</td>
+                <td>Rp. {{number_format( $totalGrossMenu , 0, ',','.')}}</td>
                 <td>(Rp. {{number_format( $totalDiscountMenu , 0, ',','.')}} )</td>
-                <td>(Rp. {{number_format( $totalRefundMenu + $totalRefundAdds , 0, ',','.')}})</td>
-                <td>Rp. {{number_format( $totalNetMenu + $totalNetAdds , 0, ',','.')}}</td>
-                <td>Rp. {{number_format( $totalNetMenu + $totalNetAdds , 0, ',','.')}}</td>
+                <td>(Rp. {{number_format( $totalRefundMenu , 0, ',','.')}})</td>
+                <td>Rp. {{number_format( $totalNetMenu  , 0, ',','.')}}</td>
+                <td>Rp. {{number_format( $totalNetMenu, 0, ',','.')}}</td>
             </tr>
         </tfoot>
     </table>

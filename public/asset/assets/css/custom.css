@@ -377,8 +377,8 @@ table.list-bill-table {
     margin-top: 24px;
     margin-bottom: 20px;
 }
-.part-payment {
-   border: 1px solid rgb(22, 22, 22);
+.part-payment, .part-category {
+    border: 1px solid rgb(22, 22, 22);
     width: 48%;
     display: flex;
     justify-content: center;
@@ -387,11 +387,11 @@ table.list-bill-table {
     border-radius: 10px;
     cursor: pointer;
 }
-.part-payment:hover {
+.part-payment:hover, .part-category:hover {
    background-color: #0f0e0e;
    color: white;
 }
-.part-payment.active {
+.part-payment.active, .part-category.active {
    background-color: #0f0e0e;
    color: white;
 }
@@ -404,16 +404,28 @@ table.list-bill-table {
     display: flex;
     gap: 10px;
     justify-content: space-between;
+    width: 100%
 }
 
 
-.btn-selesai, .save-bill {
+.btn-selesai {
+    display:block;
     background: black;
     color: white;
     padding: 7px 16px;
     border-radius: 10px;
-    cursor: pointer;
+   cursor:pointer;
+   width:100%
 }
+ .btn.save-bill{
+    min-width: 100%;
+    display:block;
+    background: black;
+    color: white;
+    padding: 7px 16px;
+    border-radius: 10px;
+ }
+
 .btn-selesai:hover , .btn-close-part:hover, .save-bill:hover {
     background: rgba(29, 29, 29, 0.836);
 
@@ -1106,7 +1118,7 @@ button.update-pass {
 }
 /* end password */
 /* pop-name-bill */
-.popup-name-bill ,.popup-qty, .popup-print{
+.popup-name-bill ,.popup-qty, .popup-print, .popup-category-custom{
     position: fixed;
     top: 0;
     left: 0;
@@ -1121,14 +1133,14 @@ button.update-pass {
 }
 .popup-name-bill .position-card, 
 .popup-qty .position-card,
-.popup-print .position-card {
+.popup-print .position-card, .popup-category-custom .position-card {
     position: fixed;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 .position-card .card-colum-input,
-.popup-print .card-colum-input {
+.popup-print .card-colum-input, .popup-category-custom .position-card {
     background: white;
     color: black;
     padding: 20px;

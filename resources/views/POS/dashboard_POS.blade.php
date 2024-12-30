@@ -127,7 +127,7 @@
                                     <span class="tombol">8</span>
                                     <span class="tombol">9</span>
                                     <span class="tombol" id="nol">0</span>
-                                    <span class="add-custom" idx="{{ $customItem->id }}">Add</span>
+                                    <span class="add-custom">Add</span>
                                     <span class="tombol oprator">C</span>
                                     <span class="tombol oprator">
                                         < </span>
@@ -328,7 +328,7 @@
         </div>
         <div class="content-payment">
             @foreach ( $payment as $pay )
-            <div class="part-payment off" xid="{{ $pay->id }}">
+            <div class="part-payment unactive" xid="{{ $pay->id }}">
                 <p class="text-paymnt" data="{{ $pay->nama }}">{{ $pay->nama }}</p>
             </div>
             @endforeach
@@ -376,27 +376,27 @@
                 <label for="" class="form-label">Name Bill</label>
                 <input type="text" class="form-control nameBill">
             </div>
-            <div class="save-bill">
-                <p class="text-btn-act" style="margin: 0px; text-align: center; ">Selesai</p>
-            </div>
+            <button class="btn save-bill">
+                Selesai
+            </button>
         </div>
     </div>
 </div>
 
 <div class="popup-qty" style="display: none">
     <div class="position-card">
-        <div class="card-colum-input" style="width: 500px;height: 450px;">
+        <div class="card-colum-input" style="width: 500px;max-height: 450px; height:auto;">
             <div class="header-card">
                 <div class="txt-tittle"></div>
                 <div class="total-payment"></div>
                 <div class="close">X</div>
             </div>
-            <div class="cotent-detail" style="overflow: scroll;height: 348px;">
+            <div class="cotent-detail" style="overflow: scroll;max-height: 330px;height:auto;">
 
             </div>
-            <div class="btn-selesai">
-                <p class="text-btn-act oke" style="margin: 0px; text-align: center; ">Oke</p>
-            </div>
+            <button class="btn btn-selesai" disabled>
+                Oke
+            </button>
         </div>
     </div>
 </div>
@@ -414,6 +414,25 @@
             </div>
         </div>
 </div>
+
+<div class="popup-category-custom" style="display: none">
+    <div class="position-card">
+        <div class="card-colum-input">
+            <div class="header-card">
+                <div class="txt-tittle">Choice Category Custom</div>
+                <div class="total-payment"></div>
+                <div class="close">X</div>
+            </div>
+           <div class="content-payment">
+                @foreach ( $customItem as $item )
+                <div class="part-category uncative p-1" xid="{{ $item->id }}">
+                    <p class="text-paymnt" data="{{ $item->id }}">{{ $item->nama_menu }}</p>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+</div>
 @stop
 
 @section('script')
@@ -423,17 +442,17 @@
 <script>
 
     var currentBillId = 0;
+    
+    $(()=>{
 
- $(()=>{
-
-    var throttledButtonClick;
-    var throttledButtonClickDelete;
-    var canClick;
-    var canClickDelete;
+        var throttledButtonClick;
+        var throttledButtonClickDelete;
+        var canClick;
+        var canClickDelete;
  
         canClick = true;
         canClickDelete = true;
-       
+        
 
         $('body').on('click','.item-card-menu', function(){
             var $elm = $(this);
@@ -459,29 +478,56 @@
 
         $('body').on('click', '.add-custom',  function(){
            
+           $('.popup-category-custom').fadeIn();
+
             //menampilkan pop up additional untuk menu custom
-            var $elm = $(this);
-            var idx = $elm.attr('idx');
-            var $popup = $('.pop-up.additional');
-            var harga = $('.custom-part .nilai-custom').val();
+            //var $elm = $(this);
+            //var idx = $elm.attr('idx');
+            //var $popup = $('.pop-up.additional');
+            //var harga = $('.custom-part .nilai-custom').val();
 
-            if (harga.indexOf('.') !== -1) {
-                 var harga_ = harga.replace(".", "");
-                 $popup.find('.harga-total').attr('price', harga_).text(harga);
-            }
+            //if (harga.indexOf('.') !== -1) {
+            //     var harga_ = harga.replace(".", "");
+            //     $popup.find('.harga-total').attr('price', harga_).text(harga);
+            //}
 
-            $popup.find('.harga-total').attr('price', harga).text(harga);
-            $popup.find('.card-popup').attr('id-x', idx);
-            $popup.find('.btn-add').attr('x-id', idx);
+            //$popup.find('.harga-total').attr('price', harga).text(harga);
+            //$popup.find('.card-popup').attr('id-x', idx);
+            //$popup.find('.btn-add').attr('x-id', idx);
 
-            console.log(idx);
-            getVariasi(idx, 'add','');
-            getAdditional(idx,'add','');
-            $('.pop-up.additional').fadeIn();
+            //console.log(idx);
+            //getVariasi(idx, 'add','');
+            //getAdditional(idx,'add','');
+            //$('.pop-up.additional').fadeIn();
 
         }).on('click', '.act-btn-add', function(e){
             currentBillId = 0; // gunanya untuk reset state jadi customer / bill baru supaya item yang di add lewat session lagi
         })
+
+        $('body').on('click', '.part-category', function () {
+            var elm = $(this);
+            $(elm).toggleClass('active');
+            $(elm).removeClass('off');
+            $('.popup-category-custom').not(elm).removeClass('active').addClass('unactive');
+
+            var $partActive = $('.part-category.active');
+            var idx = $partActive.attr('xid');
+            var $popup = $('.pop-up.additional');
+            var harga = $('.custom-part .nilai-custom').val();
+            if (harga.indexOf('.') !== -1) {
+                 var harga_ = harga.replace(".", "");
+                 $popup.find('.harga-total').attr('price', harga_).text(harga);
+            }
+            $popup.find('.harga-total').attr('price', harga).text(harga);
+            $popup.find('.card-popup').attr('id-x', idx);
+            $popup.find('.btn-add').attr('x-id', idx);
+            console.log(idx);
+            getVariasi(idx, 'add','');
+            getAdditional(idx,'add','');
+
+            $('.pop-up.additional').fadeIn();
+            $('.popup-category-custom').fadeOut();
+        });
 
         //klik item untuk edit
         $('body').on('click','.itm-bil',function(){
@@ -637,8 +683,15 @@
                 console.log('pyment split bill Local');
                 splitBill($(this), 3);
             }else{
-                console.log('pyment to local')
-                payment($(this), 'local');
+                console.log('pyment to local');
+                if(loadPhase){
+                    console.log('Process is already running. Please wait.');
+                    return;
+                }
+                loadPhase = true;
+                const $button = $(this);
+                $button.prop('disabled', true).text('Processing...');
+                payment($(this), 'local', $button);
             }
 
 
@@ -658,10 +711,12 @@
 
         $('body').on('click', `.act-edit .check-edit`, function(e){
            splitBill($(this), 1);
+           checkCheckboxes()
+           
            $('.pop-up.additional').fadeOut();
         });
 
-        $('.popup-qty').on('click', '.oke', function(){
+        $('.popup-qty').on('click', '.btn-selesai', function(){
              $('.popup-qty').fadeOut();
              splitBill($(this), 2);
         }).on('click', '.header-card .close', function(){
@@ -702,6 +757,7 @@
             $('.footer-sub-total .txt-price-total.total').text(ConTotal);
              
             $('.popup-qty').fadeOut();
+            checkCheckboxes()
 
         })
 
@@ -752,7 +808,15 @@
         })
     
         $('.popup-name-bill .card-colum-input .save-bill').on('click', function(e){
-            POSorder();
+            
+            if(loadPhase){
+                console.log('Process is already running. Please wait.');
+                return;
+            }
+            loadPhase = true;
+            const $button = $(this);
+            $button.prop('disabled', true).text('Processing...');
+            POSorder($button);
         });
 
         
@@ -766,9 +830,15 @@
         });
 
 
+        function checkCheckboxes() {
+            // Periksa apakah ada checkbox yang dicentang
+            const isAnyChecked = $('.popup-qty .check-edit:checked').length > 0;
 
+            // Aktifkan atau nonaktifkan tombol "Oke"
+            $('.popup-qty .btn-selesai').prop('disabled', !isAnyChecked);
+        }
             //function payment post
-        function payment($elment, type){
+        function payment($elment, type,$button){
             var $targetpayment = $('.pop-payment');
             var paymentId = $targetpayment.find('.content-payment .part-payment.active').attr('xid');
             var xidOrder = $('.act-btn-bill .act-btn.act2').attr('data-xid');
@@ -828,6 +898,10 @@
                                 console.log('error', data);
                                 alert('Payment tidak sesuai')
                                 LogActivity('error payment', data)
+                        }).always(function () {
+                            // Reset loadPhase and button state
+                            loadPhase = false;
+                            $button.prop('disabled', false).text('Pay Now');
                         });
 
                         if(type == 'server'){
@@ -849,7 +923,7 @@
                
 
             }else{
-                POSorder()
+                POSorder($button)
             }
 
             Pusher.logToConsole = true;
@@ -891,6 +965,9 @@
                     var $actBtn1 = $('.act-btn.act1');
                     var $popUpSplit = $('.popup-qty');
                     var $paymentNominal = $('.payment-nominal');
+                    var $customCategory = $('.payment-nominal');
+                    var $customCategory = $('.content-payment');
+                    var $custom = $('.panel[data-panel="panel3"] .custom-part');
                     
                     currentBillId = 0;
                     console.log('clear session')
@@ -900,7 +977,8 @@
                      $('.act-2 .txt-btn-act-bill.total').text('');
                      $('.act-btn-bill .act-btn.act2').attr('data-xid','');
                      $detaiOrder.find('.view-detail-ord').empty();
-                     $payment.find('.part-payment.active').addClass('off').removeClass('active');
+                     $payment.find('.part-payment.active').addClass('unactive').removeClass('active');
+                     $customCategory.find('.part-category.active').addClass('unactive').removeClass('active');
                      $actBtn1.find('.print-act-btn.split-bill').attr('data-xid', '');
                      $popUpSplit.find('.cotent-detail').empty();
                      $popUpSplit.find('.txt-tittle').empty();
@@ -909,6 +987,7 @@
                      $paymentNominal.find('.nm-payment').empty();
                      $paymentNominal.find('input.convert-cash').val('');
                      $paymentNominal.find('input.cash-nominal-input').val('');
+                     $custom.find('input.nilai-custom').val('');
 
 
                 }
@@ -938,6 +1017,7 @@
                 console.log(result);
             })
         }
+
         //get menu sub
         function getmenuSub(id){
             let URL = "{{ route('subMenu', '')}}"+'/'+id;
@@ -948,6 +1028,7 @@
                 console.log(result);
             })
         }
+
         //get menu kat
        
         // get data variasi
@@ -1243,8 +1324,12 @@
                             
                             
                                 LogActivity('modify bill add item', data);
-
+                                var $custom = $('.panel[data-panel="panel3"] .custom-part');
+                                var $customCategory = $('.content-payment');
                                 var $viewDetail = $('.view-detail-ord');
+
+                                $custom.find('input.nilai-custom').val('');
+                                $customCategory.find('.part-category.active').addClass('unactive').removeClass('active');
                                 $viewDetail.find('.drop-down').remove();
                                 $viewDetail.find('.detil-bil').remove();
                                 $viewDetail.find('.footer-sub-total').remove();
@@ -1312,7 +1397,12 @@
                             }
 
                             console.log('data item add '+ data);
+                            var $custom = $('.panel[data-panel="panel3"] .custom-part');
+                            var $customCategory = $('.content-payment');
                             var $viewDetail = $('.view-detail-ord');
+
+                            $custom.find('input.nilai-custom').val('');
+                            $customCategory.find('.part-category.active').addClass('unactive').removeClass('active');
                             $viewDetail.empty();
                             $('.option-varian').removeClass('active');
                             $('.option-menu-additional').removeClass('active');
@@ -1446,16 +1536,29 @@
                               
                                
 
+                                var $custom = $('.panel[data-panel="panel3"] .custom-part');
+                                var $customCategory = $('.content-payment');
+                                var $viewDetail = $('.view-detail-ord');
+
+                                $custom.find('input.nilai-custom').val('');
+                                $customCategory.find('.part-category.active').addClass('unactive').removeClass('active');
+                                $viewDetail.find('.drop-down').remove();
+                                $viewDetail.find('.detil-bil').remove();
+                                $viewDetail.find('.footer-sub-total').remove();
                                 $('.option-varian').removeClass('active');
                                 $('.option-menu-additional').removeClass('active');
                                 $('.option-discount input:checked').prop('checked', false);
                                 $('.jml-menu input.qty').val('1');
                                 $('.catatan-menu textarea').val('')
-                                $('.option-type.active').removeClass('active');
-                                $('.option-type').removeClass('active');
-                                var Option = $('.option-type');
                                 $('.card-popup').attr('id-x','').attr('key-id', '');
                                 $('.btn-add').attr('x-id','').attr('key','').attr('id_detail', '').text('add');
+                                $('.pop-up.additional').fadeOut();
+                                getBill(currentBillId);
+                                $('.pop-up.additional').fadeOut();
+                                $('.btn-add').removeAttr('disabled');
+                                $('.tooltip').fadeOut();
+                                var Option = $('.option-type');
+                                $('.option-type.active').removeClass('active');
                                 $('.popup-name-bill input.nameBill').val('');
                                 Option.each(function() {
                                     if ($(this).attr('idx') === '4') {
@@ -1491,8 +1594,31 @@
                         LogActivity('Success session delete item', data)
                         $elm.remove();
                         //$(this).attr('data-notify',data['count']);
-                        var $viewDetail = $('.view-detail-ord');
-                        $viewDetail.empty();
+                        var $custom = $('.panel[data-panel="panel3"] .custom-part');
+                            var $customCategory = $('.content-payment');
+                            var $viewDetail = $('.view-detail-ord');
+                            
+                            $custom.find('input.nilai-custom').val('');
+                            $customCategory.find('.part-category.active').addClass('unactive').removeClass('active');
+                            $viewDetail.empty();
+                            $('.option-varian').removeClass('active');
+                            $('.option-menu-additional').removeClass('active');
+                            $('.option-discount input:checked').prop('checked', false);
+                            $('.jml-menu input.qty').val('1');
+                            $('.catatan-menu textarea').val('')
+                            $('.card-popup').attr('id-x','').attr('key-id', '');
+                            $('.btn-add').attr('x-id','').attr('key','').attr('id_detail', '').text('add');
+                            $('.btn-add').removeAttr('disabled');
+                            $('.tooltip').fadeOut();
+                            var Option = $('.option-type');
+                            $('.option-type.active').removeClass('active');
+
+                            Option.each(function() {
+                                if ($(this).attr('idx') === '4') {
+                                    // Add 'active' class to the element with idx '4'
+                                    $(this).addClass('active');
+                                }
+                            });
                             
                         getSessionOrder()
                     }
@@ -1576,7 +1702,7 @@
         
 
         //post Order
-        function POSorder(){
+        function POSorder($button){
             var $targetpayment = $('.pop-payment');
             var nameBill = $('.popup-name-bill .nameBill').val();
             var table = $('.drop-down input.nomer-meja').val();
@@ -1652,11 +1778,15 @@
 
                 }).fail(function(err){
                     console.log(err);
-                    alert('Something is incomplete. Check again with Barista');
+                    alert('Sepertinya kamu melakukan kesalah coba cek kembali');
                     
                     // addLogLocalStorage('error', 'edit order', err);
                     LogActivity('edit error', err)
-                })
+                }).always(function () {
+                       // Reset loadPhase and button state
+                        loadPhase = false;
+                        $button.prop('disabled', false).text('Selesai');
+                });
             }else{
                 var URL = "{{ route('POS-Order') }}";
                 if(paymentId !== undefined && paymentId !== null && paymentId !== ""){
@@ -1710,10 +1840,13 @@
                     }
                 }).fail(function(err){
                     console.log(err);
-                    alert('Something is incomplete. Check again with Barista');
-                    // addLogLocalStorage('ErrorOrderPost', 'post Order', data);
+                    alert('Sepertinya kamu melakukan kesalah coba cek kembali');
                     LogActivity('error order post', data)
-                })
+                }).always(function () {
+                       // Reset loadPhase and button state
+                        loadPhase = false;
+                        $button.prop('disabled', false).text('Selesai');
+                });
             }
 
 
@@ -2560,8 +2693,17 @@
             });
 
             // Update nilai input dengan format Rupiah
-            input.value = formatter.format(nominal);
-            var Nominal = $('input.cash-nominal-input').val();
+            const formattedValue = nominal === '' ? '' : formatter.format(nominal); // Handle nilai kosong
+            input.value = formattedValue;
+            //input.value = formatter.format(nominal);
+            //var Nominal = $('input.cash-nominal-input').val();
+            if (input.value === "Rp0" || input.value.trim() === "" || input.value === "0") {
+                // Nonaktifkan tombol
+                $('.btn-selesai').prop('disabled', true);
+            } else {
+                // Aktifkan tombol
+                $('.btn-selesai').prop('disabled', false);
+            }
             console.log(Nominal)
         }
         
@@ -2611,6 +2753,7 @@
 
             return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
         }
+
         function LogActivity(fromAction, result) {
             const Url = "{{route('action-log')}}";
             const Data = {
@@ -2904,10 +3047,7 @@
           
         }
 
-        
-
-    
-});   
+    });   
 
 
 </script>

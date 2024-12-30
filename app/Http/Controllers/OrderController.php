@@ -52,45 +52,71 @@ class OrderController extends Controller
             // dd($order_new_nonUser);
             $order_selesai = Orders::where('id_status', 2)->whereBetween('tanggal', [$startDate, $endDate])->where('deleted', 0)->orderBy('created_at', 'desc')->get();
             $order_batal = Orders::where('deleted', 1)->whereBetween('tanggal', [$startDate, $endDate])->orderBy('created_at', 'desc')->get();
+            
             $orderCount = Orders::where('id_status', 2)->whereBetween('tanggal', [$startDate, $endDate])->where('deleted', 0)->count();
+            
             $orderSumTotal = Orders::where('id_status', 2)->whereBetween('tanggal', [$startDate, $endDate])->where('deleted', 0)->sum('total_order');
+            
             $orderSumSubTotal = Orders::where('id_status', 2)->where('deleted', 0)->whereBetween('tanggal', [$startDate, $endDate])->sum('subtotal');
-            //dd($orderSumTotal);
-            $SumDiscount = Discount_detail_order::whereBetween(
-                        DB::raw('DATE(created_at)'), 
-                        [$startDate, $endDate]
-                    )->whereHas('Detail_order.order', function($query){
-                $query->where('id_status',2)->where('deleted', 0);
+            
+            // harga menu detail order
+            $items = DetailOrder::whereHas('order', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('tanggal', [$startDate, $endDate])
+                    ->where('id_status', 2)->where('deleted', 0);
+            })->sum('total');
+    
+            // total qty menu detail order
+            $itmsum = DetailOrder::whereHas('order', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('tanggal', [$startDate, $endDate])
+                    ->where('id_status', 2)->where('deleted', 0);
+            })->sum('qty');
+    
+            // sum total discount
+            $totalDiscount = Discount_detail_order::whereHas('Detail_order', function ($query) use ($startDate, $endDate) {
+                $query->whereHas('order', function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('tanggal', [$startDate, $endDate])
+                        ->where('id_status', 2)->where('deleted', 0);
+                });
             })->sum('total_discount');
-
-
-            $refundItemSum = RefundOrderMenu::whereBetween('tanggal', [$startDate, $endDate])->sum('refund_nominal');
-            $refundAddsSum = AdditionalRefund::whereBetween('tanggal', [$startDate, $endDate])->sum('total_');
-            $refundDisCountSum = DiscountMenuRefund::whereBetween(
-                                    DB::raw('DATE(created_at)'), 
-                                    [$startDate, $endDate]
-                                )->sum('nominal_dis');
-            // dd($refundDisCountSum);
-
+    
+            // sum total refund discount
+            $refundDisCountSum = DiscountMenuRefund::whereHas('Refund', function ($query) use ($startDate, $endDate) {
+                $query->whereHas('order', function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('tanggal', [$startDate, $endDate]);
+                });
+            })->sum('nominal_dis');
+    
+            // sum qty refund
+            $SumRefund = RefundOrderMenu::whereHas('order', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('tanggal', [$startDate, $endDate])
+                    ->where('id_status', 2)->where('deleted', 0);
+            })->sum('qty');
+            // harga item refund
+            $hargaRefund = RefundOrderMenu::whereHas('order', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('tanggal', [$startDate, $endDate])
+                    ->where('id_status', 2)->where('deleted', 0);
+            })->sum('refund_nominal');
+    
+        
+    
             $taxpb1 = Taxes::where('nama', 'PB1')->first();
             $service = Taxes::where('nama', 'Service Charge')->first();
-
+            // dd($totalDiscount,$refundDisCountSum);
+            $allGrandSales =  $items + $hargaRefund;
+    
+            $sumDiscountTotal =  $totalDiscount + $refundDisCountSum;
+            $allGrandDis =  $sumDiscountTotal - $refundDisCountSum;
+            $allGrandRefund = $hargaRefund;
+            $allGrandNet =  $allGrandSales -  $allGrandDis -  $allGrandRefund;
+    
             $PB1 = $taxpb1->tax_rate / 100;
-            $Service = $service->tax_rate /100;
-
-            $grossRef = $refundItemSum + $refundAddsSum;
-            // dd($grossRef);
-            $subref = $grossRef  - $refundDisCountSum;
-            //dd($subref);
-            $nominalPb1Ref = $subref * $PB1;
-            $nominalServiceRef = $subref * $Service;
-
-            $totalTaxRef = $nominalPb1Ref + $nominalServiceRef ;
-            //dd($totalTaxRef);
-            $subTotalRef = $subref + $totalTaxRef;
-            //dd($subTotalRef);
-            $GandTotal = $orderSumTotal - $subTotalRef;
-            $NetSales =  $orderSumSubTotal -  $subref;
+            $Service = $service->tax_rate / 100;
+    
+            $nominalPb1 = $allGrandNet * $PB1;
+            $nominalService = $allGrandNet * $Service;
+    
+            $totalTax = $nominalPb1 + $nominalService;
+            $TotalGrand = $allGrandNet + $totalTax;
             //  - $grossRef - $refundDisCountSum;
 
             return view('Orders.index', compact(
@@ -100,8 +126,8 @@ class OrderController extends Controller
                 'order_new_nonUser',
                 'orderCount',
                 'orderSumTotal',
-                'GandTotal',
-                'NetSales',
+                'TotalGrand',
+                'allGrandNet',
                 'startDate',
                 'endDate'
                 ));
@@ -195,7 +221,7 @@ class OrderController extends Controller
 
     }
 
-// Sales Type
+    // Sales Type
 
     public function salestype(){
         if(Sentinel::check()){
@@ -396,7 +422,9 @@ class OrderController extends Controller
             return redirect()->route('login');
         }
     }
+
     public function refundMenuOrder(Request $request){
+        
         if(Sentinel::check()){
 
          
@@ -468,7 +496,13 @@ class OrderController extends Controller
 
                        // Jika setelah dikurangi qty menjadi 0 atau kurang, hapus data
                        if ($detail_menu->qty <= 0) {
+
+                           $idDetailOrder = $detail_menu->id;
                            $detail_menu->delete();
+
+                           Discount_detail_order::where('id_detail_order', $idDetailOrder)->delete();
+                           Additional_menu_detail:: where('id_detail_order', $idDetailOrder)->delete();
+
                        } else {
                            $detail_menu->total = ($item['harga_menu'] + $item['adds']) *  $detail_menu->qty;
                            $detail_menu->save();
@@ -479,7 +513,6 @@ class OrderController extends Controller
                 $discount = Discount_detail_order::where('id_detail_order', $detail_menu->id)->get();
                 $total_nominal = $detail_menu->total; // Initial total
               
-
                 foreach ($discount as $discount) {
                     $rate = $discount->discount->rate_dis; // Discount rate as a percentage
 
@@ -493,6 +526,23 @@ class OrderController extends Controller
                 
                     $total_nominal -= $current_discount;
                 }
+
+
+                $addDetail = Additional_menu_detail:: where('id_detail_order', $detail_menu->id)->get();
+                
+                foreach($addDetail as $itmAdds){
+                    
+                    $qty = $itmAdds->qty ?? 0;
+                    $total = $itmAdds->total ?? 0;
+                    $harga = $total / $qty ;
+
+                    $itmAdds->qty -= $item['qty'];
+
+                    $itmAdds->total = $harga *  $itmAdds->qty;
+                    $itmAdds->save();
+                    
+                }
+
 
            }
 
@@ -515,7 +565,7 @@ class OrderController extends Controller
            return redirect()->route('login');
        }
 
-   }
+    }
 
     public function laporan(Request $request){
         // $order = Orders::whereBetween('created_at', [$tanggal_mulai, $tanggal_akhir])->get();

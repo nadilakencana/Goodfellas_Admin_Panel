@@ -66,7 +66,7 @@ class POSController extends Controller
             //  $dataServer = $dataBillServer->json();
             //  $billServer = $dataServer['data'];
 
-            $customItem = Menu::where('nama_menu', 'Custom')->where('custom', 1)->first();
+            $customItem = Menu::where('custom', 1)->get();
             $carts = Session::get('cart');
 
             $subtotal = 0;
@@ -427,6 +427,8 @@ class POSController extends Controller
 
         if (Sentinel::check()) {
 
+            DB::beginTransaction();
+
             try {
                 
                 $order = Orders::where('id', $request->get('target_order'))->first();
@@ -613,7 +615,7 @@ class POSController extends Controller
                             $order->save();
                         }
 
-
+                        DB::commit();
                         return response()->json([
                             'success' => 1,
                             'message' => 'Data Tersimpan',
@@ -625,6 +627,7 @@ class POSController extends Controller
                             ]
                         ], 200);
                     } else {
+                         DB::commit();
                         return response()->json([
                             'success' => 0,
                             'message' => 'data order sudah payment',
@@ -633,6 +636,7 @@ class POSController extends Controller
                     }
                 }
             } catch (\Exception $e) {
+                DB::rollBack();
                 return response()->json([
                     'message' => 'Failed to fetch data detail order',
                     'data' => [

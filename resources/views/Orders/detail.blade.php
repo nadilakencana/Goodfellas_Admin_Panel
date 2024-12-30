@@ -824,7 +824,8 @@
                     varian: varian,
                     adds : totalAds,
                     catatan: note,
-                    discount: disRef
+                    discount: disRef,
+                    additional: arAdds
                 };
 
                 itm_detail.push(obj_detail_order);

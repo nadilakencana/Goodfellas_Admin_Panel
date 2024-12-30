@@ -1,3 +1,4 @@
+let loadPhase = false;
 $(() => {
     $('.pop-up.additional').hide();
     $('.pop-daftar-bill').hide();
@@ -38,6 +39,11 @@ $(() => {
         }
     });
     $('.pop-up .header-card-popup .close').on('click', function () {
+
+        var $custom = $('.panel[data-panel="panel3"] .custom-part');
+        var $customCategory = $('.content-payment');
+        $custom.find('input.nilai-custom').val('');
+        $customCategory.find('.part-category.active').addClass('unactive').removeClass('active');
         $('.pop-up.additional').fadeOut();
         $('.option-varian').removeClass('active');
         $('.option-menu-additional').removeClass('active');
@@ -60,9 +66,14 @@ $(() => {
         $('.btn-add').removeAttr('disabled');
         $('.tooltip').fadeOut();
     })
+
     $(".pop-up.additional").click(function(event){
         if(!$(event.target).closest('.card-popup').length) {
             $(this).fadeOut();
+            var $custom = $('.panel[data-panel="panel3"] .custom-part');
+            var $customCategory = $('.content-payment');
+            $custom.find('input.nilai-custom').val('');
+            $customCategory.find('.part-category.active').addClass('unactive').removeClass('active');
             $('.option-varian').removeClass('active');
             $('.option-menu-additional').removeClass('active');
             $('.option-discount input:checked').prop('checked', false);
@@ -138,12 +149,27 @@ $(() => {
             $(this).fadeOut();
         }
     });
+    $(".popup-category-custom").click(function(event){
+        if(!$(event.target).closest('.position-card').length) {
+            $(this).fadeOut();
+        }
+    });
     
     $('.payment-nominal .footer-card .btn-close-part').on('click', function () {
         $('.payment-nominal').fadeOut();
         var $payment = $('body .pop-payment .content-payment');
-        $payment.find('.part-payment.active').addClass('off').removeClass('active');
+        $payment.find('.part-payment.active').addClass('unactive').removeClass('active');
         // console.log('testing get id',xid);
+        const $button =$('.payment-nominal .card-payment-nominal .footer-card .btn-selesai')
+        loadPhase = false;
+        $button.prop('disabled', false).text('Selesai');
+    })
+
+    $('.popup-category-custom .close').on('click', function () {
+        $('.popup-category-custom').fadeOut();
+        var $category = $('body .popup-category-custom .content-payment');
+        $payment.find('.part-category.active').addClass('unactive').removeClass('active');
+        
     })
     // $('body').on('click', '.payment-nominal', function(){
     //     $('.payment-nominal').hide();
@@ -152,11 +178,13 @@ $(() => {
     $('body').on('click', '.part-payment', function () {
         var elm = $(this);
         $(elm).toggleClass('active');
-        $(elm).removeClass('off');
-        $('.part-payment').not(elm).removeClass('active').addClass('off');
+        $(elm).removeClass('unactive');
+        $('.part-payment').not(elm).removeClass('active').addClass('unactive');
         $('.payment-nominal').fadeIn();
         $('.pop-payment').fadeOut();
     });
+
+    
 
     $('.act-btn.act2').on('click', function (e) {
         //var $total = $('.txt-price-total.total').text();
@@ -317,22 +345,31 @@ $(() => {
         $('.popup-name-bill').hide();
         var nameBill = $('.popup-name-bill input.nameBill');
         var name = $('input.nomer-meja').attr('data-name');
+
         if(nameBill == "" || nameBill == null || nameBill == undefined){
             nameBill.val('');
         }else{
             nameBill.val(name)
         }
+
+        loadPhase = false;
+        const $button = $('.popup-name-bill .card-colum-input .save-bill');
+        $button.prop('disabled', false).text('Selesai'); 
     })
     $('body').on('click', '.popup-name-bill', function(event){
         if(!$(event.target).closest('.card-colum-input').length) {
             $(this).fadeOut();
             var nameBill = $('.popup-name-bill input.nameBill');
             var name = $('input.nomer-meja').attr('data-name');
+             
             if(nameBill == "" || nameBill == null || nameBill == undefined){
                 nameBill.val('');
             }else{
                 nameBill.val(name)
             }
+            loadPhase = false;
+            const $button = $('.popup-name-bill .card-colum-input .save-bill');
+            $button.prop('disabled', false).text('Selesai');  
         }
     })
 
@@ -344,6 +381,7 @@ $(() => {
         var input = $('input.convert-cash').val(nilaiAngka);
         console.log(input);
     })
+    
     $('.change-input').on('input', function () {
         var value = $(this).val();
         console.log(value)

@@ -186,13 +186,13 @@
                               </div>
                               <div class="sum-transaksi">
                                   <div class="jml-trans">
-                                      Rp. {{number_format( $GandTotal, 0, ',','.')  }}
+                                      Rp. {{number_format( $TotalGrand, 0, ',','.')  }}
                                   </div>
                                   <div class="txt-name-trans">Total Collected</div>
                               </div>
                               <div class="sum-transaksi">
                                   <div class="jml-trans">
-                                      Rp. {{number_format(  $NetSales, 0, ',','.')  }}
+                                      Rp. {{number_format(  $allGrandNet, 0, ',','.')  }}
                                   </div>
                                   <div class="txt-name-trans">Net Sales</div>
                               </div>
