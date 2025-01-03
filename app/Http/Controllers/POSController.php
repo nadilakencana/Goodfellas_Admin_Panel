@@ -1186,6 +1186,9 @@ class POSController extends Controller
 
 
                 $detail = DetailOrder::where('id_order', $order->id)->get();
+                if(empty($detail)){
+                    $detail = 0;
+                }
 
                 Session::forget('cart');
                 return response()->json([

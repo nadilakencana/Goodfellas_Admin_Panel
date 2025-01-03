@@ -18,6 +18,7 @@ use App\Models\Cash;
 use App\Models\Sift;
 use App\Models\TypePayment;
 use App\Models\DiscountMenuRefund;
+use App\Models\RefundOrder;
 use App\Models\RefundOrderMenu;
 use App\Models\Taxes;
 use Illuminate\Support\Facades\DB;
@@ -655,134 +656,79 @@ class PrintController extends Controller
             ->whereDate('orders.tanggal', $sift->start_time)->sum('qty');
             
             //total nominal refund payment cash
-            $sumTotalCashRefund = RefundOrderMenu::whereHas('order', function($query) use ($sift) {
-                                    $query->where('id_type_payment', 2)
-                                        ->whereDate('tanggal', $sift->start_time);
-                                })->sum('refund_nominal');
+            $RefundTotalCash = RefundOrder::whereHas('order', function($query) use ($sift) {
+                    $query->where('id_type_payment', 2)
+                    ->whereDate('tanggal', $sift->start_time);
+            })->sum('total_retur');
             
-             //total nominal refund payment BCA
-            $sumTotalBCA = RefundOrderMenu::whereHas('order', function($query) use ($sift) {
-                                $query->where('id_type_payment', 7)
-                                    ->whereDate('tanggal', $sift->start_time);
-                            })->sum('refund_nominal');
-             
-             //total nominal refund payment Mandiri
-            $sumTotalMandiri = RefundOrderMenu::whereHas('order', function($query) use ($sift) {
-                                    $query->where('id_type_payment', 6)
-                                        ->whereDate('tanggal', $sift->start_time);
-                                })->sum('refund_nominal');
-             
-             //total nominal refund payment Ovo
-            $sumTotalOvo = RefundOrderMenu::whereHas('order', function($query) use ($sift) {
-                                $query->where('id_type_payment', 3)
-                                    ->whereDate('tanggal', $sift->start_time);
-                            })->sum('refund_nominal');
-             
-             $sumTotalGrab = RefundOrderMenu::whereHas('order', function($query) use ($sift) {
-                                $query->where('id_type_payment', 4)
-                                    ->whereDate('tanggal', $sift->start_time);
-                            })->sum('refund_nominal');
+                //total nominal refund payment BCA
+            $RefundTotalBCA = RefundOrder::whereHas('order', function($query) use ($sift) {
+                    $query->where('id_type_payment', 7)
+                ->whereDate('tanggal', $sift->start_time);
+            })->sum('total_retur');
+        
+            //total nominal refund payment Mandiri
+            $RefundTotalMandiri = RefundOrder::whereHas('order', function($query) use ($sift) {
+                $query->where('id_type_payment', 6)
+                ->whereDate('tanggal', $sift->start_time);
+            })->sum('total_retur');
+
+            $RefundTotalBRI = RefundOrder::whereHas('order', function($query) use ($sift) {
+                    $query->where('id_type_payment', 8)
+                    ->whereDate('tanggal', $sift->start_time);
+            })->sum('total_retur');
                 
-                //total nominal refund payment Bank Transfer
-            $sumTotalbankTf = RefundOrderMenu::whereHas('order', function($query) use ($sift) {
-                                    $query->where('id_type_payment', 5)
-                                        ->whereDate('tanggal', $sift->start_time);
-                                })->sum('refund_nominal');
-                // total nominal refund payment Online
-            $sumTotalOnline = RefundOrderMenu::whereHas('order', function($query) use ($sift) {
-                                    $query->where('id_type_payment', 4)
-                                        ->whereDate('tanggal', $sift->start_time);
-                                })->sum('refund_nominal');
+            //total nominal refund payment Ovo
+           
+            $RefundTotalOvo = RefundOrder::whereHas('order', function($query) use ($sift) {
+                    $query->where('id_type_payment', 3)
+                    ->whereDate('tanggal', $sift->start_time);
+            })->sum('total_retur');
+                
+            //total nominal refund payment grab
             
-            
-            // discount refund Cash 
-            $discountTotalCash = DiscountMenuRefund::whereHas('Refund', function($query) use ($sift){
-                $query->whereHas('order', function($query) use ($sift) {    
-                        $query->where('id_type_payment', 2)
-                    ->whereDate('tanggal', $sift->start_time);
-                });
-            })->sum('nominal_dis');
-
-            // discount refund BCA
-            $discountTotalBCA = DiscountMenuRefund::whereHas('Refund', function($query) use ($sift){
-                $query->whereHas('order', function($query) use ($sift) {    
-                        $query->where('id_type_payment', 7)
-                    ->whereDate('tanggal', $sift->start_time);
-                });
-            })->sum('nominal_dis');
-
-            $discountTotalBRI = DiscountMenuRefund::whereHas('Refund', function($query) use ($sift){
-                $query->whereHas('order', function($query) use ($sift) {    
-                        $query->where('id_type_payment', 0)
-                    ->whereDate('tanggal', $sift->start_time);
-                });
-            })->sum('nominal_dis');
-            
-            // discount refund Mandiri
-            $discountTotalMandiri = DiscountMenuRefund::whereHas('Refund', function($query) use ($sift){
-                $query->whereHas('order', function($query) use ($sift) {    
-                        $query->where('id_type_payment', 6)
-                    ->whereDate('tanggal', $sift->start_time);
-                });
-            })->sum('nominal_dis');
-
-            // discount refund Ovo
-                $discountTotalOvo = DiscountMenuRefund::whereHas('Refund', function($query) use ($sift){
-                $query->whereHas('order', function($query) use ($sift) {    
-                        $query->where('id_type_payment', 3)
-                    ->whereDate('tanggal', $sift->start_time);
-                });
-            })->sum('nominal_dis');
-            
-            // discount refund TF
-                $discountTotalTF = DiscountMenuRefund::whereHas('Refund', function($query) use ($sift){
-                $query->whereHas('order', function($query) use ($sift) {    
-                        $query->where('id_type_payment', 5)
-                    ->whereDate('tanggal', $sift->start_time);
-                });
-            })->sum('nominal_dis');
-
-            // discount refund Online
-                $discountTotalGrab = DiscountMenuRefund::whereHas('Refund', function($query) use ($sift){
-                $query->whereHas('order', function($query) use ($sift) {    
+            $RefundTotalGrab = RefundOrder::whereHas('order', function($query) use ($sift) {
                         $query->where('id_type_payment', 4)
                     ->whereDate('tanggal', $sift->start_time);
-                });
-            })->sum('nominal_dis');
+                })->sum('total_retur');
+                
+            //total nominal refund payment Bank Transfer
+            
+            $RefundTotalbankTf = RefundOrder::whereHas('order', function($query) use ($sift) {
+                        $query->where('id_type_payment', 5)
+                        ->whereDate('tanggal', $sift->start_time);
+                })->sum('total_retur');
+                // total nominal refund payment Online
+           
+            $RefundTotalOnline = RefundOrder::whereHas('order', function($query) use ($sift) {
+                    $query->where('id_type_payment', 4)
+                     ->whereDate('tanggal', $sift->start_time);
+                })->sum('total_retur');
 
             $taxpb1 = Taxes::where('nama', 'PB1')->first();
             $service = Taxes::where('nama', 'Service Charge')->first();  
             $PB1 = $taxpb1->tax_rate / 100;
             $Service = $service->tax_rate / 100;
             
-            // EDC
-            $EDCRefund = ($sumTotalBCA + $sumTotalMandiri) - ($discountTotalBCA + $discountTotalMandiri + $discountTotalBRI);
-            $nominalPb1EDC =  $EDCRefund * $PB1;
-            $nominalServiceEDC = $EDCRefund * $Service;
-       
+           // EDC
+            $EDCRefund = $RefundTotalBCA + $RefundTotalMandiri + $RefundTotalBRI;
+           
             // Cash
-            $refund_cash = $sumTotalCashRefund - $discountTotalCash;
-            $nominalPb1Cash = $refund_cash * $PB1;
-            $nominalServiceCash = $refund_cash * $Service ;
-
+            $refund_cash = $RefundTotalCash;
+            
             // other
-            $other_Refund =  ($sumTotalOvo +  $sumTotalbankTf) - ($discountTotalTF + $discountTotalOvo);
-            $nominalPb1Other = $other_Refund * $PB1;
-            $nominalServiceOther = $other_Refund * $Service ;
+            $other_Refund =  $RefundTotalOvo + $RefundTotalbankTf;
             
             // grab
-            $grab_Refund =  ($sumTotalGrab) - ($discountTotalGrab);
-            $nominalPb1Grab = $grab_Refund * $PB1;
-            $nominalServiceGrab = $grab_Refund * $Service ;
-
-
+            $grab_Refund =  $RefundTotalGrab;
+            
             $total_itemSold = $itmsum + $SumRefund ;
             $total_itmRefund = $SumRefund;
-            $grendRefunEDC = $EDCRefund + $nominalPb1EDC + $nominalServiceEDC;
-            $grendRefundCash = $refund_cash +  $nominalPb1Cash +  $nominalServiceCash;
-            $grendOther = $other_Refund +  $nominalPb1Other +  $nominalServiceOther;
-            $grendGrab = $grab_Refund + $nominalPb1Grab + $nominalServiceGrab;
-			
+            $grendRefunEDC = $EDCRefund;
+            $grendRefundCash = $refund_cash;
+            $grendOther = $other_Refund ;
+            $grendGrab = $grab_Refund;
+          
 			//create shift info
 			$shiftInfo = [];
 			$shiftInfo['shift_name'] = $sift->admin->nama;
@@ -852,7 +798,7 @@ class PrintController extends Controller
 				$cashFlowInfo['start'] = number_format($modal->nominal,0,',','.');
 			}
 			
-			$cashFlowInfo['sales'] = number_format($cashtype, 0,',','.');
+			$cashFlowInfo['sales'] = number_format($cashtype + $RefundTotalCash, 0,',','.');
 			$cashFlowInfo['refund'] = number_format($grendRefundCash, 0,',','.');
 			$cashFlowInfo['expense'] = number_format( $total_pengeluaran, 0,'.','.');
 			foreach($kas_out as $kas){
@@ -870,7 +816,7 @@ class PrintController extends Controller
 				array_push($cashFlowInfo['income_list'], $obj);
 			}
 			
-			$total_sift = ($modal->nominal + $cashtype + $total_pemasukan) -$total_pengeluaran - $grendRefundCash;
+			$total_sift = (($modal->nominal + $total_pemasukan)+($cashtype + $RefundTotalCash)) -$total_pengeluaran - $grendRefundCash;
 			$cashFlowInfo['expectedEnd'] = number_format($total_sift, 0,',','.');
 			if(empty($endingSift->nominal)){
 				$cashFlowInfo['actualEnd'] = 0;
@@ -879,17 +825,17 @@ class PrintController extends Controller
 			}
 			
 			$cashPaymentInfo = [];
-			$cashPaymentInfo['sales'] = number_format($cashtype, 0,',','.');
+			$cashPaymentInfo['sales'] = number_format($cashtype + $RefundTotalCash, 0,',','.');
 			$cashPaymentInfo['refund'] = number_format($grendRefundCash, 0,',','.') ;
-			$total_cash = $cashtype - $grendRefundCash;
+			$total_cash = ($cashtype + $RefundTotalCash) - $grendRefundCash;
 			$cashPaymentInfo['expected'] = number_format($total_cash, 0,',','.');
 			
 			//$deliveryInfo, $edcInfo, $otherInfo, $totalActualInfo
 			
 			$deliveryInfo = [];
-			$deliveryInfo['grab'] = number_format($grab, 0,',','.');
+			$deliveryInfo['grab'] = number_format($grab + $RefundTotalGrab, 0,',','.');
 			$deliveryInfo['grab_refund'] = number_format($grendGrab, 0,',','.');
-			$total_online = $grab - $grendGrab ; 
+			$total_online = ($grab + $RefundTotalGrab) - $grendGrab ; 
 			$deliveryInfo['expected'] = number_format($total_online, 0,',','.');
 			
 			
@@ -899,11 +845,12 @@ class PrintController extends Controller
 			$edcInfo['edc_refund'] = 0;
 			$edcInfo['expected'] = 0;
 			
-			$edcInfo['bca'] = number_format($BCA, 0,',','.');
-			$edcInfo['mandiri'] = number_format($mandiri, 0,',','.');
+			$edcInfo['bca'] = number_format($BCA + $RefundTotalBCA, 0,',','.');
+			$edcInfo['mandiri'] = number_format($mandiri + $RefundTotalMandiri, 0,',','.');
 			$edcInfo['edc_refund'] = number_format($grendRefunEDC, 0,',','.');
-			$edcInfo['expected'] = number_format(( $BCA + $mandiri) - $grendRefunEDC, 0,',', '.');
-			$total_EDC =( $BCA + $mandiri) - $grendRefunEDC;
+			$total_EDC =(($BCA + $RefundTotalBCA) + ($mandiri + $RefundTotalMandiri)) - $grendRefunEDC;
+			$edcInfo['expected'] = number_format($total_EDC, 0,',', '.');
+			
 			
 			$otherInfo = [];
 			$otherInfo['ovo'] = 0;
@@ -911,11 +858,12 @@ class PrintController extends Controller
 			$otherInfo['other_refund'] = 0;
 			$otherInfo['expected'] = 0;
 			
-			$otherInfo['ovo'] = number_format($ovo, 0,',','.');
-			$otherInfo['bank_transfer'] = number_format($bankTF, 0,',','.');
+			$otherInfo['ovo'] = number_format($ovo + $RefundTotalOvo, 0,',','.');
+			$otherInfo['bank_transfer'] = number_format($bankTF + $RefundTotalbankTf, 0,',','.');
 			$otherInfo['other_refund'] = number_format($grendOther, 0,',','.');
-			$otherInfo['expected'] = number_format(($ovo + $bankTF) - $grendOther, 0,',','.');
-			$total_other_payment = ($ovo + $bankTF) - $grendOther;
+			$total_other_payment = (($ovo + $RefundTotalOvo) + ($bankTF + $RefundTotalbankTf)) - $grendOther;
+			$otherInfo['expected'] = number_format($total_other_payment, 0,',','.');
+			
 			
 			$totalActualInfo = [];
 			$totalActualInfo['expected'] = 0;

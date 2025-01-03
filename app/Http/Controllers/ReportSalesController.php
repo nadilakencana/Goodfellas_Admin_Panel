@@ -26,6 +26,7 @@ use App\Models\OptionModifier;
 use App\Models\SubKategori;
 use App\Models\TypePayment;
 use App\Models\VarianMenu;
+use App\Models\RefundOrder;
 use PhpOffice\PhpSpreadsheet\Calculation\Category;
 use DB;
 
@@ -373,7 +374,7 @@ class ReportSalesController extends Controller
 
             $subTotalRef = $subRef + $totalTaxRef;
 
-            $GandTotal = $totalGrand - $subTotalRef;
+            $GandTotal = $totalGrand;
 
             $paymentData[] = [
                 'paymentMethod' => $payment,
@@ -467,7 +468,7 @@ class ReportSalesController extends Controller
             //dd($totalTaxRef);
             $subTotalRef = $subref + $totalTaxRef;
             //dd($subTotalRef);
-            $GandTotal = $SumTotal - $subTotalRef;
+            $GandTotal = $SumTotal;
             // $GandTotal = $SumTotal;
 
             $SalesData[] = [
@@ -576,6 +577,7 @@ class ReportSalesController extends Controller
                     $grossSalesVarian = $TotalSum + $TotalSumRfeund;
 
                     // Total discount
+                    
                     $totalDiscountVarian = Discount_detail_order::whereHas('Detail_order', function ($query) use ($itm, $varian, $startDate, $endDate) {
                         $query->where('id_menu', $itm->id)
                             ->where('id_varian', $varian->id)
@@ -1101,7 +1103,6 @@ class ReportSalesController extends Controller
             'endDate'
         ));
     }
-
 
 
     //export laporan

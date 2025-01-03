@@ -17,7 +17,7 @@ class RefundOrderMenu extends Model
         'id_menu',
         'alasan_refund',
         'tanggal',
-
+        'id_refund_order'
 
     ];
 
@@ -45,5 +45,7 @@ class RefundOrderMenu extends Model
         return$this->hasMany(AdditionalRefund::class, 'id_refund_menu', 'id');
     }
 
-
+     public function refund(){
+        return $this->belongsTo(RefundOrder::class, 'id_refund_order', 'id');
+    }
 }

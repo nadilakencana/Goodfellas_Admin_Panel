@@ -9,11 +9,12 @@
         </div>
         <div class="dt-header d-flex justify-content-between">
             <label for="">Starting Sift</label>
-            <p class="text-detail">{{ $sift->start_time }} {{ date("H:i", strtotime($sift->created_at))  }}</p>
+            <p class="text-detail">{{ $sift->start_time }} {{ date("H:i", strtotime($sift->created_at)) }}</p>
         </div>
         <div class="dt-header d-flex justify-content-between">
             <label for="">Ending Sift</label>
-            <p class="text-detail">@if(empty($sift->end_time)) - @else{{ $sift->end_time }} {{ date("H:i", strtotime($sift->updated_at))  }} @endif</p>
+            <p class="text-detail">@if(empty($sift->end_time)) - @else{{ $sift->end_time }} {{ date("H:i",
+                strtotime($sift->updated_at)) }} @endif</p>
         </div>
     </div>
     {{-- //sales --}}
@@ -30,22 +31,23 @@
     {{-- //cash --}}
     <div class="part-title">Cash</div>
     @php
-        $total_sift = 0;
+    $total_sift = 0;
     @endphp
     <div class="itm-detail d-flex justify-content-between">
         <label for="">Starting Cash</label>
-        <p class="text-detail">Rp. @if(empty($modal->nominal))0 @else {{ number_format($modal->nominal, 0,',','.') }} @endif</p>
+        <p class="text-detail">Rp. @if(empty($modal->nominal))0 @else {{ number_format($modal->nominal, 0,',','.') }}
+            @endif</p>
     </div>
     <div class="itm-detail d-flex justify-content-between">
         <label for="">Cash Sales</label>
-        <p class="text-detail">Rp.{{ number_format($cashtype, 0,',','.') }}</p>
+        <p class="text-detail">Rp.{{ number_format($cashtype + $RefundTotalCash, 0,',','.') }}</p>
     </div>
     <div class="itm-detail d-flex justify-content-between">
         <label for="">Cash Refund</label>
         <p class="text-detail">Rp.{{ number_format($grendRefundCash, 0,',','.') }}</p>
     </div>
     <div class="itm-detail dropdown ">
-        
+
         <div href="" class="d-flex justify-content-between">
             <label for="">Total Expence</label>
             <div class="arow d-flex align-items-center">
@@ -59,13 +61,13 @@
                 <div>{{ $kas->deskripsi }}</div>
                 <p class="text-detail">(Rp. {{ number_format($kas->nominal, 0,'.','.') }})</p>
             </div>
-            
+
             @endforeach
-    
+
         </div>
     </div>
     <div class="itm-detail dropdown">
-       
+
         <div href="" class=" d-flex justify-content-between">
             <label for="">Total Income</label>
             <div class="arow d-flex align-items-center">
@@ -75,18 +77,19 @@
         </div>
         <div class="sub-menu" id="sub-item" style="display: none;">
 
-             @foreach ($kas_in as $kas )
+            @foreach ($kas_in as $kas )
             <div class="itm-detail d-flex justify-content-between">
                 <div>{{ $kas->deskripsi }}</div>
                 <p class="text-detail">(Rp. {{ number_format($kas->nominal, 0,'.','.') }})</p>
             </div>
             @endforeach
-           
-            
+
+
         </div>
     </div>
     @php
-        $total_sift = ($modal->nominal + $cashtype + $total_pemasukan) -$total_pengeluaran - $grendRefundCash;
+    $total_sift = (($modal->nominal + $total_pemasukan)+($cashtype + $RefundTotalCash)) - $total_pengeluaran -
+    $grendRefundCash;
     @endphp
     <div class="itm-detail d-flex justify-content-between">
         <label for="">Expected Ending Cash</label>
@@ -94,7 +97,8 @@
     </div>
     <div class="itm-detail d-flex justify-content-between">
         <label for="">Actual Ending Cash</label>
-        <p class="text-detail">Rp.@if(empty($endingSift->nominal) ) 0 @else {{ number_format($endingSift->nominal, 0,',','.') }} @endif</p>
+        <p class="text-detail">Rp.@if(empty($endingSift->nominal) ) 0 @else {{ number_format($endingSift->nominal,
+            0,',','.') }} @endif</p>
     </div>
 
     {{-- //cash --}}
@@ -102,15 +106,15 @@
     <div class="part-title">Cash</div>
     <div class="itm-detail d-flex justify-content-between">
         <label for="">Cash Sales</label>
-        <p class="text-detail">Rp. {{ number_format($cashtype, 0,',','.') }}</p>
+        <p class="text-detail">Rp. {{ number_format($cashtype + $RefundTotalCash, 0,',','.') }}</p>
     </div>
     <div class="itm-detail d-flex justify-content-between">
         <label for="">Cash Refund</label>
         <p class="text-detail">(Rp.{{ number_format($grendRefundCash, 0,',','.') }})</p>
     </div>
     @php
-        $total_cash = 0;
-        $total_cash = $cashtype - $grendRefundCash;
+    $total_cash = ($cashtype + $RefundTotalCash);
+    $total_cash = $total_cash - $grendRefundCash;
     @endphp
     <div class="itm-detail d-flex justify-content-between">
         <label for="">Expected Cash Payment</label>
@@ -122,42 +126,42 @@
     <div class="part-title">Online Delivery</div>
     <div class="itm-detail d-flex justify-content-between">
         <label for="">Grab</label>
-        <p class="text-detail">Rp. {{ number_format($grab, 0,',','.') }}</p>
+        <p class="text-detail">Rp. {{ number_format($grab + $RefundTotalGrab, 0,',','.') }}</p>
     </div>
-    {{--  <div class="itm-detail d-flex justify-content-between">
-        <label for="">Gojek</label>
-        <p class="text-detail">Name</p>
-    </div>  --}}
+    <div class="itm-detail d-flex justify-content-between">
+        <label for="">Refund Online</label>
+        <p class="text-detail">(Rp. {{ number_format($grendGrab, 0,',','.') }})</p>
+    </div>
     @php
-        $total_online = 0;
-        $total_online = $grab;
+    $total_online = ($grab + $RefundTotalGrab);
+    $total_online = $total_online - $grendGrab;
     @endphp
     <div class="itm-detail d-flex justify-content-between">
         <label for="">Expected Online Delivery</label>
-        <p class="text-detail">Rp. {{ number_format($grab, 0,',','.') }}</p>
+        <p class="text-detail">Rp. {{ number_format($total_online, 0,',','.') }}</p>
     </div>
-    
+
     {{-- //EDC --}}
     <div class="part-title">EDC</div>
     <div class="itm-detail d-flex justify-content-between">
         <label for="">BCA</label>
-        <p class="text-detail">Rp. {{ number_format($BCA, 0,',','.') }}</p>
+        <p class="text-detail">Rp. {{ number_format($BCA + $RefundTotalBCA, 0,',','.') }}</p>
     </div>
     <div class="itm-detail d-flex justify-content-between">
         <label for="">Mandiri</label>
-        <p class="text-detail">Rp. {{ number_format($mandiri, 0,',','.') }}</p>
+        <p class="text-detail">Rp. {{ number_format($mandiri + $RefundTotalMandiri, 0,',','.') }}</p>
     </div>
     <div class="itm-detail d-flex justify-content-between">
         <label for="">BRI</label>
-        <p class="text-detail">Rp. {{ number_format($BRI, 0,',','.') }}</p>
+        <p class="text-detail">Rp. {{ number_format($BRI + $RefundTotalBRI, 0,',','.') }}</p>
     </div>
     <div class="itm-detail d-flex justify-content-between">
         <label for="">EDC Refund</label>
         <p class="text-detail">(Rp. {{ number_format($grendRefunEDC, 0,',','.') }})</p>
     </div>
     @php
-        $total_EDC = 0;
-        $total_EDC = ( $BCA + $mandiri + $BRI) - $grendRefunEDC;
+    $total_EDC = ($BCA + $RefundTotalBCA) + ($mandiri + $RefundTotalMandiri) + ($BRI + $RefundTotalBRI);
+    $total_EDC = $total_EDC - $grendRefunEDC;
     @endphp
     <div class="itm-detail d-flex justify-content-between">
         <label for="">Expected EDC Payment</label>
@@ -168,11 +172,11 @@
     <div class="part-title">Other</div>
     <div class="itm-detail d-flex justify-content-between">
         <label for="">OVO</label>
-        <p class="text-detail">Rp. {{ number_format($ovo, 0,',','.') }}</p>
+        <p class="text-detail">Rp. {{ number_format($ovo + $RefundTotalOvo, 0,',','.') }}</p>
     </div>
     <div class="itm-detail d-flex justify-content-between">
         <label for="">Bank Transfer</label>
-        <p class="text-detail">Rp. {{ number_format($bankTF, 0,',','.') }}</p>
+        <p class="text-detail">Rp. {{ number_format($bankTF + $RefundTotalbankTf, 0,',','.') }}</p>
     </div>
     <div class="itm-detail d-flex justify-content-between">
         <label for="">Refund Other</label>
@@ -180,8 +184,9 @@
     </div>
 
     @php
-        $total_other_payment = 0;
-        $total_other_payment = ($ovo + $bankTF) - $grendOther;
+    $total_other_payment = ($ovo + $RefundTotalOvo) + ($bankTF + $RefundTotalbankTf);
+
+    $total_other_payment = $total_other_payment - $grendOther;
     @endphp
     <div class="itm-detail d-flex justify-content-between">
         <label for="">Expected Other Payment</label>
@@ -191,12 +196,12 @@
     {{-- //Total --}}
 
     @php
-        $total_expected = 0;
-        $total_actual = 0;
-        $defferent = 0;
-        $total_expected = $total_sift  + $total_online + $total_EDC + $total_other_payment;
-        $total_actual =  $total_expected;
-        $defferent = $total_expected - $total_actual;
+    $total_expected = 0;
+    $total_actual = 0;
+    $defferent = 0;
+    $total_expected = $total_sift + $total_online + $total_EDC + $total_other_payment;
+    $total_actual = $total_expected;
+    $defferent = $total_expected - $total_actual;
     @endphp
     <div class="part-title">Total</div>
     <div class="itm-detail d-flex justify-content-between">
@@ -213,7 +218,7 @@
     </div>
 </div>
 <script>
-  $(()=>{
+    $(()=>{
     const dropdown = $('.dropdown');
     dropdown.on('click', function(){
         $(this).find('.sub-menu').slideToggle("fast");

@@ -712,13 +712,25 @@
         $('body').on('click', `.act-edit .check-edit`, function(e){
            splitBill($(this), 1);
            checkCheckboxes()
+           var $popAdds = $('.pop-up.additional');
+            if ($popAdds.css('display') === 'block' || $popAdds.css('') === '' ) {
+                $popAdds.css('display', 'none');
+            }
            
            $('.pop-up.additional').fadeOut();
+        });
+        
+        $('body').on('click', `.detil-bil .itm .qty`, function(e){
+           var $popAdds = $('.pop-up.additional');
+            if ($popAdds.css('display') === 'block' || $popAdds.css('') === '' ) {
+                $popAdds.css('display', 'none');
+            }
         });
 
         $('.popup-qty').on('click', '.btn-selesai', function(){
              $('.popup-qty').fadeOut();
              splitBill($(this), 2);
+             checkCheckboxes()
         }).on('click', '.header-card .close', function(){
             let $popupQty = $('.popup-qty');
             let $detail = $popupQty.find('.detil-bil');
@@ -757,7 +769,7 @@
             $('.footer-sub-total .txt-price-total.total').text(ConTotal);
              
             $('.popup-qty').fadeOut();
-            checkCheckboxes()
+           
 
         })
 

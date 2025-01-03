@@ -21,11 +21,8 @@ class Orders extends Model
 
     public function details(){
         return $this->hasMany(DetailOrder::class, 'id_order' ,'id');
-        // dd($this->hasMany(DetailOrder::class, 'id_order' ,'id'));
     }
-    public function tabel(){
-        return $this->belongsTo(Tabel::class, 'id_tabel','id');
-    }
+    
     public function user(){
         return $this->belongsTo(User::class, 'id_user','id');
     }

@@ -28,9 +28,24 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\Aktivity;
+use App\Models\RefundOrder;
+use Illuminate\Support\Facades\Crypt;
+
+
 class OrderController extends Controller
 
 {
+    public function kodePesanan($length = 5)
+    {
+            $str = 'RF';
+            $charecters = array_merge(range('A', 'Z'), range('a', 'z'));
+            $max = count($charecters) - 1;
+            for ($i = 0; $i < $length; $i++) {
+                $rand = mt_rand(0, $max);
+                $str .= $charecters[$rand];
+            }
+            return $str;
+    }
 
     public function indexOrder(Request $request){
         if(Sentinel::check()){
@@ -147,6 +162,11 @@ class OrderController extends Controller
             
             $taxs = Taxes::all();
             $refund = RefundOrderMenu::where('id_order', $detail->id)->get();
+            $refundOrder = RefundOrder::where('id_order', $detail->id)->get()->map(function ($refund) {
+                $refund->encrypted_id = Crypt::encryptString($refund->id); // Enkripsi ID
+                return $refund;
+            });
+
             $DisTotal=0;
             foreach($refund as $ref){
                 $DisTotal = DiscountMenuRefund::where('id_refund_menu', $ref->id)->sum('nominal_dis');
@@ -162,7 +182,7 @@ class OrderController extends Controller
             $totalTax = 0;
 
 
-                return view('Orders.detail', compact('detail', 'status', 'subtotal', 'totalTax','taxs', 'refund', 'totalItemRef','additional', 'addSum', 'DisTotal'));
+                return view('Orders.detail', compact('detail', 'status', 'subtotal', 'totalTax','taxs', 'refund', 'totalItemRef','additional','refundOrder', 'addSum', 'DisTotal'));
 
         } else {
             return redirect()->route('login');
@@ -314,6 +334,7 @@ class OrderController extends Controller
             return redirect()->route('login');
         }
     }
+
     public function DeleteOrder($id){
         if(Sentinel::check()){
             try {
@@ -398,6 +419,14 @@ class OrderController extends Controller
             $order->id_admin_deleted = $admin;
             $order->alasan_delete = $request->alasan_delete;
             $order->save();
+             if($order){
+                $refundOrder = RefundOrder::where('id_order', $order->id)->first();
+                $refundOrder->deleted = 1;
+                $refundOrder->id_admin_delete =  $order->id_admin_deleted;
+                $refundOrder->alasan_delete= $order->alasan_delete;
+                $refundOrder->deleted_at= $date;
+                $refundOrder->save();
+            }
             $detail = [
                 'id' => $order->id,
                 'name' => $order->name, // example property
@@ -428,139 +457,183 @@ class OrderController extends Controller
         if(Sentinel::check()){
 
          
-           $userId = Sentinel::getUser();
-           $admin = $userId->id;
-           //menu di detail order yang ingin di hapus karena sudah di refund
-           $menuDetail = $request->detail_menu;
-           $menuRefund = $request->menu;
-           // dd($menuRefund, $menuDetail) ;
+            $userId = Sentinel::getUser();
+            $admin = $userId->id;
+            $date = Carbon::now()->format('Y-m-d');
+            //menu di detail order yang ingin di hapus karena sudah di refund
+            $menuDetail = $request->detail_menu;
+            $menuRefund = $request->menu;
+            $orders = Orders::where('id', $request->order_id)->first();
+            // dd($menuDetail, $menuRefund);
+        
+            try{
+                
+                DB::beginTransaction();
+                // dd($menuRefund);
+                $refundOrder = new RefundOrder();
+                // dd($refundOrder);
+                $refundOrder->id_order = $orders->id;
+                $refundOrder->name_bill = 'Refund-'.$orders->kode_pemesanan;
+                $refundOrder->kode_refund = $this->kodePesanan();
+                // dd($refundOrder->kode_refund);
+                $refundOrder->subtotal = $request->subTotalrefund;
+                $refundOrder->total_retur = $request->TotalRefund;
+                $refundOrder->id_admin = $admin;
+                $refundOrder->tanggal = $date;
+                
+                $refundOrder->save();
+
+                if($refundOrder){
+                    foreach ($menuRefund as $refund) {
+                    
+                            $itmRefund = new RefundOrderMenu();   
+                            $itmRefund->id_order = $refund['id_order'];
+                            $itmRefund->id_refund_order = $refundOrder->id;
+                            $itmRefund->id_menu = $refund['id_menu'];
+                            $itmRefund->refund_nominal = ($refund['harga_menu'] + $refund['adds']) * $refund['qty'] ;
+                            $itmRefund->harga = $refund['harga_menu'];
+                            $itmRefund->qty = $refund['qty'];
+                            $itmRefund->catatan = $refund['catatan'];
+                            $itmRefund->id_varian = $refund['varian'];
+                            $itmRefund->id_admin = $admin;
+                            $itmRefund->alasan_refund = $refund['alasan'];
+                            $itmRefund->tanggal = Carbon::now()->toDateTimeString();
+                            $itmRefund->save();
+                    
+                            if($itmRefund){
+                                if (isset($refund['discount'])) {
+                                    $disRefund = $refund['discount'];
+                                    foreach ($disRefund as $dis) {
+                                        $discount = new DiscountMenuRefund();
+                                        $discount->id_refund_menu  = $itmRefund->id;
+                                        $discount->id_menu = $dis['id_menu'];
+                                        $discount->id_discount = $dis['idDiscount'];
+                                        $discount->nominal_dis = $dis['nominalDis'];
+                                        $discount->id_admin = $admin;
+                                        $discount->save();
+                                    }
+                                }
+
+                                if (isset($refund['additional'])) {
+                                    $addRef = $refund['additional'];
+                                    foreach ($addRef as $add) {
+                                        $additional = new AdditionalRefund();
+                                        $additional->id_refund_menu  = $itmRefund->id;
+                                        $additional->id_menu = $add['id_menu'];
+                                        $additional->id_option_additional = $add['id_add'];
+                                        $additional->harga = $add['nominal'];
+                                        $additional->qty = $add['qty'];
+                                        $additional->total_ = $add['Total_adds'];
+                                        $additional->tanggal = Carbon::now()->toDateTimeString();
+                                        $additional->id_admin = $admin;
+                                        $additional->save();
+                                    }
+                                }
+                            }
+                            
+                            // dd($refund['discount']);
+                    
+                    }
+                }
            
-           foreach ($menuRefund as $refund) {
-               
-               $itmRefund = new RefundOrderMenu();
-               $itmRefund->id_order = $refund['id_order'];
-               $itmRefund->id_menu = $refund['id_menu'];
-               $itmRefund->refund_nominal = ($refund['harga_menu'] + $refund['adds']) * $refund['qty'] ;
-               $itmRefund->harga = $refund['harga_menu'];
-               $itmRefund->qty = $refund['qty'];
-               $itmRefund->catatan = $refund['catatan'];
-               $itmRefund->id_varian = $refund['varian'];
-               $itmRefund->id_admin = $admin;
-               $itmRefund->alasan_refund = $refund['alasan'];
-               $itmRefund->tanggal = Carbon::now()->toDateTimeString();
-               $itmRefund->save();
-               
-               if($itmRefund){
-                    if (isset($refund['discount'])) {
-                        $disRefund = $refund['discount'];
-                        foreach ($disRefund as $dis) {
-                            $discount = new DiscountMenuRefund();
-                            $discount->id_refund_menu  = $itmRefund->id;
-                            $discount->id_menu = $dis['id_menu'];
-                            $discount->id_discount = $dis['idDiscount'];
-                            $discount->nominal_dis = $dis['nominalDis'];
-                            $discount->id_admin = $admin;
+
+                foreach($menuDetail as $item){
+                    $detail_menu = DetailOrder::where('id', $item["id_detail"])->first();
+
+                    if ($detail_menu) {
+                            // Jika detail menu memiliki ID yang sama dengan item refund
+                        if ($detail_menu->id_order == $item['id_order'] && $detail_menu->id_menu == $item['id_menu']) {
+                            // Kurangi qty detail menu dengan qty item refund
+                            $detail_menu->qty -= $item['qty'];
+
+                            // Jika setelah dikurangi qty menjadi 0 atau kurang, hapus data
+                            if ($detail_menu->qty <= 0) {
+
+                                $idDetailOrder = $detail_menu->id;
+                                $detail_menu->delete();
+
+                                Discount_detail_order::where('id_detail_order', $idDetailOrder)->delete();
+                                Additional_menu_detail:: where('id_detail_order', $idDetailOrder)->delete();
+
+                            } else {
+                                $detail_menu->total = ($item['harga_menu'] + $item['adds']) *  $detail_menu->qty;
+                                $detail_menu->save();
+                            }
+                        }
+                    }
+
+                        $discount = Discount_detail_order::where('id_detail_order', $detail_menu->id)->get();
+                        $total_nominal = $detail_menu->total; // Initial total
+                    
+                        foreach ($discount as $discount) {
+                            $rate = $discount->discount->rate_dis; // Discount rate as a percentage
+
+                            // Calculate the discount based on the current nominal value
+                            $current_discount = $total_nominal * ($rate / 100);
+
+                            // Save the current discount amount in the model
+                            $discount->total_discount = $current_discount;
                             $discount->save();
+
+                        
+                            $total_nominal -= $current_discount;
                         }
-                    }
 
-                    if (isset($refund['additional'])) {
-                        $addRef = $refund['additional'];
-                        foreach ($addRef as $add) {
-                            $additional = new AdditionalRefund();
-                            $additional->id_refund_menu  = $itmRefund->id;
-                            $additional->id_menu = $add['id_menu'];
-                            $additional->id_option_additional = $add['id_add'];
-                            $additional->harga = $add['nominal'];
-                            $additional->qty = $add['qty'];
-                            $additional->total_ = $add['Total_adds'];
-                            $additional->tanggal = Carbon::now()->toDateTimeString();
-                            $additional->id_admin = $admin;
+                        $addDetail = Additional_menu_detail:: where('id_detail_order', $detail_menu->id)->get();
+                        
+                        foreach($addDetail as $itmAdds){
+                            
+                            $qty = $itmAdds->qty ?? 0;
+                            $total = $itmAdds->total ?? 0;
+                            $harga = $total / $qty ;
 
-                            $additional->save();
+                            $itmAdds->qty -= $item['qty'];
+
+                            $itmAdds->total = $harga *  $itmAdds->qty;
+                            $itmAdds->save();
+                            
                         }
-                    }
-               }
-               // dd($refund['discount']);
-               
-           }
 
-           foreach($menuDetail as $item){
-               $detail_menu = DetailOrder::where('id', $item["id_detail"])->first();
 
-               if ($detail_menu) {
-                    // Jika detail menu memiliki ID yang sama dengan item refund
-                   if ($detail_menu->id_order == $item['id_order'] && $detail_menu->id_menu == $item['id_menu']) {
-                       // Kurangi qty detail menu dengan qty item refund
-                       $detail_menu->qty -= $item['qty'];
-
-                       // Jika setelah dikurangi qty menjadi 0 atau kurang, hapus data
-                       if ($detail_menu->qty <= 0) {
-
-                           $idDetailOrder = $detail_menu->id;
-                           $detail_menu->delete();
-
-                           Discount_detail_order::where('id_detail_order', $idDetailOrder)->delete();
-                           Additional_menu_detail:: where('id_detail_order', $idDetailOrder)->delete();
-
-                       } else {
-                           $detail_menu->total = ($item['harga_menu'] + $item['adds']) *  $detail_menu->qty;
-                           $detail_menu->save();
-                       }
-                   }
-               }
-
-                $discount = Discount_detail_order::where('id_detail_order', $detail_menu->id)->get();
-                $total_nominal = $detail_menu->total; // Initial total
-              
-                foreach ($discount as $discount) {
-                    $rate = $discount->discount->rate_dis; // Discount rate as a percentage
-
-                    // Calculate the discount based on the current nominal value
-                    $current_discount = $total_nominal * ($rate / 100);
-
-                    // Save the current discount amount in the model
-                    $discount->total_discount = $current_discount;
-                    $discount->save();
-
-                
-                    $total_nominal -= $current_discount;
                 }
 
+          
+                $sumDetailOrder = DetailOrder::where('id_order', $orders->id)->sum('total');
+                $sumDiscount = Discount_detail_order::whereHas('Detail_order', function ($query) use ($orders) {
+                    $query->where('id_order', $orders->id);
+                })->sum('total_discount');
 
-                $addDetail = Additional_menu_detail:: where('id_detail_order', $detail_menu->id)->get();
+                $tax_order_pb1 = TaxOrder::where('id_order', $orders->id)->where('id_tax', 1)->first();
+                $tax_order_pb1->total_tax = $request->tx_pb1;
+                $tax_order_pb1->save();
+
+                $tax_order_service = TaxOrder::where('id_order', $orders->id)->where('id_tax', 2)->first();
+                $tax_order_service->total_tax = $request->tx_service;
+                $tax_order_service->save();
+            
+                $subtotalNew = $sumDetailOrder - $sumDiscount ;
+                $totalNew = $subtotalNew + $tax_order_pb1->total_tax + $tax_order_service->total_tax ;
+                $orders->subtotal = $subtotalNew;
+                $orders->total_order = $totalNew;
+                $orders->cash = $totalNew;
+                $orders->save();
+
                 
-                foreach($addDetail as $itmAdds){
-                    
-                    $qty = $itmAdds->qty ?? 0;
-                    $total = $itmAdds->total ?? 0;
-                    $harga = $total / $qty ;
+                DB::commit();
 
-                    $itmAdds->qty -= $item['qty'];
-
-                    $itmAdds->total = $harga *  $itmAdds->qty;
-                    $itmAdds->save();
-                    
-                }
-
-
-           }
-
-           $order = Orders::where('id', $request->order_id)->first();
+                return response()->json([
+                    'success' => 1,
+                    'message' => 'refund di simpan'
+                ],200);
+            }catch(\Exception $e){
+                DB::rollBack();
+                return response()->json([
+                    'success' => 0,
+                    'message' => 'refund faild',
+                    'error' => $e->getMessage()
+                ],500);
+            }
            
-           $tax_order_pb1 = TaxOrder::where('id_order', $order->id)->where('id_tax', 1)->first();
-           $tax_order_pb1->total_tax = $request->tx_pb1;
-           $tax_order_pb1->save();
-
-           $tax_order_service = TaxOrder::where('id_order', $order->id)->where('id_tax', 2)->first();
-           $tax_order_service->total_tax = $request->tx_service;
-           $tax_order_service->save();
-                
-           
-           return response()->json([
-               'success' => 1,
-               'message' => 'refund di simpan'
-           ]);
        }else{
            return redirect()->route('login');
        }

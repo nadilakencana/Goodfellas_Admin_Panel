@@ -37,7 +37,7 @@
         <div class="btn-act-refund">
             Refund Item
         </div>
-        <div class="btn print-bill"  data-id="{{ $detail->id }}">
+        <div class="btn print-bill" data-id="{{ $detail->id }}">
             Print Bill
         </div>
     </div>
@@ -90,15 +90,15 @@
                 </div>
 
                 @php
-                    $total_itms = 0;
-                    $total_items_refund = 0;
-                    $total_dis = 0;
-                    $sub_refund = 0;
-                    $nominalDis = 0;
-                    $subtotalRef = 0;
-                    $totalDis=0;
-                    $subtotal_order = 0;
-                    $totalDisRef = 0;
+                $total_itms = 0;
+                $total_items_refund = 0;
+                $total_dis = 0;
+                $sub_refund = 0;
+                $nominalDis = 0;
+                $subtotalRef = 0;
+                $totalDis=0;
+                $subtotal_order = 0;
+                $totalDisRef = 0;
                 @endphp
                 <div class="list-item-menu">
 
@@ -118,12 +118,14 @@
                                     <input type="numeric" class="qty" value="{{ $menu->qty }}" max="{{ $menu->qty }}" />
                                     <a href="#" class="qty qty-plus">+</a>
                                 </div>
-                                <p class="card-text " style="font-weight: 800"> {{ number_format($menu->total,0,".",".")}}</p>
+                                <p class="card-text " style="font-weight: 800"> {{
+                                    number_format($menu->total,0,".",".")}}</p>
 
                             </div>
                             <div class="detail-itm">
                                 @if(!@empty($menu['id_varian']))
-                                <small class="option varian-op" id-varian="{{ $menu['id_varian'] }}">{{ $menu->varian->nama }}</small>
+                                <small class="option varian-op" id-varian="{{ $menu['id_varian'] }}">{{
+                                    $menu->varian->nama }}</small>
                                 @else
                                 <small class="option varian-op" id-varian=""></small>
                                 @endif
@@ -145,26 +147,30 @@
 
 
                                 @if(!@empty($menu['id_sales_type']))
-                                    <small class="option status-order" idx="{{ $menu['id_sales_type'] }}">
-                                        {{ $menu->salesType->name }}
-                                    </small>
+                                <small class="option status-order" idx="{{ $menu['id_sales_type'] }}">
+                                    {{ $menu->salesType->name }}
+                                </small>
                                 @else
                                 @endif
 
                                 @foreach($menu ->Discount_menu_order as $discounts)
-                                    @php
-                                        $total_rate =+ $discounts->discount->rate_dis;
-                                        $totalDis += $discounts->total_discount;
-                                    @endphp
-                              
-                                   
-                                    <small class="option discount" idx="{{ $discounts->discount->id }}" dis="{{ $discounts->discount->rate_dis }}" 
-                                    nominal-dis="{{ $discounts->total_discount }}" data-idItem="{{ $discounts->id_detail_order }}">Discount {{ $discounts->discount->rate_dis }}%  - {{ number_format( $discounts->total_discount, 0, ',','.') }}</small>
-                               
+                                @php
+                                $total_rate =+ $discounts->discount->rate_dis;
+                                $totalDis += $discounts->total_discount;
+                                @endphp
+
+
+                                <small class="option discount" idx="{{ $discounts->discount->id }}"
+                                    dis="{{ $discounts->discount->rate_dis }}"
+                                    nominal-dis="{{ $discounts->total_discount }}"
+                                    data-idItem="{{ $discounts->id_detail_order }}">Discount {{
+                                    $discounts->discount->rate_dis }}% - {{ number_format( $discounts->total_discount,
+                                    0, ',','.') }}</small>
+
                                 @endforeach
 
                                 @if(!@empty($menu['catatan']))
-                                    <small class="option status-order note">{{ $menu['catatan'] }}</small>
+                                <small class="option status-order note">{{ $menu['catatan'] }}</small>
                                 @else
                                 @endif
                             </div>
@@ -175,23 +181,23 @@
                             <span class="checkmark"></span>
                         </div>
                     </div>
-                        @php
-                            $total_itms += $menu->total;
-                        @endphp
-                    @endforeach
-                    {{--  {{ $totalDis }}
-                    {{ $total_itms }}  --}}
                     @php
-                        $subtotal_order = $total_itms - $totalDis;
+                    $total_itms += $menu->total;
+                    @endphp
+                    @endforeach
+                    {{-- {{ $totalDis }}
+                    {{ $total_itms }} --}}
+                    @php
+                    $subtotal_order = $total_itms - $totalDis;
                     @endphp
                 </div>
-                
+
                 @if(!@empty($refund))
-               
+
                 <div class="header-refund mb-4" style="border-bottom: dashed;border-top: dashed; color: gray">
                     Item Refund
                 </div>
-                    
+
                 <div class="list-item-menu mb-4">
 
                     @foreach ($refund as $menu)
@@ -211,14 +217,17 @@
 
                                 @php
 
-                                $additional = App\Models\AdditionalRefund ::where('id_menu', $menu->id_menu)->where('id_refund_menu', $menu->id)->get();
+                                $additional = App\Models\AdditionalRefund ::where('id_menu',
+                                $menu->id_menu)->where('id_refund_menu', $menu->id)->get();
                                 $discount = App\Models\DiscountMenuRefund::where('id_refund_menu',
                                 $menu->id)->where('id_menu', $menu->id_menu)->get();
-                                
+
                                 @endphp
-                                <p class="card-text " style="font-weight: 800"> {{number_format($menu['refund_nominal'],0,".",".") }}</p>
+                                <p class="card-text " style="font-weight: 800">
+                                    {{number_format($menu['refund_nominal'],0,".",".") }}</p>
 
                             </div>
+
                             <div class="detail-itm">
                                 @if(!@empty($menu['alasan_refund']))
                                 <small class="option status-order note">{{ $menu['alasan_refund'] }}</small>
@@ -226,27 +235,28 @@
                                 @endif
 
                                 @if(!@empty($menu['id_varian']))
-                                <small class="option varian-op" id-varian="{{ $menu['id_varian'] }}">{{$menu->varian->nama }}</small>
+                                <small class="option varian-op"
+                                    id-varian="{{ $menu['id_varian'] }}">{{$menu->varian->nama }}</small>
                                 @else
-                                    <small class="option varian-op" id-varian=""></small>
+                                <small class="option varian-op" id-varian=""></small>
                                 @endif
 
                                 @foreach($additional as $adds)
-                                    @if(!@empty( $adds ))
-                                        <small class="option add-op" id_adds="{{  $adds->id_option_additional }}">
-                                            {{ $adds->additionOps->name }} - <span class="harga-adds"
-                                                nominal="{{ $adds->additionOps->harga }}">{{ $adds->additionOps->harga }}</span>
-                                        </small>
-                                    @else
-                                    @endif
+                                @if(!@empty( $adds ))
+                                <small class="option add-op" id_adds="{{  $adds->id_option_additional }}">
+                                    {{ $adds->additionOps->name }} - <span class="harga-adds"
+                                        nominal="{{ $adds->additionOps->harga }}">{{ $adds->additionOps->harga }}</span>
+                                </small>
+                                @else
+                                @endif
                                 @endforeach
 
 
                                 @foreach($discount as $discounts)
-                                        @php
-                                            $totalDisRef += $discounts->nominal_dis;
-                                        @endphp
-                                   
+                                @php
+                                $totalDisRef += $discounts->nominal_dis;
+                                @endphp
+
                                 <small class="option status-order discount" xid="{{ $discounts->id_discount }}">Discount
                                     - {{ number_format( $discounts->nominal_dis, 0, ',','.') }}</small>
 
@@ -261,16 +271,16 @@
                         </div>
 
                     </div>
-                        @php
-                            $sub_refund += $menu['refund_nominal'];
-                           
-                        @endphp
+                    @php
+                    $sub_refund += $menu['refund_nominal'];
+
+                    @endphp
                     @endforeach
-                   @php
-                     $sub_refund =  $sub_refund - $totalDisRef;
-                   @endphp
-                   {{--  {{ $sub_refund }}
-                   {{ $subtotal_order }}  --}}
+                    @php
+                    $sub_refund = $sub_refund - $totalDisRef;
+                    @endphp
+                    {{-- {{ $sub_refund }}
+                    {{ $subtotal_order }} --}}
                 </div>
 
 
@@ -279,28 +289,28 @@
                 @endif
 
                 <div class="footer-sub-total">
-                     
-                   {{--  @php
-                        $subtotal_order = $subtotal_order - $sub_refund;
-                   @endphp  --}}
-                  
-                     
+
+                    {{-- @php
+                    $subtotal_order = $subtotal_order - $sub_refund;
+                    @endphp --}}
+
+
                     <div class="total">
                         <div class="txt-total subtotal">Subtotal:</div>
                         <div class="txt-price-total subtotal" data-subtotal="{{$subtotal_order}}">{{
                             number_format($subtotal_order,0,".",".") }}</div>
                     </div>
-                     @php
-                        $total_taxs = 0;
-                        $grand_total = 0;
+                    @php
+                    $total_taxs = 0;
+                    $grand_total = 0;
                     @endphp
                     @foreach ($taxs as $tax )
-                        @php
-                        $nominalTax = 0;
-                        $desimalTax = $tax->tax_rate / 100;
-                        $nominalTax = str_replace(".", "", $subtotal_order) * $desimalTax;
-                        $totalTax += $nominalTax;
-                        @endphp
+                    @php
+                    $nominalTax = 0;
+                    $desimalTax = $tax->tax_rate / 100;
+                    $nominalTax = str_replace(".", "", $subtotal_order) * $desimalTax;
+                    $totalTax += $nominalTax;
+                    @endphp
                     <div class="total taxes" idx="{{ $tax-> id_tax}}">
                         <div class="txt-total service-change" data-tax-rate="{{$tax->rate}}">{{ $tax->nama }} <p
                                 class="presentage">{{ $tax->tax_rate }} %</p>:</div>
@@ -308,23 +318,24 @@
                             style="color: grey;font-size: 13px;">{{$nominalTax}}</div>
                     </div>
                     @php
-                        $total_taxs += $nominalTax;
+                    $total_taxs += $nominalTax;
                     @endphp
                     @endforeach
 
                     @php
-                        $grand_total = $subtotal_order + $total_taxs;
+                    $grand_total = $subtotal_order + $total_taxs;
                     @endphp
                     <div class="total">
                         <div class="txt-total total">Total:</div>
-                        <div class="txt-price-total total" data-total="{{ $grand_total }}">{{ number_format($grand_total, 0, '.','.') }}</div>
+                        <div class="txt-price-total total" data-total="{{ $grand_total }}">{{
+                            number_format($grand_total, 0, '.','.') }}</div>
                     </div>
 
                     @if(!empty($detail->id_booking))
-                        @php
-                        $sisaBayar = 0;
-                        $sisaBayar = $detail->total_order - $detail->booking->nominal_dp;
-                        @endphp
+                    @php
+                    $sisaBayar = 0;
+                    $sisaBayar = $detail->total_order - $detail->booking->nominal_dp;
+                    @endphp
                     <div class="total">
                         <div class="txt-total total">Deposit:</div>
                         <div class="txt-price-total ">{{ number_format( $detail->booking->nominal_dp, 0, '.','.') }}
@@ -352,15 +363,165 @@
                 {{-- data refund item --}}
                 @if(!@empty($refund))
                 <div class="header-refund">
-                    Item Refund
+                    Bill Refund
                 </div>
-               @php
-                     $subtotalRef = 0;
-                     $totalDis =0 ;
-               @endphp
+                @php
+                $subtotalRef = 0;
+                $totalDis =0 ;
+                @endphp
                 <div class="list-item-menu">
+                    @foreach ($refundOrder as $refund)
 
-                    @foreach ($refund as $menu)
+                    <div class="part-list mb-2">
+                        <div class="item">
+                            <div class="detail-menu-order">
+                                <p class="card-text nama-bill" id-refund="{{  $refund->encrypted_id }}" style="margin-bottom: 0.1rem; color:white; font-weight: 800;
+                                        cursor: pointer;text-decoration: underline;">
+                                    {{ $refund->kode_refund}}
+                                </p>
+
+                                <p class="card-text harga-menu" style="margin-bottom: 0.1rem;">
+                                    {{ $refund->name_bill }}
+                                </p>
+                                <p class="card-text harga-menu" style="margin-bottom: 0.1rem;">
+                                    Rp.{{number_format($refund->subtotal,0,".",".") }}
+                                </p>
+                                <p class="card-text harga-menu" style="margin-bottom: 0.1rem;">
+                                    Rp.{{number_format($refund->total_retur,0,".",".") }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-popup-detail-refund" style="display: none"
+                        data-xid="{{  $refund->encrypted_id }}">
+                        <div class="card-modal-detail">
+                            <div class="header-card">
+                                <div class="txt-tittle">Detail Refund Bill</div>
+                                <div class="close">X</div>
+                            </div>
+                            @if (!empty($refund->refundItem))
+                                @foreach ($refund->refundItem as $itemDetail)
+                                    <div class="part-list mb-2" idx="{{ $itemDetail->id_menu }}">
+                                        <div class="item">
+                                            <div class="detail-menu-order">
+                                                <p class="card-text nama" style="margin-bottom: 0.1rem;">
+                                                    @if(isset($itemDetail->menu->nama_menu)) {{ $itemDetail->menu->nama_menu
+                                                    }}@else @endif </p>
+
+                                                <p class="card-text harga-menu" style="margin-bottom: 0.1rem;"
+                                                    data-harga="{{ $menu->menu->harga }}"> {{ $itemDetail->harga }}</p>
+
+                                                <div class="control-qty">
+                                                    <input type="numeric" class="qty" value="{{ $menu->qty }}"
+                                                        max="{{ $menu->qty }}" disabled />
+                                                </div>
+
+                                                @php
+                                                $additional = App\Models\AdditionalRefund ::where('id_menu',
+                                                $itemDetail->id_menu)->where('id_refund_menu', $itemDetail->id)->get();
+                                                $discount =
+                                                App\Models\DiscountMenuRefund::where('id_refund_menu',$itemDetail->id)->where('id_menu',
+                                                $itemDetail->id_menu)->get();
+
+
+                                                @endphp
+                                                <p class="card-text " style="font-weight: 800"> {{
+                                                    number_format($itemDetail->refund_nominal,0,".",".") }}</p>
+
+                                            </div>
+                                            <div class="detail-itm">
+                                                @if(!@empty($itemDetail->alasan_refund))
+                                                <small class="option status-order note">{{ $itemDetail->alasan_refund }}</small>
+                                                @else
+                                                @endif
+
+                                                @if(!@empty($itemDetail->id_varian))
+                                                <small class="option varian-op" id-varian="{{ $itemDetail->id_varian}}">{{
+                                                    $itemDetail->varian->nama }}</small>
+                                                @else
+                                                <small class="option varian-op" id-varian=""></small>
+                                                @endif
+
+                                                @foreach($additional as $adds)
+                                                @if(!@empty( $adds ))
+                                                <small class="option add-op" id_adds="{{  $adds->id_option_additional }}">
+                                                    {{ $adds->additionOps->name }} - <span class="harga-adds"
+                                                        nominal="{{ $adds->additionOps->harga }}">{{ $adds->additionOps->harga
+                                                        }}</span>
+                                                </small>
+                                                @else
+                                                @endif
+                                                @endforeach
+
+
+                                                @foreach($discount as $discounts)
+                                                @php
+                                                $totalDis += $discounts->nominal_dis;
+
+                                                @endphp
+                                                <small class="option status-order discount"
+                                                    xid="{{ $discounts->id_discount }}">Discount
+                                                    - {{ number_format( $discounts->nominal_dis, 0, ',','.') }}</small>
+                                                @endforeach
+
+                                                @if(!@empty($itemDetail->catatan))
+                                                <small class="option status-order note">{{ $itemDetail->catatan }}</small>
+                                                @else
+                                                @endif
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    @php
+                                    $subtotalRef += $itemDetail->refund_nominal;
+                                    @endphp
+
+                                @endforeach
+                            @endif
+                            @php
+                                $subtotalRef = $subtotalRef - $totalDis ;
+                            @endphp
+                              <div class="footer-sub-total">
+                                    <div class="total">
+                                        <div class="txt-total subtotal">Subtotal:</div>
+                                        <div class="txt-price-total subtotal">{{ number_format($subtotalRef,0,".",".") }}</div>
+                                    </div>
+                                    @php
+                                        $totalTax = 0;
+                                    @endphp
+                                    @foreach ($taxs as $tax )
+                                        @php
+                                            $nominalTax = 0;
+                                            $desimalTax = $tax->tax_rate / 100;
+                                            $nominalTax = str_replace(".", "", $subtotalRef) * $desimalTax;
+                                            $totalTax += $nominalTax;
+                                        @endphp
+
+                                    <div class="total taxes" idx="{{ $tax->id}}">
+                                        <div class="txt-total service-change">{{ $tax->nama }} <p class="presentage">{{ $tax->tax_rate
+                                                }} %</p>:</div>
+                                        <div class="txt-price-total nominal-tax" style="color: grey;font-size: 13px;">{{ number_format(
+                                            $nominalTax, 0, '.','.') }}</div>
+                                    </div>
+                                    @endforeach
+
+                                    <div class="total">
+                                        @php
+                                            $grandTotal = 0;
+                                            $grandTotal = $subtotalRef + $totalTax;
+                                        @endphp
+                                        <div class="txt-total total">Total:</div>
+                                        <div class="txt-price-total total" data-total="{{ $grandTotal }}">{{ number_format( $grandTotal,
+                                            0, '.','.') }}</div>
+                                    </div>
+                                </div>
+                        </div>
+
+                    </div>
+                    @endforeach
+
+                    {{-- @foreach ($refund as $menu)
                     <div class="part-list mb-2" idx="{{ $menu->id_menu }}">
                         <div class="item">
                             <div class="detail-menu-order">
@@ -376,9 +537,12 @@
                                 </div>
 
                                 @php
-                                $additional = App\Models\AdditionalRefund ::where('id_menu', $menu->id_menu)->where('id_refund_menu', $menu->id)->get();
-                                $discount = App\Models\DiscountMenuRefund::where('id_refund_menu',$menu->id)->where('id_menu', $menu->id_menu)->get();
-                                
+                                $additional = App\Models\AdditionalRefund ::where('id_menu',
+                                $menu->id_menu)->where('id_refund_menu', $menu->id)->get();
+                                $discount =
+                                App\Models\DiscountMenuRefund::where('id_refund_menu',$menu->id)->where('id_menu',
+                                $menu->id_menu)->get();
+
 
                                 @endphp
                                 <p class="card-text " style="font-weight: 800"> {{
@@ -399,27 +563,27 @@
                                 @endif
 
                                 @foreach($additional as $adds)
-                                    @if(!@empty( $adds ))
-                                    <small class="option add-op" id_adds="{{  $adds->id_option_additional }}">
-                                        {{ $adds->additionOps->name }} - <span class="harga-adds"
-                                            nominal="{{ $adds->additionOps->harga }}">{{ $adds->additionOps->harga }}</span>
-                                    </small>
-                                    @else
-                                    @endif
+                                @if(!@empty( $adds ))
+                                <small class="option add-op" id_adds="{{  $adds->id_option_additional }}">
+                                    {{ $adds->additionOps->name }} - <span class="harga-adds"
+                                        nominal="{{ $adds->additionOps->harga }}">{{ $adds->additionOps->harga }}</span>
+                                </small>
+                                @else
+                                @endif
                                 @endforeach
 
 
                                 @foreach($discount as $discounts)
-                                    @php
-                                        $totalDis += $discounts->nominal_dis;
+                                @php
+                                $totalDis += $discounts->nominal_dis;
 
-                                    @endphp
-                                    <small class="option status-order discount" xid="{{ $discounts->id_discount }}">Discount
+                                @endphp
+                                <small class="option status-order discount" xid="{{ $discounts->id_discount }}">Discount
                                     - {{ number_format( $discounts->nominal_dis, 0, ',','.') }}</small>
                                 @endforeach
 
                                 @if(!@empty($menu['catatan']))
-                                    <small class="option status-order note">{{ $menu['catatan'] }}</small>
+                                <small class="option status-order note">{{ $menu['catatan'] }}</small>
                                 @else
                                 @endif
 
@@ -428,17 +592,18 @@
 
                     </div>
                     @php
-                        $subtotalRef += $menu['refund_nominal'];
+                    $subtotalRef += $menu['refund_nominal'];
                     @endphp
-                    
+
                     @endforeach
-                
+
                     @php
-                        $subtotalRef = $subtotalRef - $totalDis ;
-                    @endphp
+                    $subtotalRef = $subtotalRef - $totalDis ;
+                    @endphp --}}
+
                 </div>
 
-                <div class="footer-sub-total">
+                {{-- <div class="footer-sub-total">
 
                     <div class="total">
                         <div class="txt-total subtotal">Subtotal:</div>
@@ -448,12 +613,12 @@
                     $totalTax = 0;
                     @endphp
                     @foreach ($taxs as $tax )
-                        @php
-                            $nominalTax = 0;
-                            $desimalTax = $tax->tax_rate / 100;
-                            $nominalTax = str_replace(".", "", $subtotalRef) * $desimalTax;
-                            $totalTax += $nominalTax;
-                        @endphp
+                    @php
+                    $nominalTax = 0;
+                    $desimalTax = $tax->tax_rate / 100;
+                    $nominalTax = str_replace(".", "", $subtotalRef) * $desimalTax;
+                    $totalTax += $nominalTax;
+                    @endphp
 
                     <div class="total taxes" idx="{{ $tax->id}}">
                         <div class="txt-total service-change">{{ $tax->nama }} <p class="presentage">{{ $tax->tax_rate
@@ -472,7 +637,7 @@
                         <div class="txt-price-total total" data-total="{{ $grandTotal }}">{{ number_format( $grandTotal,
                             0, '.','.') }}</div>
                     </div>
-                </div>
+                </div> --}}
                 @else
 
                 @endif
@@ -521,9 +686,9 @@
                 <div class="txt-tittle">Print sedang diproses..</div>
                 <div class="total-payment"></div>
             </div>
-            
+
             <p>Tunggu Sebentar..</p>
-            
+
         </div>
     </div>
 </div>
@@ -634,6 +799,23 @@
 
         $('.btn-refund').on('click', function(e){
             refund($(this), 2);
+        });
+
+        $('.nama-bill').click(function(e){
+            const xid = $(this).attr('id-refund');
+            console.log(xid);
+            const target = $(`.modal-popup-detail-refund[data-xid="${xid}"]`);
+            
+            if(target.length){
+                target.fadeIn();
+            }else{
+                console.log('tidak ada modal pop up')
+            }
+        });
+
+        $(".header-card .close").on("click", function () {
+            // Tutup modal yang sedang aktif
+            $(this).closest(".modal-popup-detail-refund").fadeOut();
         });
 
         function Bill(id, type){
@@ -824,8 +1006,7 @@
                     varian: varian,
                     adds : totalAds,
                     catatan: note,
-                    discount: disRef,
-                    additional: arAdds
+                    discount: disRef
                 };
 
                 itm_detail.push(obj_detail_order);
@@ -858,7 +1039,7 @@
 
             var totalDiscount = 0;
             
-           $.each(itm, function(index, item) {
+            $.each(itm, function(index, item) {
                 $.each(item.discount, function(discountIndex, discount) {
                     totalDiscount += parseInt(discount.nominalDis);
                 });
@@ -906,17 +1087,20 @@
                     detail_menu: itm_detail,
                     order_id : xidOrder,
                     tx_pb1: pj_order1,
-                    tx_service: pj_order2
+                    tx_service: pj_order2,
+                    subTotalrefund: SubDis,
+                    TotalRefund:TotalRefund
                      
 
                 }
 
-                console.log("Data Refund :", DataRefund);
+                
 
                 $.post("{{ route('refund') }}", DataRefund).done(function(data){
                         if(data.success === 0){
                             alert(data.message);
                         }else{
+                            console.log("Data Refund berhasil :", DataRefund);
                             //$(this).attr('data-notify', data['count']);
                             location.reload();
                         }

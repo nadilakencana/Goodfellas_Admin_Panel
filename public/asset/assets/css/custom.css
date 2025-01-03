@@ -280,9 +280,11 @@ li.nav-item.d-flex.justify-content-between.align-content-center {
 #hitung:hover {
     background: rgb(228, 149, 2);
 }
-
+.modal-popup-detail-refund {
+    background: #000000ab;
+}
 /* daftar bill */
-.pop-daftar-bill, .pop-daftar-discount {
+.pop-daftar-bill, .pop-daftar-discount, .modal-popup-detail-refund {
     position: fixed;
     display: flex;
     z-index: 10000;
@@ -293,8 +295,12 @@ li.nav-item.d-flex.justify-content-between.align-content-center {
     justify-content: center;
     align-items: center;
 }
+.card-modal-detail {
+    overflow: scroll;
+    max-height: 500px;
+}
 .pop-daftar-bill .card-list-bill, 
-.pop-daftar-discount .card-list-discount  {
+.pop-daftar-discount .card-list-discount, .card-modal-detail  {
     display: flex;
     margin-top: 30px;
     flex-direction: column;
@@ -305,7 +311,7 @@ li.nav-item.d-flex.justify-content-between.align-content-center {
     padding: 10px 20px;
 }
 .pop-daftar-bill .card-list-bill .header-card, 
-.pop-daftar-discount .card-list-discount .header-card {
+.pop-daftar-discount .card-list-discount .header-card,.card-modal-detail  .header-card {
     display: flex;
     justify-content: space-between;
     font-size: 20px;
