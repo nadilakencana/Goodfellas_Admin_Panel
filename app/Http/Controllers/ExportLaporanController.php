@@ -1125,11 +1125,20 @@ class ExportLaporanController extends Controller
                 $hargaRefund = RefundOrderMenu::where('id_order', $itm->id_order)
                 ->where('id_menu', $itm->id_menu)->value('harga');
 
+                $nominalRefund = RefundOrderMenu::where('id_order', $itm->id_order)
+                ->where('id_menu', $itm->id_menu)->value('refund_nominal');
+
 
                 $totalRefund = $hargaRefund * $qtyRefund;
                 $disTotal = $totalDiscount - $refundDisCountSum;
-                $netSales = $itm->total - ($totalRefund - $refundDisCountSum);
-                
+                $total = $itm->total - $totalDiscount;
+
+                $gross = $itm->total + $nominalRefund;
+                $netSales = $gross - $totalDiscount - $nominalRefund;
+                $tax = 15/100;
+                $nominalTax = $netSales * $tax;
+                $totalColect = $netSales + $nominalTax;
+
                 $itemSalesMenu[] = [
                     'Kode_Pesanan' => $itm->order->kode_pemesanan,
                     'create' => $itm->order->created_at,
@@ -1137,12 +1146,14 @@ class ExportLaporanController extends Controller
                     'Name' => $itm->menu->nama_menu,
                     'itemSold' => $itm->qty,
                     'itemrefund' => $qtyRefund,
-                    'GrossSalse' => $itm->harga,
-                    'Discount' => $disTotal,
-                    'Total' => $itm->total,
-                    'Refund' => $totalRefund,
+                    'GrossSalse' => $gross,
+                    'Discount' => $totalDiscount,
+                    // 'Total' => $total,
+                    'Refund' => $nominalRefund,
                     'Discount_ref' => $refundDisCountSum,
                     'NetSales' => $netSales,
+                    'Tax' => $nominalTax,
+                    'totalColect' => $totalColect,
                     'paymentMetode' => $itm->order->payment->nama
                    
                 ];
