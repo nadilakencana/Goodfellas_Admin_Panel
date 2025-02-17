@@ -185,7 +185,7 @@ $(() => {
     });
 
     
-
+ber
     $('.act-btn.act2').on('click', function (e) {
         //var $total = $('.txt-price-total.total').text();
         var $total = $('.txt-price-total.sisa-bayar');

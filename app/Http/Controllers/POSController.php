@@ -1028,6 +1028,7 @@ class POSController extends Controller
                             $itmOrder->qty = $itm['qty'];
                             $itmOrder->catatan = $itmDetail->catatan;
                             $itmOrder->id_sales_type = $itmDetail->id_sales_type;
+                             $itmOrder->id_varian = $itm['varian'];
 
                             if ($itmOrder->save()) {
                                 if (isset($itm['Adds'])) {

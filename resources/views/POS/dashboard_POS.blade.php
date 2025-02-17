@@ -2254,6 +2254,7 @@
                 var qty = $perent.find('.control-qty input.qty').val();
                 var $adds = $perent.find('.detail-itm .option.add-op');
                 var $dis = $perent.find('.option.discount');
+                var varian = $perent.find('.option.varian-op').attr('data-id');
                 var itmAds = [];
                 var itmsDis=[];
 
@@ -2306,7 +2307,8 @@
                     Adds: itmAds,
                     jumlah : (parseInt(price) + parseInt(ItemTotalAdds)) * qty,
                     TotalRateDis:ItmsTotalRateDis,
-                    Discount: itmsDis
+                    Discount: itmsDis,
+                    varian:varian
 
                 }
 

@@ -41,7 +41,7 @@
         </div>
         <div class="detail-itm">
             @if(!@empty($cart['id_varian']))
-                <small class="option varian-op">{{ $cart->varian->nama }}</small>
+                <small class="option varian-op" data-id="{{ $cart['id_varian'] }}">{{ $cart->varian->nama }}</small>
             @else
             @endif
 

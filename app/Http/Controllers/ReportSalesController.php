@@ -330,56 +330,75 @@ class ReportSalesController extends Controller
         $additional = OptionModifier::all();
 
         foreach ($paymentMetode as $payment) {
+            // harga menu detail order
+            $items = DetailOrder::whereHas('order', function ($query) use ($startDate, $endDate,$payment) {
+                $query->whereBetween('tanggal', [$startDate, $endDate])
+                    ->where('id_status', 2)->where('deleted', 0)->where('id_type_payment', $payment->id);
+            })->sum('total');
 
-            $totalTransaksi = Orders::where('id_type_payment', $payment->id)->whereBetween('tanggal', [$startDate, $endDate])
-                ->where('id_status', 2)->where('deleted', 0)->count();
+            // total qty menu detail order
+            $itmsum = DetailOrder::whereHas('order', function ($query) use ($startDate, $endDate,$payment) {
+                $query->whereBetween('tanggal', [$startDate, $endDate])
+                    ->where('id_status', 2)->where('deleted', 0)->where('id_type_payment', $payment->id);
+            })->sum('qty');
 
-            $totalGrand = Orders::where('id_type_payment', $payment->id)->whereBetween('tanggal', [$startDate, $endDate])
-                ->where('id_status', 2)->where('deleted', 0)
-                ->sum('total_order');
+            // sum total discount
+            $totalDiscount = Discount_detail_order::whereHas('Detail_order', function ($query) use ($startDate, $endDate,$payment) {
+                $query->whereHas('order', function ($query) use ($startDate, $endDate,$payment) {
+                    $query->whereBetween('tanggal', [$startDate, $endDate])
+                        ->where('id_status', 2)->where('deleted', 0)->where('id_type_payment', $payment->id);
+                });
+            })->sum('total_discount');
 
-            $refund = RefundOrderMenu::whereHas('order', function ($query) use ($startDate, $endDate, $payment) {
-                $query->where('id_type_payment', $payment->id)
-                    ->whereBetween('tanggal', [$startDate, $endDate])
-                    ->where('id_status', 2)->where('deleted', 0);
-            })->sum('refund_nominal');
-
-            $discountRefund = DiscountMenuRefund::whereHas('Refund', function ($query) use ($startDate, $endDate, $payment) {
-                $query->whereHas('order', function ($query) use ($startDate, $endDate, $payment) {
-                    $query->where('id_type_payment', $payment->id)->whereBetween('tanggal', [$startDate, $endDate])
-                        ->where('id_status', 2)->where('deleted', 0);
+            // sum total refund discount
+            $refundDisCountSum = DiscountMenuRefund::whereHas('Refund', function ($query) use ($startDate, $endDate,$payment) {
+                $query->whereHas('order', function ($query) use ($startDate, $endDate,$payment) {
+                    $query->whereBetween('tanggal', [$startDate, $endDate])->where('deleted', 0)->where('id_type_payment', $payment->id);
                 });
             })->sum('nominal_dis');
 
-            $hargarefundAdds = AdditionalRefund::whereHas('Refund', function ($query) use ($startDate, $endDate, $payment) {
-                $query->whereHas('order', function ($query) use ($startDate, $endDate, $payment) {
-                    $query->where('id_type_payment', $payment->id)->whereBetween('tanggal', [$startDate, $endDate])
-                        ->where('id_status', 2)->where('deleted', 0);
-                });
-            })->sum('total_');
+            // sum qty refund
+            $SumRefund = RefundOrderMenu::whereHas('order', function ($query) use ($startDate, $endDate,$payment) {
+                $query->whereBetween('tanggal', [$startDate, $endDate])
+                    ->where('id_status', 2)->where('deleted', 0)->where('id_type_payment', $payment->id);
+            })->sum('qty');
+            // harga item refund
+            $hargaRefund = RefundOrderMenu::whereHas('order', function ($query) use ($startDate, $endDate,$payment) {
+                $query->whereBetween('tanggal', [$startDate, $endDate])
+                    ->where('id_status', 2)->where('deleted', 0)->where('id_type_payment', $payment->id);
+            })->sum('refund_nominal');
 
-            // $totalRef = $refund + $hargarefundAdds;
-            $subRef = $refund - $discountRefund;
+             $totalTransaksi = Orders::where('id_type_payment', $payment->id)->whereBetween('tanggal', [$startDate, $endDate])
+                ->where('id_status', 2)->where('deleted', 0)->count();
+
 
             $taxpb1 = Taxes::where('nama', 'PB1')->first();
             $service = Taxes::where('nama', 'Service Charge')->first();
+            // dd($totalDiscount,$refundDisCountSum);
+            $allGrandSales =  $items + $hargaRefund;
+
+            $sumDiscountTotal =  $totalDiscount + $refundDisCountSum;
+            $allGrandDis =  $sumDiscountTotal - $refundDisCountSum;
+            $allGrandRefund = $hargaRefund;
+            $allGrandNet =  $allGrandSales -  $allGrandDis -  $allGrandRefund;
 
             $PB1 = $taxpb1->tax_rate / 100;
             $Service = $service->tax_rate / 100;
 
-            $nominalPb1Ref = $subRef * $PB1;
-            $nominalServiceRef = $subRef * $Service;
+            $nominalPb1 = $allGrandNet * $PB1;
+            $nominalService = $allGrandNet * $Service;
 
-            $totalTaxRef = $nominalPb1Ref + $nominalServiceRef;
+            $totalTax = $nominalPb1 + $nominalService;
+            $TotalGrand = $allGrandNet + $totalTax;
 
-            $subTotalRef = $subRef + $totalTaxRef;
+           
 
-            $GandTotal = $totalGrand;
+           
 
             $paymentData[] = [
                 'paymentMethod' => $payment,
                 'totalOrder' =>  $totalTransaksi,
-                'totalPembayaran' => $GandTotal
+                'totalPembayaran' => $TotalGrand
             ];
         }
 
@@ -501,7 +520,7 @@ class ReportSalesController extends Controller
             $endDate = \Carbon\Carbon::now()->endOfMonth()->toDateString();
         }
 
-        $menu = Menu::where('custom', '0')->with('varian')->get();
+        $menu = Menu::with('varian')->get();
         $additional = OptionModifier::all();
 
         $menuCustom = DetailOrder::whereHas('menu', function ($query) {
@@ -881,51 +900,65 @@ class ReportSalesController extends Controller
 
 
 
-        foreach ($taxes as $tax) {
-            $Order = Orders::whereBetween('tanggal', [$startDate, $endDate])
-                ->where('id_status', 2)
-                ->where('deleted', 0)->sum('subtotal');
-
-            $refund = RefundOrderMenu::whereHas('order', function ($query) use ($startDate, $endDate) {
-                $query->whereBetween('tanggal', [$startDate, $endDate])
-                    ->where('id_status', 2)
-                    ->where('deleted', 0);
-            })->sum('refund_nominal');
-
-            $discountRefund = DiscountMenuRefund::whereHas('Refund', function ($query) use ($startDate, $endDate) {
-                $query->whereHas('order', function ($query) use ($startDate, $endDate) {
+            foreach ($taxes as $tax) {
+                // harga menu detail order
+                $items = DetailOrder::whereHas('order', function ($query) use ($startDate, $endDate) {
                     $query->whereBetween('tanggal', [$startDate, $endDate])
                         ->where('id_status', 2)->where('deleted', 0);
-                });
-            })->sum('nominal_dis');
+                })->sum('total');
 
-            $totalDiscount = Discount_detail_order::whereHas('Detail_order', function ($query) use ($startDate, $endDate) {
-                $query->whereHas('order', function ($query) use ($startDate, $endDate) {
+                // total qty menu detail order
+                $itmsum = DetailOrder::whereHas('order', function ($query) use ($startDate, $endDate) {
                     $query->whereBetween('tanggal', [$startDate, $endDate])
                         ->where('id_status', 2)->where('deleted', 0);
-                });
-            })->sum('total_discount');
+                })->sum('qty');
 
-            $addsRefund = AdditionalRefund::whereHas('Refund', function ($query) use ($startDate, $endDate) {
-                $query->whereHas('order', function ($query) use ($startDate, $endDate) {
+                // sum total discount
+                $totalDiscount = Discount_detail_order::whereHas('Detail_order', function ($query) use ($startDate, $endDate) {
+                    $query->whereHas('order', function ($query) use ($startDate, $endDate) {
+                        $query->whereBetween('tanggal', [$startDate, $endDate])
+                            ->where('id_status', 2)->where('deleted', 0);
+                    });
+                })->sum('total_discount');
+
+                // sum total refund discount
+                $refundDisCountSum = DiscountMenuRefund::whereHas('Refund', function ($query) use ($startDate, $endDate) {
+                    $query->whereHas('order', function ($query) use ($startDate, $endDate) {
+                        $query->whereBetween('tanggal', [$startDate, $endDate]);
+                    });
+                })->sum('nominal_dis');
+
+                // sum qty refund
+                $SumRefund = RefundOrderMenu::whereHas('order', function ($query) use ($startDate, $endDate) {
                     $query->whereBetween('tanggal', [$startDate, $endDate])
                         ->where('id_status', 2)->where('deleted', 0);
-                });
-            })->sum('total_');
-            // echo($refund);
-            // echo($discountRefund);
+                })->sum('qty');
+                // harga item refund
+                $hargaRefund = RefundOrderMenu::whereHas('order', function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('tanggal', [$startDate, $endDate])
+                        ->where('id_status', 2)->where('deleted', 0);
+                })->sum('refund_nominal');
 
-            $netGross = $Order  - ($refund - $discountRefund);
 
-            $taxs = $tax->tax_rate / 100;
-            $nominal = $netGross * $taxs;
 
-            $dataTax[] = [
-                'Taxs' => $tax,
-                'Net' => $netGross,
-                'taxTotal' => $nominal
-            ];
-        }
+
+                $allGrandSales =  $items + $hargaRefund;
+
+                $sumDiscountTotal =  $totalDiscount + $refundDisCountSum;
+                $allGrandDis =  $sumDiscountTotal - $refundDisCountSum;
+                $allGrandRefund = $hargaRefund;
+                $netGross =  $allGrandSales -  $allGrandDis -  $allGrandRefund;
+
+
+                $taxs = $tax->tax_rate / 100;
+                $nominal = $netGross * $taxs;
+
+                $dataTax[] = [
+                    'Taxs' => $tax,
+                    'Net' => $netGross,
+                    'taxTotal' => $nominal
+                ];
+            }
 
 
         return view('Report.Taxes', compact(
