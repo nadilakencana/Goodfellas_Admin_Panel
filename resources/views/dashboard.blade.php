@@ -223,7 +223,7 @@
 <script>
   $(()=>{
 
-    // top sales item
+      // top sales item
       // const chartData = @json( $chartData );
       // const ctx = document.getElementById('topSellingItemsChart').getContext('2d');
       // const myChart = new Chart(ctx, {
@@ -237,6 +237,7 @@
       //         }
       //     }
       // });
+
       // daily report gross
       const chartDataGrossDaily = @json( $chartDailyGrossSales );
       const ctx_grossDaily = document.getElementById('grossSales').getContext('2d');

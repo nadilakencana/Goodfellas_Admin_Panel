@@ -16,10 +16,12 @@ class Kernel extends ConsoleKernel
 
      protected $commands = [
         \App\Console\Commands\UpdateDataServer::class,
+        \App\Console\Commands\OptimizeCommand::class,
     ];
     protected function schedule(Schedule $schedule)
     {
          $schedule->command('update:ServerUpdate')->hourly();
+         $schedule->command('optimaze:update')->daily();
     }
 
     /**
