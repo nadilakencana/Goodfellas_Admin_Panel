@@ -92,14 +92,14 @@ class MenuController extends Controller
                 }
 
                 // dd($var_menu);
-                $localServerUrl = 'https://admin.goodfellas.id/api/new-menu';
+                // $localServerUrl = 'https://admin.goodfellas.id/api/new-menu';
 
-                $dataArray = $menu->toArray();
+                // $dataArray = $menu->toArray();
 
-                $response = Http::post($localServerUrl, [
-                    'Menu' => $dataArray,
-                    'variasi' => $variasi
-                ]);
+                // $response = Http::post($localServerUrl, [
+                //     'Menu' => $dataArray,
+                //     'variasi' => $variasi
+                // ]);
                 // dd($response->body());
                 return redirect()->route('menu')->with('Success', 'Menu Berhasil Di Tambahkan ');
             }else{
@@ -235,20 +235,21 @@ class MenuController extends Controller
             $menu = Menu::findOrFail($dec);
 
             if($menu){
-                $detailOrder = DetailOrder::where('id_menu', $menu->id)->get();
-                if($detailOrder){
-                    return redirect()->back()->with('error', 'Menu ini tidak bisa di hapus karena sudah memiliki penjualan');
-                }else{
+                $menu->delete_menu = 1;
+                $menu->save();
 
-                    $menu->delete_menu = 1;
-                    $menu->save();
+                $varian = VarianMenu::where('id_menu', $menu)->get();
 
-                    return redirect()->back()->with('Success', 'Menu berhasil di hapus');
-
+                foreach($varian as $var){
+                    $varUp = VarianMenu::where('id', $var->id)->first();
+                    $varUp->deleted = 1;
+                    $varUp->save();
                 }
-            }
-           
 
+                return redirect()->back()->with('Success', 'Menu berhasil di hapus');
+            }else{
+                 return redirect()->back()->with('error', 'Menu gagal di hapus');
+            }
           
         }else{
             return redirect()->route('login');
@@ -256,9 +257,6 @@ class MenuController extends Controller
 
 
     }
-
-
-
 
 
 }

@@ -53,9 +53,9 @@ class POSController extends Controller
     public function POSdashboard()
     {
         if (Sentinel::check()) {
-            $itemMenu = Menu::where('custom', false)->get();
+            $itemMenu = Menu::where('custom', false)->where('delete_menu', 0)->get();
             $Category = Kategori::all();
-            $subCategory = SubKategori::all();
+            $subCategory = SubKategori::where('deleted', 0)->get();
             $discount = Discount::all();
             $payment = TypePayment::all();
             $typeOrder = SalesType::all();
@@ -66,7 +66,7 @@ class POSController extends Controller
             //  $dataServer = $dataBillServer->json();
             //  $billServer = $dataServer['data'];
 
-            $customItem = Menu::where('custom', 1)->get();
+            $customItem = Menu::where('custom', 1)->where('delete_menu', 0)->get();
             $carts = Session::get('cart');
 
             $subtotal = 0;

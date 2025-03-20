@@ -97,7 +97,7 @@ Route::get('/create/sub-kategori', [SubKategoriController::class,'createSubKat']
 Route::post('/push/sub-kategori',[SubKategoriController::class,'pushSubKat'])->name('subKat.push');
 Route::get('/edit/sub-kategori/{id}',[SubKategoriController::class,'editSubKat'])->name('edit.subKat');
 Route::put('/push/edit/sub-kategori/{id}', [SubKategoriController::class, 'UpdateSubKat'])->name('update.subKat');
-Route::delete('/delete/sub-kategori/{id}', [SubKategoriController::class, 'deleteSubKat'])->name('delete.subKat');
+Route::get('/delete/sub-kategori/{id}', [SubKategoriController::class, 'deleteSubKat'])->name('delete.subKat');
 
 //Order
 

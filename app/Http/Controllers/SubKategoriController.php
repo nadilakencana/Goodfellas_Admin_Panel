@@ -20,7 +20,7 @@ class SubKategoriController extends Controller
 
     public function indexSubKat(){
         if(Sentinel::check()){
-            $subKat = SubKategori::all();
+            $subKat = SubKategori::where('deleted', 0)->get();
             return view('SubKategori.index', compact('subKat'));
         }else{
             return redirect()->route('login');
@@ -125,10 +125,16 @@ class SubKategoriController extends Controller
         if(Sentinel::check()){
             $dec = decrypt($id);
             $subKat = SubKategori::findOrFail($dec);
+            $subKat->deleted = 1;
+            $subKat->save();
 
-            $subKat->delete();
+            if($subKat){
+                return redirect()->back()->with('Success', 'Subkategori Berhasil di Hapus');
 
-            return redirect()->back()->with('Success', 'Subkategori Berhasil di Hapus');
+            }else{
+               return redirect()->back()->with('error', 'Subkategori gagal di Hapus');
+
+            }
         }else{
             return redirect()->route('login');
         }

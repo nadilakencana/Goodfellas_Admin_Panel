@@ -264,13 +264,13 @@ class DashboardController extends Controller
 
        
             $grossSalesPerDayOfWeek = [
-            'Sunday' => 0,
-            'Monday' => 0,
-            'Tuesday' => 0,
-            'Wednesday' => 0,
-            'Thursday' => 0,
-            'Friday' => 0,
-            'Saturday' => 0,
+                'Sunday' => 0,
+                'Monday' => 0,
+                'Tuesday' => 0,
+                'Wednesday' => 0,
+                'Thursday' => 0,
+                'Friday' => 0,
+                'Saturday' => 0,
             ];
 
             foreach($Order_bill_week as $Order_week) {

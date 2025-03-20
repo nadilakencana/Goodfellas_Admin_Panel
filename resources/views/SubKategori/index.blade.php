@@ -101,19 +101,9 @@
                                     Edit
                                 </a>
 
-                                    <form action="{{route('delete.subKat',encrypt($Subkat->id))}}" method="POST">
-
-                                            @csrf
-
-                                            @method('delete')
-
-                                            <button  class="btn btn-block btn-danger">
-
-                                                Delete
-
-                                            </button>
-
-                                    </form>
+                                <a href="{{route('delete.subKat',encrypt($Subkat->id))}}" type="button" class="btn btn-block btn-danger mb-2">
+                                     Delete 
+                                </a>
 
                             </div>
 

@@ -561,7 +561,7 @@ function getmenuKat(id, type) {
 }
 
 function getDataBills(){
-    let URL = "http://192.168.1.22:8000/data-bill";
+    let URL = "http://192.168.100.137:8000/data-bill";
     $.get(URL, function(result){
          var $tgtBill = $('.popup-daftar-bill');
          $tgtBill.fadeIn();
@@ -573,7 +573,7 @@ function getDataBills(){
     });
 }
 function getDataDiscount(){
-    let URL = "http://192.168.1.22:8000/pos/data-discount";
+    let URL = "http://192.168.100.137:8000/pos/data-discount";
     $.get(URL, function(result){
          var $tgtBill = $('.popup-daftar-discount');
          $tgtBill.fadeIn();

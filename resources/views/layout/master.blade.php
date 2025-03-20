@@ -46,7 +46,7 @@
 	{{-- <iframe class="frameHolder" src="{{route('notif')}}" allow="autoplay" style="display:none;"></iframe> --}}
 
 
-
+    
     <script src="{{ asset('asset/tamplate/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('asset/tamplate/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js') }}"></script>
     <script src="{{ asset('asset/tamplate/js/adminlte.js') }}"></script>
