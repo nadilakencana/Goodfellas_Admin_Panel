@@ -386,14 +386,60 @@
                 endDate: endDate
             }
            
-            $.ajax({
+            //$.ajax({
+            //    url: url,
+            //    method: 'post', 
+            //    data: dt,
+            //    xhrFields: {
+            //        responseType: 'blob'  
+            //    },
+            //   success: function(data, status, xhr) {
+            //        if (data && data instanceof Blob) {
+            //            var disposition = xhr.getResponseHeader('Content-Disposition');
+            //            var matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
+            //            var filename = (matches != null && matches[1]) ? matches[1].replace(/['"]/g, '') : 'file.xlsx';
+//
+            //            // Membuat Blob untuk file Excel
+            //            var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            //            var link = document.createElement('a');
+            //            var url = window.URL.createObjectURL(blob);
+//
+            //            link.href = url;
+            //            link.download = filename;
+            //            document.body.appendChild(link);
+            //            link.click();
+//
+            //            // Membersihkan objek URL dan elemen link setelah selesai
+            //            window.URL.revokeObjectURL(url);
+            //            document.body.removeChild(link);
+            //        } else {
+            //            console.error('Unexpected response data format:', data);
+            //        }
+            //    },
+            //    error: function(xhr, status, error) {
+            //        console.error('Download error:', error);
+            //        if (xhr.response && xhr.response instanceof Blob) {
+            //            var reader = new FileReader();
+            //            reader.onload = function() {
+            //                console.error('Download error:', reader.result);
+            //            };
+            //            reader.readAsText(xhr.response); // Baca Blob sebagai teks
+            //        } else {
+            //            console.error('Unexpected response type or error:', xhr.responseText || error);
+            //        }
+            //    }
+            //}).fail(function(xhr) {
+            //    console.log('Request failed:', xhr.responseText);
+            //});
+
+            $.ajax({ 
                 url: url,
                 method: 'post', 
                 data: dt,
                 xhrFields: {
-                    responseType: 'blob'  
+                    responseType: 'blob'  // tetap blob karena ekspor file
                 },
-               success: function(data, status, xhr) {
+                success: function(data, status, xhr) {
                     if (data && data instanceof Blob) {
                         var disposition = xhr.getResponseHeader('Content-Disposition');
                         var matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
@@ -409,7 +455,7 @@
                         document.body.appendChild(link);
                         link.click();
 
-                        // Membersihkan objek URL dan elemen link setelah selesai
+                        // Bersihkan
                         window.URL.revokeObjectURL(url);
                         document.body.removeChild(link);
                     } else {
@@ -417,20 +463,32 @@
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('Download error:', error);
+                    console.error('Status:', xhr.status);
+                    console.error('Error:', error);
+
                     if (xhr.response && xhr.response instanceof Blob) {
+                        // Baca isi blob (misal dump Laravel atau pesan error)
                         var reader = new FileReader();
                         reader.onload = function() {
-                            console.error('Download error:', reader.result);
+                            try {
+                                // Coba parse kalau bentuk JSON
+                                var json = JSON.parse(reader.result);
+                                console.error('Parsed error response:', json);
+                            } catch (e) {
+                                // Kalau bukan JSON, tampilkan sebagai teks biasa (misal hasil dump())
+                                console.error('Raw error response:\n', reader.result);
+                            }
                         };
-                        reader.readAsText(xhr.response); // Baca Blob sebagai teks
+                        reader.readAsText(xhr.response);
                     } else {
-                        console.error('Unexpected response type or error:', xhr.responseText || error);
+                        console.error('Unexpected error response:', xhr.responseText || error);
                     }
                 }
             }).fail(function(xhr) {
-                console.log('Request failed:', xhr.responseText);
+                console.warn('Request failed with status:', xhr.status);
+                console.warn('Response:', xhr.responseText);
             });
+
         }
 
 

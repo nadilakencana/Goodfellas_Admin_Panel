@@ -449,7 +449,7 @@ class ExportLaporanController extends Controller
                 $endDate = \Carbon\Carbon::now()->endOfMonth()->toDateString();
             }
             
-            $menu = Menu::where('custom', '0')->with('varian')->get();
+            $menu = Menu::with('varian')->get();
             $additional = OptionModifier::all();
 
             $menuCustom = DetailOrder::whereHas('menu', function ($query) {
@@ -461,6 +461,7 @@ class ExportLaporanController extends Controller
 
             $itemSalesMenu = [];
             $itemSalesAdss = [];
+            
             $TOTAL = [];
             $totalItemSoldMenu = 0;
             $totalItemRefundMenu = 0;
@@ -474,6 +475,12 @@ class ExportLaporanController extends Controller
             $totalDiscountAdds = 0;
             $totalRefundAdds = 0;
             $totalNetAdds = 0;
+            $totalItemSoldMenuOld = 0;
+            $totalItemRefundMenuOld = 0;
+            $totalGrossMenuOld = 0;
+            $totalDiscountMenuOld = 0;
+            $totalRefundMenuOld = 0; 
+            $totalNetMenuOld = 0;
 
             foreach ($menu as $itm) {
                 $totalItemSold = 0;
@@ -619,13 +626,82 @@ class ExportLaporanController extends Controller
                 }
             }
 
-            
 
+
+            $itemsOrderNonVar = [];
+
+            $detailOrders = DetailOrder::with(['menu', 'order'])
+                ->whereHas('menu', function ($query) {
+                    $query->where('custom', 0)->whereHas('varian');
+                })
+                ->whereNull('id_varian')
+                ->whereHas('order', function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('tanggal', [$startDate, $endDate])
+                        ->where('id_status', 2)
+                        ->where('deleted', 0);
+                })
+                ->get()
+            ->groupBy('id_menu'); 
+
+           
+
+            foreach ($detailOrders as $id_menu => $details) {
+                $menu = $details->first()->menu;
+
+                // Hitung total qty, total sales
+                $itmsum = $details->sum('qty');
+                $TotalSumSales = $details->sum('total');
+
+                // Hitung refund
+                $refundSum = RefundOrderMenu::where('id_menu', $id_menu)
+                    ->whereHas('order', function ($query) use ($startDate, $endDate) {
+                        $query->whereBetween('tanggal', [$startDate, $endDate])
+                            ->where('id_status', 2)
+                            ->where('deleted', 0);
+                    })->sum('qty');
+
+                $TotalrefundSum = RefundOrderMenu::where('id_menu', $id_menu)
+                    ->whereHas('order', function ($query) use ($startDate, $endDate) {
+                        $query->whereBetween('tanggal', [$startDate, $endDate])
+                            ->where('id_status', 2)
+                            ->where('deleted', 0);
+                    })->sum('refund_nominal');
+
+                $totalRefund = $TotalrefundSum;
+                $sumSold = $itmsum + $refundSum;
+                $grossSales = $TotalSumSales + $TotalrefundSum;
+
+                // Hitung total discount
+                $totalDiscount = Discount_detail_order::whereHas('Detail_order', function ($query) use ($id_menu, $startDate, $endDate) {
+                    $query->where('id_menu', $id_menu)
+                        ->whereHas('order', function ($query) use ($startDate, $endDate) {
+                            $query->whereBetween('tanggal', [$startDate, $endDate])
+                                    ->where('id_status', 2)
+                                    ->where('deleted', 0);
+                        });
+                })->sum('total_discount');
+
+                $netSales = $grossSales - $totalDiscount - $totalRefund;
+
+                $itemsOrderNonVar[$id_menu] = [
+                    'Name' => $menu->nama_menu,
+                    'itemSold' => $sumSold,
+                    'itemrefund' => $refundSum,
+                    'GrossSalse' => $grossSales,
+                    'Discount' => $totalDiscount,
+                    'Refund' => $totalRefund,
+                    'NetSales' => $netSales,
+                ];
+
+                
+            }
+
+            
+           Log::info($itemsOrderNonVar);
 
             return Excel::download(new ItemSalesExport(
                 $itemSalesAdss,
                 $itemSalesMenu,
-                $menu,
                 $totalItemSoldMenu,
                 $totalItemRefundMenu,
                 $totalGrossMenu,
@@ -638,6 +714,13 @@ class ExportLaporanController extends Controller
                 $totalDiscountAdds ,
                 $totalRefundAdds ,
                 $totalNetAdds ,
+                $itemsOrderNonVar,
+                $totalItemSoldMenuOld,
+                $totalItemRefundMenuOld,
+                $totalGrossMenuOld,
+                $totalDiscountMenuOld,
+                $totalRefundMenuOld,
+                $totalNetMenuOld
 
             ), 'Laporan Item Report.xlsx');
         } else {

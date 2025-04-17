@@ -531,6 +531,7 @@ class ReportSalesController extends Controller
         })->get();
 
         $itemSalesMenu = [];
+        $itmOrderNonVar = [];
         $itemSalesMenuCustom = [];
         $itemSalesAdss = [];
         $TOTAL = [];
@@ -682,6 +683,72 @@ class ReportSalesController extends Controller
             }
         }
 
+        $detailOrders = DetailOrder::with(['menu', 'order'])
+            ->whereHas('menu', function ($query) {
+                $query->where('custom', 0)->whereHas('varian');
+            })
+            ->whereNull('id_varian')
+            ->whereHas('order', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('tanggal', [$startDate, $endDate])
+                    ->where('id_status', 2)
+                    ->where('deleted', 0);
+            })
+            ->get()
+        ->groupBy('id_menu'); 
+
+        // dd($menuOldNonVar);
+
+        foreach ($detailOrders as $id_menu => $details) {
+            $menu = $details->first()->menu;
+
+            // Hitung total qty, total sales
+            $itmsum = $details->sum('qty');
+            $TotalSumSales = $details->sum('total');
+
+            // Hitung refund
+            $refundSum = RefundOrderMenu::where('id_menu', $id_menu)
+                ->whereHas('order', function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('tanggal', [$startDate, $endDate])
+                        ->where('id_status', 2)
+                        ->where('deleted', 0);
+                })->sum('qty');
+
+            $TotalrefundSum = RefundOrderMenu::where('id_menu', $id_menu)
+                ->whereHas('order', function ($query) use ($startDate, $endDate) {
+                    $query->whereBetween('tanggal', [$startDate, $endDate])
+                        ->where('id_status', 2)
+                        ->where('deleted', 0);
+                })->sum('refund_nominal');
+
+            $totalRefund = $TotalrefundSum;
+            $sumSold = $itmsum + $refundSum;
+            $grossSales = $TotalSumSales + $TotalrefundSum;
+
+            // Hitung total discount
+            $totalDiscount = Discount_detail_order::whereHas('Detail_order', function ($query) use ($id_menu, $startDate, $endDate) {
+                $query->where('id_menu', $id_menu)
+                    ->whereHas('order', function ($query) use ($startDate, $endDate) {
+                        $query->whereBetween('tanggal', [$startDate, $endDate])
+                                ->where('id_status', 2)
+                                ->where('deleted', 0);
+                    });
+            })->sum('total_discount');
+
+            $netSales = $grossSales - $totalDiscount - $totalRefund;
+
+            $itmOrderNonVar[] = [
+                'Name' => $menu->nama_menu,
+                'itemSold' => $sumSold,
+                'itemrefund' => $refundSum,
+                'GrossSalse' => $grossSales,
+                'Discount' => $totalDiscount,
+                'Refund' => $totalRefund,
+                'NetSales' => $netSales,
+            ];
+        }
+
+        // dd($itmOrderNonVar);
+
         
 
 
@@ -689,6 +756,7 @@ class ReportSalesController extends Controller
             'menu',
             'itemSalesMenu',
             'itemSalesAdss',
+            'itmOrderNonVar',
             'startDate',
             'endDate'
 

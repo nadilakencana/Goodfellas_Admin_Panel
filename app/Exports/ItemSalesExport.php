@@ -29,6 +29,13 @@ class ItemSalesExport implements FromView
     protected $totalDiscountAdds ;
     protected $totalRefundAdds ;
     protected $totalNetAdds ;
+    protected $itemsOrderNonVar;
+    protected $totalItemSoldMenuOld;
+    protected $totalItemRefundMenuOld;
+    protected $totalGrossMenuOld;
+    protected $totalDiscountMenuOld;
+    protected $totalRefundMenuOld;
+    protected $totalNetMenuOld;
 
     public function __construct(
         $itemSalesAdss,
@@ -45,6 +52,13 @@ class ItemSalesExport implements FromView
         $totalDiscountAdds ,
         $totalRefundAdds ,
         $totalNetAdds ,
+        $itemsOrderNonVar,
+        $totalItemSoldMenuOld,
+        $totalItemRefundMenuOld,
+        $totalGrossMenuOld,
+        $totalDiscountMenuOld,
+        $totalRefundMenuOld,
+        $totalNetMenuOld
     )
     {
         $this->itemSalesAdss = $itemSalesAdss;
@@ -61,6 +75,13 @@ class ItemSalesExport implements FromView
         $this->totalDiscountAdds = $totalDiscountAdds ;
         $this->totalRefundAdds = $totalRefundAdds ;
         $this->totalNetAdds = $totalNetAdds ;
+        $this->itemsOrderNonVar = $itemsOrderNonVar;
+        $this->totalItemSoldMenuOld = $totalItemSoldMenuOld;
+        $this->totalItemRefundMenuOld   = $totalItemRefundMenuOld;
+        $this->totalGrossMenuOld  = $totalGrossMenuOld;
+        $this->totalDiscountMenuOld  = $totalDiscountMenuOld;
+        $this->totalRefundMenuOld  = $totalRefundMenuOld;
+        $this->totalNetMenuOld  = $totalNetMenuOld;
     }
 
     public function view(): View
@@ -80,6 +101,13 @@ class ItemSalesExport implements FromView
             'totalDiscountAdds' => $this->totalDiscountAdds ,
             'totalRefundAdds' => $this->totalRefundAdds ,
             'totalNetAdds' => $this->totalNetAdds ,
+            'itemsOrderNonVar'=> $this->itemsOrderNonVar ,
+            'totalItemSoldMenuOld'=> $this->totalItemSoldMenuOld, 
+            'totalItemRefundMenuOld'=> $this->totalItemRefundMenuOld ,
+            'totalGrossMenuOld'=> $this->totalGrossMenuOld,
+            'totalDiscountMenuOld'=> $this->totalDiscountMenuOld ,
+            'totalRefundMenuOld'=> $this->totalRefundMenuOld,
+            'totalNetMenuOld'=> $this->totalNetMenuOld,
         ]);
     }
 }
