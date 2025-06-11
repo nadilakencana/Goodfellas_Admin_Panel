@@ -36,7 +36,7 @@
                 <td class="data-item">
                     @if(!empty($menu['Name'])) 
                         {{ $menu['Name'] }} 
-                        @if(!empty($menu->varian->nama)) - {{ $menu->varian->nama }} @endif 
+                        @if(!empty($menu['Varian'])) - {{ $menu['Varian'] }} @endif 
                     @else 
                         Menu Not available 
                     @endif

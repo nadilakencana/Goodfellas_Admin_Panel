@@ -194,7 +194,7 @@
             @endforeach
             @foreach ( $itmOrderNonVar as $menuOld )
                     <tr class="body-data">
-                        <td class="data-item list-nama">{{ $menuOld['Name'] }}</td>
+                        <td class="data-item list-nama">{{ $menuOld['Name'] }} - old</td>
                         <td class="data-item">{{ $menuOld['itemSold'] ?? 0 }}</td>
                         <td class="data-item">{{ $menuOld['itemrefund'] ?? 0 }}</td>
                         <td class="data-item">Rp. {{ number_format($menuOld['GrossSalse'] ?? 0, 0, ',', '.') }}</td>

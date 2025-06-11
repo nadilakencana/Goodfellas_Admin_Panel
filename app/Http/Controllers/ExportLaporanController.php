@@ -604,7 +604,7 @@ class ExportLaporanController extends Controller
                     $grossSales = $TotalSumSales + $TotalrefundSum;
 
                     $totalDiscount = Discount_detail_order::whereHas('Detail_order', function ($query) use ($itm, $startDate, $endDate) {
-                        $query->where('id_menu', $itm->id)
+                        $query->where('id_menu', $itm->id)->whereNull('id_varian')
                             ->whereHas('order', function ($query) use ($startDate, $endDate) {
                                 $query->whereBetween('tanggal', [$startDate, $endDate])
                                     ->where('id_status', 2)->where('deleted', 0);
@@ -673,7 +673,7 @@ class ExportLaporanController extends Controller
 
                 // Hitung total discount
                 $totalDiscount = Discount_detail_order::whereHas('Detail_order', function ($query) use ($id_menu, $startDate, $endDate) {
-                    $query->where('id_menu', $id_menu)
+                    $query->where('id_menu', $id_menu)->whereNull('id_varian')
                         ->whereHas('order', function ($query) use ($startDate, $endDate) {
                             $query->whereBetween('tanggal', [$startDate, $endDate])
                                     ->where('id_status', 2)
@@ -1247,6 +1247,8 @@ class ExportLaporanController extends Controller
                     'create' => $itm->order->created_at,
                     'Tanggal' => $itm->order->updated_at,
                     'Name' => $itm->menu->nama_menu,
+                
+                    'Varian' => $itm->varian->nama ?? '',
                     'itemSold' => $itm->qty,
                     'itemrefund' => $qtyRefund,
                     'GrossSalse' => $gross,
@@ -1260,6 +1262,7 @@ class ExportLaporanController extends Controller
                     'paymentMetode' => $itm->order->payment->nama
                    
                 ];
+                // dd($itemSalesMenu);
               
   
             }

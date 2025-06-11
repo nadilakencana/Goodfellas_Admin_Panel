@@ -123,6 +123,7 @@ Route::controller(ReportSalesController::class)->group(function () {
     Route::get('/filterSummary', 'fileterSalesSummary')->name('fileterSalesSummary');
     Route::get('/gross-profit', 'GrossProfit')->name('GrossProfit');
     Route::get('/categori', 'Category')->name('Category');
+    Route::get('/data-penjualan','viewReport')->name('penjualan-data');
 });
 
 Route::controller(ExportLaporanController::class)->group(function(){
