@@ -22,6 +22,7 @@ use App\Models\VocherGift;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Route;
 use PhpParser\Node\Stmt\Return_;
+use App\Http\Controllers\OrderCustomerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -267,3 +268,7 @@ Route::controller(CashController::class)->group(function(){
 });
 
 Route::get('print-sift-thermal/{id}', [PrintController::class, 'printShiftThermal'])->name('print.shift.thermal');
+
+Route::controller(OrderCustomerController::class)->group(function(){
+    Route::get('Order/Customer', 'index')->name('Orders.customer');
+});

@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+.content-wrapper {
+    flex-grow: 1;
+    overflow-y: none;
+}
+
+/* Navbar */
+.nav-fixed input.form-control {
+    border-radius: 15px !important;
+    padding: 0.70rem !important;
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+.nav-fixed .icon-search {
+    position: absolute;
+    top: 31px;
+    right: 34px;
+    z-index: 1100;
+    cursor: pointer;
+}
+
+a {
+    text-decoration: none;
+}
+
+.text-black {
+    color: rgb(36, 36, 36);
+}
+
+.text-grey {
+    color: rgb(156, 156, 156);
+}
+
+/* end navbar */
+
+/* banner */
+.hero-section.position-relative {
+    width: 100%;
+    height: 18rem;
+    padding: 0;
+}
+
+.banner {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.hero-section .banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* end banner */
+
+/* content */
+/* items menu */
+.itm-menu {
+    border-bottom: 1px solid #80808063;
+}
+.img-menu {
+    width: 6rem;
+    height: 6rem;
+    overflow: hidden;
+}
+
+.img-menu img{
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+/* end items menu  */
+/* end content */
