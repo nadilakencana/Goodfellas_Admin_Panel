@@ -10,7 +10,7 @@ use App\Models\SalesType;
 use Illuminate\Support\Facades\Http;
 use App\Models\DetailOrder;
 use Illuminate\Support\Facades\DB;
-
+use PhpOffice\PhpSpreadsheet\Calculation\Category;
 
 class OrderCustomerController extends Controller
 {
@@ -77,44 +77,29 @@ class OrderCustomerController extends Controller
         return view('CustomerOrder.main_content', compact('topSellingItems','Category','subCategory', 'typeOrder'));
     }
 
-    // public function fetchPosts()
-    // {
-    //     try {
-    //         // endpoint yang mau di pake di taro di sini 
-    //         $response = Http::get('https://jsonplaceholder.typicode.com/posts');
+    public function category(Request $request, $slug){
 
-    //         //  apakah request berhasil 
-    //         if ($response->successful()) {
+        $category = $request->exid;
+        $dec_cat = decrypt($category);
 
-    //             $data = $response->json(); // Mengubah response menjadi json array
+        $Cat = Kategori::where('id', $dec_cat)->first();
 
+        $ItemCats = Menu::where('id_kategori', $Cat->id)
+        ->where('custom', false)->where('delete_menu', 0)->get();
 
-    //             // pilih salah satau return nya 
-                
-    //             // kalo mau testing dulu di postman pake return seperti ini 
-    //             return response()->json([
-    //                 'message' => 'Data posts berhasil diambil',
-    //                 'data' => $data
-    //             ], 200);
+        $subcat = SubKategori::where('id_kategori', $Cat->id)->get();
 
-    //             // kalo hasilnya mau di tampilin di blade 
-    //             return view('sempel.view', compact('data'));
+        return view('CustomerOrder.categoryMenu', compact('Cat', 'ItemCats','subcat'));
 
-    //         } else {
-    //             // Jika request tidak berhasil
-    //             return response()->json([
-    //                 'message' => 'Gagal mengambil data posts dari API eksternal',
-    //                 'status_code' => $response->status(),
-    //                 'error' => $response->body()
-    //             ], $response->status());
-    //         }
+    }
 
-    //     } catch (\Exception $e) {
-    //         // Menangani error jika terjadi masalah koneksi atau lainnya
-    //         return response()->json([
-    //             'message' => 'Terjadi kesalahan saat menghubungi API: ' . $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
+    public function Subcat(Request $request){
+        $subCat = $request->exid;
+        $dec_sub = decrypt($subCat);
+        $subcat = SubKategori::where('id', $dec_sub)->first();
+        $itemSub = Menu::where('id_sub_kategori', $subCat->id)->get();
+        
+        return view('CustomerOrder.SubCategoryMenu', compact('subcat', 'itemSub'));
+    }
 
 }

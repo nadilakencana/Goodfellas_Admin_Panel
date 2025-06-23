@@ -6,6 +6,44 @@
 }
 
 /* Navbar */
+#mainNavbar {
+    
+    background-color: transparent; 
+    transition: background-color 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease; 
+    z-index: 1030; 
+}
+
+/* Class added when scrolled */
+#mainNavbar.scrolled {
+    background-color: rgba(255, 255, 255, 0.1); 
+    backdrop-filter: blur(10px); 
+    -webkit-backdrop-filter: blur(10px); 
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
+    border-end-end-radius: 16px;
+    border-end-start-radius: 16px;
+}
+
+/* Penyesuaian untuk elemen di dalam navbar ketika discroll */
+#mainNavbar.scrolled .logo-nav img {
+    /* Contoh: sedikit meredupkan logo atau mengubahnya */
+    /* opacity: 0.8; */
+}
+
+#mainNavbar.scrolled .form-control {
+    /* Contoh: mengubah warna background input saat discroll */
+    background-color: rgba(255, 255, 255, 0.3) !important;
+    border-color: rgba(0, 0, 0, 0.2) !important;
+    color: #333 !important; /* Warna teks input */
+}
+
+#mainNavbar.scrolled .form-control::placeholder {
+    color: #666 !important; /* Warna placeholder input */
+}
+
+#mainNavbar.scrolled .icon-search {
+    /* Contoh: Mengubah warna icon search jika perlu */
+    /* filter: invert(20%); */
+}
 .nav-fixed input.form-control {
     border-radius: 15px !important;
     padding: 0.70rem !important;
@@ -56,6 +94,9 @@ a {
 /* end banner */
 
 /* content */
+/* main content */
+.main-content{padding-bottom: 6rem !important;}
+/* end main content */
 /* items menu */
 .itm-menu {
     border-bottom: 1px solid #80808063;
