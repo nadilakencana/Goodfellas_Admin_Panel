@@ -9,6 +9,7 @@ use App\Models\SubKategori;
 use App\Models\SalesType;
 use Illuminate\Support\Facades\Http;
 use App\Models\DetailOrder;
+use App\Models\VarianMenu;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Calculation\Category;
 
@@ -98,5 +99,12 @@ class OrderCustomerController extends Controller
         
         return view('CustomerOrder.SubCategoryMenu', compact('subcat_tgt', 'itemSub', 'subcat'));
     }
+
+   public function additional(Request $request){
+        $xid = $request->ex;
+        $dec = decrypt($xid);
+
+        $varian = VarianMenu::where('id_me')
+   }
 
 }

@@ -164,4 +164,106 @@ a {
     cursor: pointer;
 } */
 /* end items menu  */
+/* pop menu additional */
+.pop-up-modal-menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    background: #00000061;
+    bottom: 0;
+    z-index: 1900;
+    align-items: center;
+}
+.content-modal {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    margin: 0 auto !important;
+    width: 100%;
+    max-width: 100%;
+    pointer-events: none;
+    max-width: 450px;
+}
+.pop-modal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    pointer-events: auto;
+    background-color: #fff;
+    background-clip: padding-box;
+    border-radius: 1.3rem 1.3rem 0 0;
+    outline: 0;
+    height: 381px;
+    padding: 10px;
+}
+.body-content
+{
+    overflow: overlay;
+}
+.btn-minus, .btn-plus {
+    width: 100%;
+    text-align: center;
+    padding: 3px;
+    /* border: 1px solid black; */
+    border-radius: 6px;
+    background: #151515;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+input.qty {
+    border-radius: 6px;
+    border: 1px solid #a79c9c;
+    padding: 3px;
+    text-align: center;
+}
+
+.itm-var {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    text-align: center;
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #00000082;
+    padding: 3px;
+    cursor: pointer;
+}
+.itm-var.active, .itm-var:hover, .itm-adds.active,
+.nama-option:hover,.nama-option.active
+{
+    background-color: black;
+    color: white;
+}
+.itm-adds {
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #a7a7a7;
+}
+.nama-option
+ {
+    border-radius: 8px;
+    border: 1px solid #979797;
+    padding: 2px;
+    text-align: center;
+    cursor: pointer;
+}
+.catatan-menu textarea {
+    border-radius: 10px;
+    border: 1px solid #9e9d9d;
+}
+.btn-add-items {
+    border-radius: 10px;
+    padding: 8px;
+    cursor: pointer;
+    background: black;
+    color: white;
+    font-weight: 700;
+}
+/* end pop menu additional */
 /* end content */

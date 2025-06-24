@@ -10,9 +10,9 @@
             <p class="fw-bold fs-3">Bast Menu</p>
         </div>
         <div class="content pt-3">
-            <div class="items-menu d-flex flex-column">
+            <div class="items-menu justify-content-between align-items-center gap-5 py-3">
                 @foreach ($topSellingItems as $itm)
-                    <div class="itm-menu d-flex gap-5 py-3">
+                    <div class="itm-menu d-flex justify-content-between align-items-center gap-5 px-2 py-3">
                         @if (!empty($itm->menu->image))
                             <div class="img-menu">
                                 <img src="{{ asset('asset/assets/image/menu/' . $itm->menu->image) }}" alt="">
@@ -23,9 +23,9 @@
                             </div>
                         @endif
 
-                        <div class="detail-menu">
+                        <div class="detail-menu d-flex flex-column" style="width: 11rem;">
                             <span class="fw-bold">{{ $itm->menu->nama_menu }}</span>
-                            <p class="mb-0">Varian Menu: </p>
+                            {{-- <p class="mb-0">Varian Menu: </p>
                             <div class="d-flex gap-3">
 
                                 @foreach ($itm->menu->varian as $var)
@@ -34,8 +34,12 @@
                                         /
                                     @endif
                                 @endforeach
-                            </div>
+                            </div> --}}
                             <span class="pt-2">Rp. {{$itm->menu->harga}}</span>
+                            
+                        </div>
+                        <div class="btn-add cursor-pointer">
+                            <img src="{{asset('asset/assets/image/icon/btn_Add.png')}}" alt="" width="30" height="30">
                         </div>
                     </div>
                 @endforeach
