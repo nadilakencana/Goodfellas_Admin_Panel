@@ -77,12 +77,9 @@ class OrderCustomerController extends Controller
         return view('CustomerOrder.main_content', compact('topSellingItems','Category','subCategory', 'typeOrder'));
     }
 
-    public function category(Request $request, $slug){
+    public function category($slug){
 
-        $category = $request->exid;
-        $dec_cat = decrypt($category);
-
-        $Cat = Kategori::where('id', $dec_cat)->first();
+        $Cat = Kategori::where('kategori_nama', $slug)->first();
 
         $ItemCats = Menu::where('id_kategori', $Cat->id)
         ->where('custom', false)->where('delete_menu', 0)->get();
@@ -93,13 +90,13 @@ class OrderCustomerController extends Controller
 
     }
 
-    public function Subcat(Request $request){
-        $subCat = $request->exid;
-        $dec_sub = decrypt($subCat);
-        $subcat = SubKategori::where('id', $dec_sub)->first();
-        $itemSub = Menu::where('id_sub_kategori', $subCat->id)->get();
+    public function Subcat($slug){
+       
+        $subcat_tgt = SubKategori::where('slug', $slug)->first();
+        $itemSub = Menu::where('id_sub_kategori', $subcat_tgt->id)->where('custom', false)->where('delete_menu', 0)->get();
+        $subcat = SubKategori::where('id_kategori', $subcat_tgt->id_kategori)->get();
         
-        return view('CustomerOrder.SubCategoryMenu', compact('subcat', 'itemSub'));
+        return view('CustomerOrder.SubCategoryMenu', compact('subcat_tgt', 'itemSub', 'subcat'));
     }
 
 }

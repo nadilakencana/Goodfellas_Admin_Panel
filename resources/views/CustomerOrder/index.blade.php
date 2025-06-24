@@ -11,8 +11,8 @@
     <script src="{{ asset('asset/tamplate/js/bootstrap.bundel.min.js') }}"></script>
     <link rel="stylesheet" href="{{ asset('asset/assets/css/styleCustomerPage.css') }}">
 
-<body style="background-color: rgb(216, 216, 216)">
-    <div class="container-fluid bg-white content-wrapper">
+<body style="background-color: rgb(200, 199, 199)">
+    <div class="container-fluid  content-wrapper">
         <div class="row">
             <div class="col-12 px-0 col-sm-8 col-md-4 mx-auto">
                 
@@ -26,5 +26,5 @@
         </div>
     </div>
 </body>
-
+@yield('script-order')
 </html>

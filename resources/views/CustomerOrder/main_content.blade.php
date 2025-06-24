@@ -13,27 +13,29 @@
             <div class="items-menu d-flex flex-column">
                 @foreach ($topSellingItems as $itm)
                     <div class="itm-menu d-flex gap-5 py-3">
-                        @if(!empty($itm->menu->image))
-                         <div class="img-menu">
-                            <img src="{{ asset('asset/assets/image/menu/'.$itm->menu->image) }}" alt="">
-                        </div>
+                        @if (!empty($itm->menu->image))
+                            <div class="img-menu">
+                                <img src="{{ asset('asset/assets/image/menu/' . $itm->menu->image) }}" alt="">
+                            </div>
                         @else
-                         <div class="img-menu">
-                            <img src="{{ asset('asset/assets/image/menu/drink.png') }}" alt="">
-                        </div>
+                            <div class="img-menu">
+                                <img src="{{ asset('asset/assets/image/menu/drink.png') }}" alt="">
+                            </div>
                         @endif
-                       
+
                         <div class="detail-menu">
-                            <span class="fw-bold">{{$itm->menu->nama_menu}}</span>
+                            <span class="fw-bold">{{ $itm->menu->nama_menu }}</span>
                             <p class="mb-0">Varian Menu: </p>
                             <div class="d-flex gap-3">
-                               
-                               @foreach ($itm->menu->varian as $var)
-                                    <span>{{$var->nama}}</span>@if (!$loop->last) / @endif
-                               @endforeach
-                                
+
+                                @foreach ($itm->menu->varian as $var)
+                                    <span>{{ $var->nama }}</span>
+                                    @if (!$loop->last)
+                                        /
+                                    @endif
+                                @endforeach
                             </div>
-                            <span class="pt-2">Rp. 50.000</span>
+                            <span class="pt-2">Rp. {{$itm->menu->harga}}</span>
                         </div>
                     </div>
                 @endforeach

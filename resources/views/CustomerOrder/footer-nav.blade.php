@@ -5,23 +5,23 @@
               <div class="d-flex gap-2 h-100 justify-content-between">
                   <a href="{{route('Orders.customer')}}">
                       <div class="menu-nav d-flex flex-column align-items-center ">
-                          <img src="{{ request()->routeIs('Orders.customer') ? '{{ asset('asset/assets/image/icon/Home-1.png') }}': '{{ asset('asset/assets/image/icon/Home.png') }}' }}" alt="" width="23"
+                          <img src="{{ asset (request()->routeIs('Orders.customer') ? 'asset/assets/image/icon/Home-1.png' : 'asset/assets/image/icon/Home.png') }}" alt="" width="23"
                               height="23">
                           <span class="small {{ request()->routeIs('Orders.customer') ? 'text-black': 'text-grey' }}">Home</span>
                       </div>
                   </a>
-                  <a href="">
+                  <a href="{{route('OrderCustomer.category', 'Foods')}}">
                       <div class="menu-nav d-flex flex-column align-items-center ">
-                          <img src="{{ asset('asset/assets/image/icon/Meal.png') }}" alt="" width="23"
+                          <img src="{{ asset(request()->routeIs('OrderCustomer.category', 'Foods') ? 'asset/assets/image/icon/Meal-1.png' : 'asset/assets/image/icon/Meal.png') }}" alt="" width="23"
                               height="23">
-                          <span class="small {{ request()->routeIs('Orders.customer') ? 'text-black': 'text-grey' }}">Food</span>
+                          <span class="small {{ request()->routeIs('OrderCustomer.category', 'Foods') ? 'text-black': 'text-grey' }}">Food</span>
                       </div>
                   </a>
-                  <a href="">
+                  <a href="{{route('OrderCustomer.category', 'Drinks')}}">
                       <div class="menu-nav d-flex flex-column align-items-center ">
-                          <img src="{{ asset('asset/assets/image/icon/Soda.png') }}" alt="" width="23"
+                          <img src="{{ asset( request()->routeIs('OrderCustomer.category', 'Drinks') ? 'asset/assets/image/icon/Soda-1.png' :'asset/assets/image/icon/Soda.png' ) }}" alt="" width="23"
                               height="23">
-                          <span class="small {{ request()->routeIs('Orders.customer') ? 'text-black': 'text-grey' }}">Drink</span>
+                          <span class="small {{ request()->routeIs('OrderCustomer.category', 'Drinks') ? 'text-black': 'text-grey' }}">Drink</span>
                       </div>
                   </a>
                   <a href="">

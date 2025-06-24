@@ -271,4 +271,6 @@ Route::get('print-sift-thermal/{id}', [PrintController::class, 'printShiftTherma
 
 Route::controller(OrderCustomerController::class)->group(function(){
     Route::get('Order/Customer', 'index')->name('Orders.customer');
+    Route::get('category/{slug}', 'category')->name('OrderCustomer.category');
+    Route::get('Sub-category/{slug}', 'Subcat')->name('OrderCustomer.Subcategory');
 });
