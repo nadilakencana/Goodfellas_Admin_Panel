@@ -9,8 +9,10 @@ use App\Models\SubKategori;
 use App\Models\SalesType;
 use Illuminate\Support\Facades\Http;
 use App\Models\DetailOrder;
+use App\Models\OptionModifier;
 use App\Models\VarianMenu;
 use Illuminate\Support\Facades\DB;
+use Session;
 use PhpOffice\PhpSpreadsheet\Calculation\Category;
 
 class OrderCustomerController extends Controller
@@ -102,9 +104,151 @@ class OrderCustomerController extends Controller
 
    public function additional(Request $request){
         $xid = $request->ex;
+        // dd($xid);
         $dec = decrypt($xid);
+        $itemMenu = Menu::with(['varian','kategori'])->find($dec); 
+        // dd($itemMenu, $dec, $xid);
 
-        $varian = VarianMenu::where('id_me')
+        if ($itemMenu && $itemMenu->varian->isNotEmpty()) {
+            $varian = $itemMenu->varian;
+        } else {
+            $varian = null;
+        }
+       
+        if($itemMenu->kategori->kategori_nama == 'Foods'){
+            $additional = OptionModifier::where('id_group_modifier', 15)->get();
+        }
+
+        if($itemMenu->kategori->kategori_nama == 'Drinks'){
+            $additional = OptionModifier::where('id_group_modifier', 16)->get();
+        }
+
+        $type_sales = SalesType::all();
+
+        return view('CustomerOrder.part_lain_lain.pop_aditional', compact('varian', 'additional','type_sales','itemMenu'));
    }
+
+   public function AddTocart(Request $request){
+        try {
+
+            $menu = Menu::where('id', $request->get('id'))->first();
+            if($request->get('variasi') !== 0){
+                $varian = VarianMenu::where('id', $request->get('variasi'))->first();
+            }else{
+                $varian= '';
+            }
+            
+            $typeSales = SalesType::find($request->get('id_type_sales'));
+            $ex = false;
+            $exId = 0;
+            $cart = Session::get('cart');
+            $count = 0;
+            $currentPrice = 0;
+            $currentPrice = $menu->harga;
+            $harga_menu = 0;
+
+
+            
+           
+
+            $cart[] = array(
+                'id' => $menu->id,
+                'nama_menu' => $menu->nama_menu,
+                'harga' => $request->get('harga'),
+                'qty' => $request->get('qty'),
+                'harga_addtotal' => $request->get('harga_addtotal'),
+                'variasi_id' => $varian->id,
+                'var_name' => $varian->nama,
+                'additional' => $request->get('additional'),
+                'catatan' => $request->get('catatan'),
+                'type_id' => $typeSales->id,
+                'type_name' => $typeSales->name,
+             
+            );
+
+            Session::put('cart', $cart);
+                
+            Session::save();
+            $cart = Session::get('cart');
+            //dd($cart);
+            $count = count($cart);
+            return response()->json([
+                'success' => 1,
+                'message' => 'Item success',
+                'data' => [
+                    'cart' => $cart,
+                    'count' => $count
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch data detail order',
+                'data' => [
+                    'cart' => $cart,
+                    'count' => $count
+                ],
+                'error' => $e->getMessage()
+            ], 500);
+        }
+   }
+
+   public function cartSession(Request $request){
+        $table = $request->has('table');
+        $carts = Session::get('cart');
+        // dd($carts);
+        $subtotal = 0;
+
+        if (Session::has('cart')) {
+            if (isset($carts) === false) {
+                $carts = [];
+            } else {
+                foreach ($carts as $cart) {
+                    $subtotal = $subtotal + ($cart['harga'] + $cart['harga_addtotal']) * $cart['qty'];
+                }
+            }
+        } else {
+        }
+
+        return view('CustomerOrder.CartCustomer', compact('carts','subtotal'));
+   }
+
+    public function hapus(Request $request)
+    {
+       
+            try {
+                $cart = Session::get('cart');
+
+                if ($cart) {
+                    foreach ($cart as $key => $value) {
+                        if ($key == $request->get('id')) {
+                            unset($cart[$key]);
+                        }
+                    }
+                }
+
+                Session::put('cart', $cart);
+                Session::save();
+                $cart = Session::get('cart');
+
+                return response()->json([
+                    'success' => 1,
+                    'message' => 'Data berhasil Dihapus',
+                    'data' => $cart,
+                ], 200);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'message' => ' Failed to fatch delete item session',
+                    'data' => $cart,
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+        
+    }
+
+    public function clearSession()
+    {
+        Session::forget('cart');
+        // return redirect()->back();
+    }
 
 }

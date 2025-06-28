@@ -480,25 +480,7 @@
            
            $('.popup-category-custom').fadeIn();
 
-            //menampilkan pop up additional untuk menu custom
-            //var $elm = $(this);
-            //var idx = $elm.attr('idx');
-            //var $popup = $('.pop-up.additional');
-            //var harga = $('.custom-part .nilai-custom').val();
-
-            //if (harga.indexOf('.') !== -1) {
-            //     var harga_ = harga.replace(".", "");
-            //     $popup.find('.harga-total').attr('price', harga_).text(harga);
-            //}
-
-            //$popup.find('.harga-total').attr('price', harga).text(harga);
-            //$popup.find('.card-popup').attr('id-x', idx);
-            //$popup.find('.btn-add').attr('x-id', idx);
-
-            //console.log(idx);
-            //getVariasi(idx, 'add','');
-            //getAdditional(idx,'add','');
-            //$('.pop-up.additional').fadeIn();
+          
 
         }).on('click', '.act-btn-add', function(e){
             currentBillId = 0; // gunanya untuk reset state jadi customer / bill baru supaya item yang di add lewat session lagi

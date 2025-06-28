@@ -2,24 +2,7 @@
 @section('content_order')
     <div class="pt-5">
         <div class="container py-4">
-            <div class="header d-flex justify-content-between align-items-center">
-                <p class="fw-bold fs-3">{{ $Cat->kategori_nama }}</p>
-                <div class="filter d-flex align-items-center gap-2 position-relative" id="dropdown-cat">
-                    <img src="{{ asset('asset/assets/image/icon/Tune.png') }}" alt="" width="24" height="24"
-                        class="cursor-pointer">
-                    <p class="mb-0">Other Categories</p>
-                    <div class="category-dropdown off px-3">
-                        <ul class="p-2 w-100">
-                            @foreach ($subcat as $sub)
-                                <li class="p-2 list-sub-cat"><a
-                                        href="{{ route('OrderCustomer.Subcategory', $sub->slug) }}">{{ $sub->sub_kategori }}</a>
-                                </li>
-                            @endforeach
-
-                        </ul>
-                    </div>
-                </div>
-            </div>
+            
             <div class="content pt-3">
                 <div class="items-menu justify-content-between align-items-center gap-5 py-3">
                     @foreach ($ItemCats as $itm)

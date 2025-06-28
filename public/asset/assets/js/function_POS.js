@@ -32,7 +32,8 @@ $(() => {
         $tgtPopUp.fadeOut();
         $('.option-discount input:checked').prop('checked', false);
      });
-     $(".popup-daftar-discount").click(function(event){
+
+    $(".popup-daftar-discount").click(function(event){
         if(!$(event.target).closest('.card-list-discount').length) {
             $(this).fadeOut();
             $('.option-discount input:checked').prop('checked', false);
@@ -185,7 +186,6 @@ $(() => {
     });
 
     
-ber
     $('.act-btn.act2').on('click', function (e) {
         //var $total = $('.txt-price-total.total').text();
         var $total = $('.txt-price-total.sisa-bayar');
@@ -270,6 +270,7 @@ ber
         $('.form-cash input.convert-change').val(change_nominal);
         CekCashNominal();
     });
+
     //qty
     $('body').on('click', 'a.qty-minus', function (e) {
         e.preventDefault();

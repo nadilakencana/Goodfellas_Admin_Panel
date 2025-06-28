@@ -33,23 +33,12 @@
 
                             <div class="detail-menu d-flex flex-column" style="width: 11rem;">
                                 <span class="fw-bold">{{ $itm->nama_menu }}</span>
-                                {{-- <p class="mb-0">Varian Menu: </p>
-                                <div class="d-flex gap-3">
-                                    @if(!empty($itm->varian))
-                                        @foreach ($itm->varian as $var)
-                                            <span>{{ $var->nama }}</span>
-                                            @if (!$loop->last)
-                                                /
-                                            @endif
-                                        @endforeach
-                                    @else 
-                                        <span>-</span>
-                                    @endif
-                                </div> --}}
+                                
                                 <span class="pt-2">Rp. {{ $itm->harga }}</span>
                             </div>
-                            <div class="btn-add cursor-pointer">
-                                <img src="{{asset('asset/assets/image/icon/btn_Add.png')}}" alt="" width="30" height="30">
+                            <div class="btn-add-menu cursor-pointer" xid="{{encrypt($itm->id)}}">
+                                <img src="{{ asset('asset/assets/image/icon/btn_Add.png') }}" alt="" width="30"
+                                    height="30">
                             </div>
                         </div>
                     @endforeach
@@ -58,8 +47,13 @@
             </div>
         </div>
     </div>
+    <div class="col-12 px-0 col-sm-8 col-md-4 mx-auto p-0">
+        <div class="pop-up-modal-menu" style="display: none">
+            
+        </div>
+    </div>
 @endsection
-@section('script-order')
+{{-- @section('script-order')
 <script>
     $(()=>{
         $('#dropdown-cat').on('click', function(e){
@@ -81,4 +75,4 @@
     })
     
 </script>
-@endsection
+@endsection --}}

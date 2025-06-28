@@ -183,7 +183,27 @@ a {
     width: 100%;
     max-width: 100%;
     pointer-events: none;
-    max-width: 450px;
+    max-width: 500px;
+    transform: translateY(100%);
+    opacity: 0;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+}
+/* Saat aktif tampil */
+.content-modal.show {
+    transform: translateY(0%);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Saat keluar ke atas */
+.content-modal.hide {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+    -webkit-transform: translateY(100%);
+    -moz-transform: translateY(100%);
+    -ms-transform: translateY(100%);
+    -o-transform: translateY(100%);
 }
 .pop-modal {
     position: relative;
@@ -195,7 +215,7 @@ a {
     background-clip: padding-box;
     border-radius: 1.3rem 1.3rem 0 0;
     outline: 0;
-    height: 381px;
+    height: 500px;
     padding: 10px;
 }
 .body-content
@@ -224,7 +244,8 @@ input.qty {
 .itm-var {
     display: flex;
     flex-direction: column;
-    width: 100%;
+    max-width: 48%;
+    width: 48%;
     text-align: center;
     background: white;
     border-radius: 10px;
@@ -256,6 +277,7 @@ input.qty {
 .catatan-menu textarea {
     border-radius: 10px;
     border: 1px solid #9e9d9d;
+    width: 100%;
 }
 .btn-add-items {
     border-radius: 10px;
@@ -264,6 +286,11 @@ input.qty {
     background: black;
     color: white;
     font-weight: 700;
+}
+.btn-add-items:hover{
+    background-color: white;
+    border: 1px solid black;
+    color: black;
 }
 /* end pop menu additional */
 /* end content */

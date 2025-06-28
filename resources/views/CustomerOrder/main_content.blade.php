@@ -25,20 +25,10 @@
 
                         <div class="detail-menu d-flex flex-column" style="width: 11rem;">
                             <span class="fw-bold">{{ $itm->menu->nama_menu }}</span>
-                            {{-- <p class="mb-0">Varian Menu: </p>
-                            <div class="d-flex gap-3">
-
-                                @foreach ($itm->menu->varian as $var)
-                                    <span>{{ $var->nama }}</span>
-                                    @if (!$loop->last)
-                                        /
-                                    @endif
-                                @endforeach
-                            </div> --}}
                             <span class="pt-2">Rp. {{$itm->menu->harga}}</span>
                             
                         </div>
-                        <div class="btn-add cursor-pointer">
+                        <div class="btn-add-menu cursor-pointer" xid="{{encrypt($itm->menu->id)}}">
                             <img src="{{asset('asset/assets/image/icon/btn_Add.png')}}" alt="" width="30" height="30">
                         </div>
                     </div>
@@ -47,4 +37,14 @@
             </div>
         </div>
     </div>
+    <div class="col-12 px-0 col-sm-8 col-md-4 mx-auto p-0">
+        <div class="pop-up-modal-menu" style="display: none">
+            
+        </div>
+    </div>
+    
+@endsection
+@section('script-order')
+
+
 @endsection
