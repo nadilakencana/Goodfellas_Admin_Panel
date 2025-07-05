@@ -275,6 +275,8 @@ Route::controller(OrderCustomerController::class)->group(function(){
     Route::get('Sub-category/{slug}', 'Subcat')->name('OrderCustomer.Subcategory');
     Route::get('additional-pop', 'additional')->name('popAdditional');
     Route::post('add-to-cart', 'AddTocart')->name('Order.customer.add_cart');
-    Route::get('cart', 'cartSession');
-    Route::get('clear-session', 'clearSession');
+    Route::get('cart', 'cartSession')->name('Order.customer.cart');
+    Route::get('clear-session', 'clearSession')->name('Order.customer.clearSession');
+    Route::post('delete-item-cart', 'hapus')->name('Order.customer.itemDelete');
+    Route::post('edit-item-cart', 'editOrder')->name('Order.customer.itemEdit');
 });

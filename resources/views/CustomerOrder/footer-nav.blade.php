@@ -24,11 +24,15 @@
                           <span class="small {{ request()->routeIs('OrderCustomer.category', 'Drinks') ? 'text-black': 'text-grey' }}">Drink</span>
                       </div>
                   </a>
-                  <a href="">
-                      <div class="menu-nav d-flex flex-column align-items-center ">
-                          <img src="{{ asset('asset/assets/image/icon/Shopping Cart.png') }}" alt=""
+                  <a href="{{route('Order.customer.cart')}}">
+                    @php
+                        // $cart = count(Session::has('carts'));
+                    @endphp
+                      <div class="menu-nav d-flex flex-column align-items-center " count="{{count(Session::get('cart', []))}}">
+                        <span class="count-cart">{{count(Session::get('cart', []))}}</span>
+                          <img src="{{ asset(request()->routeIs('Order.customer.cart') ? 'asset/assets/image/icon/Shopping Cart-1.png' : 'asset/assets/image/icon/Shopping Cart.png') }}" alt=""
                               width="23" height="23">
-                          <span class="small {{ request()->routeIs('Orders.customer') ? 'text-black': 'text-grey' }}">Your Order</span>
+                          <span class="small {{ request()->routeIs('Order.customer.cart') ? 'text-black': 'text-grey' }}">Your Order</span>
                       </div>
                   </a>
               </div>

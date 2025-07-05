@@ -91,7 +91,19 @@ a {
 .text-grey {
     color: rgb(156, 156, 156);
 }
-
+.count-cart {
+    width: 19px;
+    
+    background: black;
+    color: white;
+    border-radius: 10px;
+    position: absolute;
+    font-size: 10px;
+    text-align: center;
+    padding: 2px;
+    right: 32px;
+    top: 8px;
+}
 /* end navbar */
 
 /* banner */
@@ -293,4 +305,28 @@ input.qty {
     color: black;
 }
 /* end pop menu additional */
+/* cart */
+.card-total-order{
+    border: 1px solid rgba(87, 87, 87, 0.364);
+    border-radius:10px;
+    -webkit-border-radius:10px;
+    -moz-border-radius:10px;
+    -ms-border-radius:10px;
+    -o-border-radius:10px;
+}
+.btn-order{
+    background-color: #0c0c0c;
+    color: white;
+    border-radius: 15px;
+    -webkit-border-radius: 15px;
+    -moz-border-radius: 15px;
+    -ms-border-radius: 15px;
+    -o-border-radius: 15px;
+}
+.btn-order:hover{
+    border: 1px solid rgb(27, 27, 27);
+    color: #0c0c0c;
+    background-color: #ffffff00;
+}
+/* end cart */
 /* end content */

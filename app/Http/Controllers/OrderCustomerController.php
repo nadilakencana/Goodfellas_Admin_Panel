@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Http;
 use App\Models\DetailOrder;
 use App\Models\OptionModifier;
 use App\Models\VarianMenu;
+use App\Models\Taxes;
 use Illuminate\Support\Facades\DB;
 use Session;
 use PhpOffice\PhpSpreadsheet\Calculation\Category;
@@ -108,6 +109,17 @@ class OrderCustomerController extends Controller
         $dec = decrypt($xid);
         $itemMenu = Menu::with(['varian','kategori'])->find($dec); 
         // dd($itemMenu, $dec, $xid);
+        $carts = Session::get('cart');
+        $itemEdit= 0 ;
+        $totalHarga = 0;
+        if ($carts) {
+            foreach ($carts as $key => $value) {
+                if ($value['id'] == $dec) {
+                    $itemEdit = $carts[$key];
+                }
+            }
+        }
+        // dd($carts);
 
         if ($itemMenu && $itemMenu->varian->isNotEmpty()) {
             $varian = $itemMenu->varian;
@@ -125,7 +137,7 @@ class OrderCustomerController extends Controller
 
         $type_sales = SalesType::all();
 
-        return view('CustomerOrder.part_lain_lain.pop_aditional', compact('varian', 'additional','type_sales','itemMenu'));
+        return view('CustomerOrder.part_lain_lain.pop_aditional', compact('varian', 'additional','type_sales','itemMenu', 'itemEdit','totalHarga'));
    }
 
    public function AddTocart(Request $request){
@@ -154,11 +166,12 @@ class OrderCustomerController extends Controller
             $cart[] = array(
                 'id' => $menu->id,
                 'nama_menu' => $menu->nama_menu,
+                'image' => $menu->image,
                 'harga' => $request->get('harga'),
                 'qty' => $request->get('qty'),
                 'harga_addtotal' => $request->get('harga_addtotal'),
-                'variasi_id' => $varian->id,
-                'var_name' => $varian->nama,
+                'variasi_id' => $varian ? $varian->id : '',
+                'var_name' => $varian ? $varian->nama : '',
                 'additional' => $request->get('additional'),
                 'catatan' => $request->get('catatan'),
                 'type_id' => $typeSales->id,
@@ -192,9 +205,108 @@ class OrderCustomerController extends Controller
         }
    }
 
+    public function editOrder(Request $request)
+    {
+
+       
+            try {
+                $menu = Menu::where('id', $request->get('id'))->first();
+                if($request->get('variasi') !== 0){
+                    $varian = VarianMenu::where('id', $request->get('variasi'))->first();
+                }else{
+                    $varian= '';
+                }
+                 $typeSales = SalesType::find($request->get('id_type_sales'));
+                $ex = false;
+                $exId = 0;
+                $cart = Session::get('cart');
+                // $option = Session::get('option');
+
+                if ($cart) {
+                    foreach ($cart as $key => $value) {
+                        if ($key == $request->get('key')) {
+                            $ex = true;
+                            $exId = $key;
+                            //dd($request->get('key'));
+
+                        }
+                    }
+                }
+
+
+                $count = 0;
+                $currentPrice = 0;
+
+                $currentPrice = $menu->harga;
+                if ($ex == false) {
+                    $cart[] = array(
+                        'id' => $menu->id,
+                        'nama_menu' => $menu->nama_menu,
+                        'image' => $menu->image,
+                        'harga' => $request->get('harga'),
+                        'qty' => $request->get('qty'),
+                        'harga_addtotal' => $request->get('harga_addtotal'),
+                        'variasi_id' => $varian ? $varian->id : '',
+                        'var_name' => $varian ? $varian->nama : '',
+                        'additional' => $request->get('additional'),
+                        'discount' => $request->get('discount'),
+                        'catatan' => $request->get('catatan'),
+                        'type_id' => $typeSales->id,
+                        'type_name' => $typeSales->name,
+                        
+                    );
+                } else {
+                    $oldData = $cart[$exId];
+                    $cart[$exId] = array(
+                        'id' =>  $menu->id,
+                        'nama_menu' => $menu->nama_menu,
+                        'image' => $menu->image,
+                        'harga' => $request->get('harga'),
+                        'qty' => $request->get('qty'),
+                        'harga_addtotal' => $request->get('harga_addtotal'),
+                        'variasi_id' => $varian ? $varian->id : '',
+                        'var_name' => $varian ? $varian->nama : '',
+                        'additional' =>  $request->get('additional'),
+                        'discount' => $request->get('discount'),
+                        'catatan' =>  $request->get('catatan'),
+                        'type_id' => $typeSales->id,
+                        'type_name' => $typeSales->name,
+                        
+                    );
+                }
+
+
+                //dd($cart['additional']['nama']);
+                Session::put('cart', $cart);
+                Session::save();
+                $cart = Session::get('cart');
+                $count = count($cart);
+                return response()->json([
+                    'success' => 1,
+                    'message' => 'Data terupdate',
+                    'data' => [
+                        'cart' => $cart,
+                        'count' => $count
+                    ],
+
+                ], 200);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'message' => 'Failed to fetch edit item bill',
+                    'data' => [
+                        'cart' => $cart,
+                        'count' => $count
+                    ],
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+       
+    }
+
    public function cartSession(Request $request){
         $table = $request->has('table');
         $carts = Session::get('cart');
+        $taxs = Taxes::all();
         // dd($carts);
         $subtotal = 0;
 
@@ -209,7 +321,7 @@ class OrderCustomerController extends Controller
         } else {
         }
 
-        return view('CustomerOrder.CartCustomer', compact('carts','subtotal'));
+        return view('CustomerOrder.CartCustomer', compact('carts','subtotal','taxs'));
    }
 
     public function hapus(Request $request)

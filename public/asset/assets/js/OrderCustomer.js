@@ -1,4 +1,4 @@
- const localhost = 'http://192.168.1.22:8000';
+ const localhost = 'http://192.168.88.114:8000';
  const Token = $('meta[name="csrf-token"]').attr('content');
  
  
@@ -20,7 +20,7 @@
     // popUp Additional
     $('.btn-add-menu').on('click', function(){
         let tgt = $(this).attr('xid');
-        additional(tgt);
+        additional(tgt, 'add', null);
         console.log(tgt)
         // console.log('click')
     })
@@ -94,15 +94,51 @@
 
     $('body').on('click','.btn-add-items', function(e){
         let idx = $(this).attr('idx_menu');
-        addToCart(idx);
-        console.log(idx);
+        let xkey = $(this).attr('xkey');
+
+        console.log('Menu ID:', idx);
+        console.log('Xkey:', xkey);
+
+        // Cek apakah xkey kosong atau tidak terdefinisi
+        if (xkey === '' || xkey === undefined || xkey === null) {
+            // Jika xkey kosong/tidak ada, ini adalah aksi "ADD"
+            console.log('Action: Add new item to cart');
+            addToCart(idx, 'add', xkey); // Panggil fungsi untuk menambah item baru
+        } else {
+            // Jika xkey memiliki nilai, ini adalah aksi "EDIT"
+            // Pastikan xkey adalah integer jika itu merepresentasikan indeks array
+            let itemIndexToEdit = parseInt(xkey);
+            if (isNaN(itemIndexToEdit)) {
+                console.error('Invalid xkey for edit action:', xkey);
+                return; // Hentikan eksekusi jika xkey tidak valid
+            }
+            console.log('Action: Edit existing item in cart (Index:', itemIndexToEdit, ')');
+            addToCart(idx, 'edit', xkey); // Panggil fungsi untuk mengedit item yang ada
+        }
+       
     })
+
+    
     // end popUp Additional
+
+    // cart
+    $('.btn-delete-itm').on('click', function(e){
+        let xkey= $(this).attr('xkey');
+        ItemDelete(xkey);
+    })
+
+    $('.item-name').on('click', function(e){
+        let tgt = $(this).attr('xid');
+        let key = $(this).attr('xkey')
+        additional(tgt, 'edit', key);
+    })
+
+    // end cart
 
 
 })
 
-function additional(xid){
+function additional(xid, action, key){
     let URL = localhost + '/additional-pop';
     console.log(URL)
     $.ajax({
@@ -116,7 +152,12 @@ function additional(xid){
             let $popup = $('.pop-up-modal-menu');
             $popup.empty().append(response).fadeIn(10, function () {
                 $('.content-modal').addClass('show');
-            });            
+            }); 
+
+            if(action === 'edit'){
+                $popup.find('.btn-add-items').attr('xkey', key)
+                console.log(key)
+            }           
         },
     }).fail(function(result){
         console.log(result);
@@ -154,8 +195,14 @@ function recountNominal(){
     $('.total-menu').text(formatted);
 }
 
-function addToCart(idx){
-    const URL = localhost +'/add-to-cart';
+function addToCart(idx, action, key){
+    let URL = '';
+    if(action == 'add'){
+        URL = localhost +'/add-to-cart';
+    }else{
+        URL = localhost +'/edit-item-cart';
+    }
+     
     let nominal = 0;
     let idx_Var = 0 ;
     let $varian = $('.itm-var.active');
@@ -211,21 +258,46 @@ function addToCart(idx){
 
     console.log(postData);
 
+    if(action == 'edit'){
+         postData["key"] = key;
+    }
 
     $.post(URL, postData).done(function(data){
         if(data.success === 0){
             alert(data.message);
             // console.log(postData, data);
-            window.location.reload()
 
         }else{
             alert(data.message);
+            window.location.reload();
             // console.log(postData, data);
         }
     }).fail(function(err){
         console.log('error', err)
-         console.log(postData, err);
+        console.log(postData, err);
         alert('faild add this item to cart, please cek your order item again');
     })
 
+}
+
+function ItemDelete(xid){
+    
+    const URL = localhost +'/delete-item-cart';
+    let postData = {
+        _token : Token,
+        id : xid,
+    }
+
+    $.post(URL, postData).done(function(data){
+        if(data.success === 0 ){
+            alert(data.message);
+        }else{
+            alert(data.message);
+            window.location.reload();
+            
+        }
+    }).fail(function(data){
+        console.log('error',data);
+        
+    });
 }
