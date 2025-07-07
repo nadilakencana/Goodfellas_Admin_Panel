@@ -33,21 +33,26 @@ use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Facades\DB;
 use App\Models\Aktivity;
-
+use App\Services\KodePesananService;
 class POSController extends Controller
 {
+    protected KodePesananService $kode_pesanan;
 
-    public function kodePesanan($length = 5)
-    {
-        $str = '';
-        $charecters = array_merge(range('A', 'Z'), range('a', 'z'));
-        $max = count($charecters) - 1;
-        for ($i = 0; $i < $length; $i++) {
-            $rand = mt_rand(0, $max);
-            $str .= $charecters[$rand];
-        }
-        return $str;
+    public function __construct(KodePesananService $kode_pesanan){
+        $this->kode_pesanan = $kode_pesanan;
     }
+    
+    // public function kodePesanan($length = 5)
+    // {
+    //     $str = '';
+    //     $charecters = array_merge(range('A', 'Z'), range('a', 'z'));
+    //     $max = count($charecters) - 1;
+    //     for ($i = 0; $i < $length; $i++) {
+    //         $rand = mt_rand(0, $max);
+    //         $str .= $charecters[$rand];
+    //     }
+    //     return $str;
+    // }
 
 
     public function POSdashboard()
@@ -953,7 +958,7 @@ class POSController extends Controller
             try {
                 $userId = Sentinel::getUser();
                 $admin = $userId->id;
-                $rand = $this->kodePesanan();
+                $rand = $this->kode_pesanan->kodePesanan();
                 $date = Carbon::now()->format('Y-m-d');
 
                 $order = Orders::where('id', $request->get('target_order'))->first();
@@ -1097,7 +1102,7 @@ class POSController extends Controller
                 $date = Carbon::now()->format('Y-m-d');
                 $userId = Sentinel::getUser();
                 $admin = $userId->id;
-                $rand = $this->kodePesanan();
+                $rand = $this->kode_pesanan->kodePesanan();
                 $paymentId = $request->Idpayment;
 
                 $order = new Orders;

@@ -94,7 +94,7 @@
                             <p>Booking Room</p>
                         </a>
                     </li>
-                     @if ($admin->level->level == 'Supervisor' || $admin->level->level == 'Manager' || $admin->level->level == 'Developer' ||
+                @if ($admin->level->level == 'Supervisor' || $admin->level->level == 'Manager' || $admin->level->level == 'Developer' ||
                     $admin->level->level == 'Directure')
                         <li class="nav-item">
                             <a href="{{ route('data-tax') }}" class="nav-link">
@@ -114,11 +114,17 @@
                                 <p>Discount</p>
                             </a>
                         </li>
-                    @endif
+                @endif
                     <li class="nav-item">
                         <a href="{{ route('contactUs') }}" class="nav-link">
                             <i class="far fa-circle nav-icon"></i>
                             <p>Contact Us</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{route('Qr-table')}}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>QR Table</p>
                         </a>
                     </li>
                 </ul>

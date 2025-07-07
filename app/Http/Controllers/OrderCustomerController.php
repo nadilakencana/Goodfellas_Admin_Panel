@@ -15,10 +15,20 @@ use App\Models\Taxes;
 use Illuminate\Support\Facades\DB;
 use Session;
 use PhpOffice\PhpSpreadsheet\Calculation\Category;
-
+use App\Services\KodePesananService;
+use Illuminate\Support\Carbon;
+use App\Models\Orders;
+use App\Models\Additional_menu_detail;
 class OrderCustomerController extends Controller
 {
-    public function index(){
+
+    protected KodePesananService $kode_pesanan;
+
+    public function __construct(KodePesananService $kode_pesanan){
+        $this->kode_pesanan = $kode_pesanan;
+    }
+
+    public function index(Request $request){
 
         $itemMenu = Menu::where('custom', false)->where('delete_menu', 0)->get();
         $Category = Kategori::all();
@@ -28,7 +38,9 @@ class OrderCustomerController extends Controller
         $typeOrder = SalesType::all();
         $startDate = \Carbon\Carbon::now()->startOfMonth()->toDateString();
         $endDate = \Carbon\Carbon::now()->endOfMonth()->toDateString();
-
+        $meja = $request->query('meja');
+        Session::put('meja', $meja);
+        Session::save();
 
 
         $topSellingItems = DetailOrder::select('id_menu', DB::raw('SUM(qty) as total_qty'), DB::raw('AVG(harga) as avg_price'))
@@ -306,6 +318,7 @@ class OrderCustomerController extends Controller
    public function cartSession(Request $request){
         $table = $request->has('table');
         $carts = Session::get('cart');
+        $meja = Session::get('meja');
         $taxs = Taxes::all();
         // dd($carts);
         $subtotal = 0;
@@ -321,7 +334,7 @@ class OrderCustomerController extends Controller
         } else {
         }
 
-        return view('CustomerOrder.CartCustomer', compact('carts','subtotal','taxs'));
+        return view('CustomerOrder.CartCustomer', compact('carts','subtotal','taxs','meja'));
    }
 
     public function hapus(Request $request)
@@ -361,6 +374,116 @@ class OrderCustomerController extends Controller
     {
         Session::forget('cart');
         // return redirect()->back();
+    }
+
+    public function PostOrderCustomer(Request $request)
+    {
+       
+        try {
+
+                $date = Carbon::now()->format('Y-m-d');
+                
+                $rand = $this->kode_pesanan->kodePesanan();
+                
+                $order = new Orders;
+                $order->name_bill = $request->nama;
+                $order->id_booking = $request->id_booking;
+                $order->kode_pemesanan = $rand;
+                $order->no_meja = $request->nomer;
+                $order->subtotal = $request->subtotal;
+                $order->total_order = $request->total;
+                $order->tanggal = $date;
+                $order->total_order = $request->total;
+
+                if (!empty($paymentId)) {
+                    $order->id_status = 2;
+                } else {
+                    $order->id_status = 1;
+                }
+
+                $order->created_at = now();
+                $order->updated_at = now();
+
+                $order->save();
+
+                $carts = Session::get('cart');
+                //dd($carts);
+                $id_order = $order->id;
+
+                foreach ($carts as $cart) {
+                    
+                    $detail = new DetailOrder;
+                    $detail->id_order = $id_order;
+                    $detail->id_menu = $cart['id'];
+                    $detail->qty = $cart['qty'];
+                    $detail->harga = $cart['harga'];
+                    $detail->id_varian = $cart['variasi_id'];
+                    if (empty($cart['type_id'])) {
+                        $detail->id_sales_type =  '4';
+                    } else {
+                        $detail->id_sales_type =  $cart['type_id'];
+                    }
+
+                    $detail->catatan = $cart['catatan'];
+                    $detail->total = ($cart['harga'] + $cart['harga_addtotal']) * $cart['qty'];
+                    $detail->created_at = now();
+                    $detail->updated_at = now();
+                    // dd($order, $detail );
+
+                    if ($detail->save()) {
+                        if (isset($cart['additional'])) {
+                            foreach ($cart['additional'] as $adds) {
+                                $additional = new Additional_menu_detail();
+                                $additional->id_detail_order = $detail->id;
+                                $additional->id_option_additional = $adds['id'];
+                                $additional->qty = $detail->qty;
+                                $additional->total = $adds['harga'] * $detail->qty;
+                                $additional->save();
+                            }
+                        }
+                        
+                    }
+                }
+
+                $Tax = $request->taxes;
+
+                foreach ($Tax as $taxs) {
+                    $taxes = new TaxOrder();
+                    $taxes->id_order  =  $id_order;
+                    $taxes->id_tax = $taxs['id'];
+                    $taxes->total_tax = $taxs['nominal'];
+                    // dd($taxes);
+                    $taxes->save();
+                }
+
+
+                $detail = DetailOrder::where('id_order', $order->id)->get();
+                if(empty($detail)){
+                    $detail = 0;
+                }
+
+                Session::forget('cart');
+                return response()->json([
+                    'success' => 1,
+                    'message' => 'Order di Proses',
+                    'data' => [
+                        'order' => $order,
+                        'detail' => $detail
+                    ],
+
+                ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => 0,
+                'message' => 'Failed to fetch data post order',
+                'data' => [
+                    'order' => $order,
+                    'detail' => $detail
+                ],
+                'error' => $e->getMessage()
+            ], 500);
+        }
+       
     }
 
 }

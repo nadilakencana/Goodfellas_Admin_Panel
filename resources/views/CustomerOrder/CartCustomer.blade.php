@@ -4,7 +4,7 @@
         <div class="container py-4">
             <div class="header d-flex justify-content-between align-items-center pt-2">
                 <p class="fw-bold fs-3">Your cart</p>
-                <p class="fs-5">No meja /Ruangan VIP</p>
+                <p class="fs-5">No Meja : {{$meja}}</p>
             </div>
             <div class="content pt-2">
                

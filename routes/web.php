@@ -23,6 +23,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Route;
 use PhpParser\Node\Stmt\Return_;
 use App\Http\Controllers\OrderCustomerController;
+use App\Http\Controllers\QrCodeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -279,4 +280,12 @@ Route::controller(OrderCustomerController::class)->group(function(){
     Route::get('clear-session', 'clearSession')->name('Order.customer.clearSession');
     Route::post('delete-item-cart', 'hapus')->name('Order.customer.itemDelete');
     Route::post('edit-item-cart', 'editOrder')->name('Order.customer.itemEdit');
+});
+
+Route::controller(QrCodeController::class)->group(function(){
+    Route::get('data-Qr', 'index')->name('Qr-table');
+    Route::get('create-Qr', 'CraateQRTable')->name('Qr-table.form');
+    Route::post('post-Qr', 'PostQRTable')->name('Qr-table.post');
+    Route::get('QR-download', 'QRDetail')->name('Qr-table.download');
+
 });

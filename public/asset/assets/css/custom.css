@@ -1168,4 +1168,17 @@ button.update-pass {
     color: rgba(32, 32, 32, 0.829);
     border: 1px solid #585858;
 }
+
+.card-qr {
+    border: 1px solid black;
+    padding: 20px;
+    width: 50%;
+    border-radius: 10px;
+}
+
+.header-card-qr {
+    gap: 10px;
+    font-weight: 700;
+    font-size: 20px;
+}
 /* end popup */
