@@ -1,4 +1,4 @@
-const baseURL = 'http://192.168.89.230:8000';
+const baseURL = 'http://127.0.0.1:8000';
 // const Token = $('meta[name="csrf-token"]').attr('content');
 
 $(()=>{

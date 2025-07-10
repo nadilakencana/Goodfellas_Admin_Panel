@@ -7,7 +7,9 @@
                 <p class="fs-5">No Meja : {{$meja}}</p>
             </div>
             <div class="content pt-2">
-               
+               <div class="name-input d-flex justify-content-center align-items-center">
+                <input type="text" name="customer_name" class="form-control" placeholder="input your name" required>
+               </div>
                 <div class="items-menu justify-content-between align-items-center gap-4 py-3">
                     @if(!empty($carts))
                         @foreach ($carts as $k => $itm)
@@ -70,7 +72,7 @@
                     <div class="card-total-order p-4">
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-order">SubTotal : </span>
-                            <span class="nominal-total-order fw-bold" nominal="{{$subtotal}}">Rp. {{number_format( $subtotal, 0, '.','.') }}</span>
+                            <span class="nominal-total-order subtotal fw-bold" nominal="{{$subtotal}}">Rp. {{number_format( $subtotal, 0, '.','.') }}</span>
                         </div>
                         @php
                             $totalTax = 0;
@@ -84,7 +86,7 @@
                             @endphp
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-order">{{$tax->nama}} {{$tax->tax_rate}}% :</span>
-                            <span class="nominal-total-order fw-bold">Rp. {{ number_format( $nominalTax, 0, '.','.') }}</span>
+                            <span class="nominal-total-order fw-bold tax-total" xid_tax="{{$tax->id}}" nominal='{{$nominalTax}}'>Rp. {{ number_format( $nominalTax, 0, '.','.') }}</span>
                         </div>
                         @endforeach
                         @php
@@ -93,7 +95,7 @@
                         @endphp
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="text-order">Grand Total : </span>
-                            <span class="nominal-total-order fw-bold" nominal="{{$total}}">Rp. {{ number_format( $total, 0, '.','.') }}</span>
+                            <span class="nominal-total-order fw-bold grand-total" nominal="{{$total}}">Rp. {{ number_format( $total, 0, '.','.') }}</span>
                         </div>
                     </div>
 

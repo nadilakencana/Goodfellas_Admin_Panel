@@ -1,4 +1,4 @@
- const localhost = 'http://192.168.88.114:8000';
+ const localhost = 'http://127.0.0.1:8000';
  const Token = $('meta[name="csrf-token"]').attr('content');
  
  
@@ -133,6 +133,10 @@
         additional(tgt, 'edit', key);
     })
 
+    $('.btn-order').on('click', function(){
+        postOrder()
+    });
+
     // end cart
 
 
@@ -196,6 +200,7 @@ function recountNominal(){
 }
 
 function addToCart(idx, action, key){
+    let valid = false;
     let URL = '';
     if(action == 'add'){
         URL = localhost +'/add-to-cart';
@@ -205,7 +210,8 @@ function addToCart(idx, action, key){
      
     let nominal = 0;
     let idx_Var = 0 ;
-    let $varian = $('.itm-var.active');
+    let $variansItem = $('.itm-var');
+    let $varian =  $('.itm-var.active');;
     if ($varian.length > 0) {
         nominal = parseInt($varian.find('.var-harga').attr('nominal'));
         idx_Var = $varian.attr('idx');
@@ -262,21 +268,38 @@ function addToCart(idx, action, key){
          postData["key"] = key;
     }
 
-    $.post(URL, postData).done(function(data){
-        if(data.success === 0){
-            alert(data.message);
-            // console.log(postData, data);
+    if ($variansItem.length > 0){
+        if ($varian.length > 0) {
 
-        }else{
-            alert(data.message);
-            window.location.reload();
-            // console.log(postData, data);
+            valid = true;
         }
-    }).fail(function(err){
-        console.log('error', err)
-        console.log(postData, err);
-        alert('faild add this item to cart, please cek your order item again');
-    })
+
+    }else{
+        valid = true;
+    }
+
+
+    if(valid == true){
+        $.post(URL, postData).done(function(data){
+            if(data.success === 0){
+                alert(data.message);
+                // console.log(postData, data);
+
+            }else{
+                alert(data.message);
+                window.location.reload();
+                // console.log(postData, data);
+            }
+        }).fail(function(err){
+            console.log('error', err)
+            console.log(postData, err);
+            alert('faild add this item to cart, please cek your order item again');
+        })
+    }else{
+        alert('please select one varian item');
+    }
+
+    
 
 }
 
@@ -300,4 +323,61 @@ function ItemDelete(xid){
         console.log('error',data);
         
     });
+}
+
+function postOrder(){
+    let valid = true;
+    const URL = localhost + '/Order-customer/post';
+
+    let customerName = $('input[name="customer_name"]').val();
+    let subtotal = $('span.subtotal').attr('nominal');
+    let $tax = $('.tax-total');
+    let grand_total = $('span.grand-total').attr('nominal');
+
+    let taxes = [];
+
+    $tax.each(function(){
+        let $tgt = $(this);
+        let xid = $tgt.attr('xid_tax');
+        let nominal = $tgt.attr('nominal');
+
+        let taxObj = {"xid": xid, "nominal": nominal};
+
+        taxes.push(taxObj);
+    })
+
+    console.log(taxes)
+
+    let postData = {
+        _token: Token,
+        customer_name:  customerName,
+        subtotal: subtotal,
+        total: grand_total,
+        tax: taxes
+    }
+
+    if(customerName == ''){
+        valid = false;
+
+    }
+
+   
+
+    if(valid == true){
+        $.post(URL, postData).done(function(data){
+        if(data.success === 0 ){
+                alert(data.message);
+            }else{
+                alert(data.message);
+                window.location.reload();
+                
+            }
+        }).fail(function(data){
+            console.log('error',data);
+            
+        });
+    }else{
+        alert('plase input your name in column name');
+    }
+
 }

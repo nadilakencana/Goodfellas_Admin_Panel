@@ -19,6 +19,8 @@ use App\Services\KodePesananService;
 use Illuminate\Support\Carbon;
 use App\Models\Orders;
 use App\Models\Additional_menu_detail;
+use App\Events\OrderCustomerCreate;
+use App\Models\TaxOrder;
 class OrderCustomerController extends Controller
 {
 
@@ -378,22 +380,22 @@ class OrderCustomerController extends Controller
 
     public function PostOrderCustomer(Request $request)
     {
-       
+       DB::beginTransaction();
         try {
 
                 $date = Carbon::now()->format('Y-m-d');
                 
                 $rand = $this->kode_pesanan->kodePesanan();
-                
+                $meja = Session::get('meja');
+
                 $order = new Orders;
-                $order->name_bill = $request->nama;
+                $order->name_bill = $request->customer_name;
                 $order->id_booking = $request->id_booking;
                 $order->kode_pemesanan = $rand;
-                $order->no_meja = $request->nomer;
+                $order->no_meja = $meja;
                 $order->subtotal = $request->subtotal;
                 $order->total_order = $request->total;
                 $order->tanggal = $date;
-                $order->total_order = $request->total;
 
                 if (!empty($paymentId)) {
                     $order->id_status = 2;
@@ -407,9 +409,11 @@ class OrderCustomerController extends Controller
                 $order->save();
 
                 $carts = Session::get('cart');
-                //dd($carts);
+                // dd($carts);
+                $cart = is_array($carts);
                 $id_order = $order->id;
-
+                $details = [];
+                // if (is_array($carts) || is_object($carts)){
                 foreach ($carts as $cart) {
                     
                     $detail = new DetailOrder;
@@ -417,7 +421,8 @@ class OrderCustomerController extends Controller
                     $detail->id_menu = $cart['id'];
                     $detail->qty = $cart['qty'];
                     $detail->harga = $cart['harga'];
-                    $detail->id_varian = $cart['variasi_id'];
+                    $detail->id_varian = ($cart['variasi_id'] === '' || $cart['variasi_id'] === null) ? null : $cart['variasi_id'];
+
                     if (empty($cart['type_id'])) {
                         $detail->id_sales_type =  '4';
                     } else {
@@ -428,29 +433,34 @@ class OrderCustomerController extends Controller
                     $detail->total = ($cart['harga'] + $cart['harga_addtotal']) * $cart['qty'];
                     $detail->created_at = now();
                     $detail->updated_at = now();
-                    // dd($order, $detail );
 
-                    if ($detail->save()) {
+                    // return dd($order, $detail );
+                    $detail->save();
+                    if ($detail) {
+                        $details[] = $detail;
                         if (isset($cart['additional'])) {
                             foreach ($cart['additional'] as $adds) {
                                 $additional = new Additional_menu_detail();
-                                $additional->id_detail_order = $detail->id;
+                                $additional->id_detail_order = $detail['id'];
                                 $additional->id_option_additional = $adds['id'];
-                                $additional->qty = $detail->qty;
-                                $additional->total = $adds['harga'] * $detail->qty;
+                                $additional->qty = $detail['qty'];
+                                $additional->total = $adds['harga'] * $detail['qty'];
                                 $additional->save();
                             }
                         }
                         
                     }
                 }
+                // }
+               
 
-                $Tax = $request->taxes;
+                $Tax = $request->tax;
+                // dd($Tax);
 
                 foreach ($Tax as $taxs) {
                     $taxes = new TaxOrder();
                     $taxes->id_order  =  $id_order;
-                    $taxes->id_tax = $taxs['id'];
+                    $taxes->id_tax = $taxs['xid'];
                     $taxes->total_tax = $taxs['nominal'];
                     // dd($taxes);
                     $taxes->save();
@@ -463,9 +473,13 @@ class OrderCustomerController extends Controller
                 }
 
                 Session::forget('cart');
+
+                // event(new OrderCustomerCreate($order));
+
+                 DB::commit();
                 return response()->json([
                     'success' => 1,
-                    'message' => 'Order di Proses',
+                    'message' => 'Your order on proses',
                     'data' => [
                         'order' => $order,
                         'detail' => $detail
@@ -473,12 +487,12 @@ class OrderCustomerController extends Controller
 
                 ], 200);
         } catch (\Exception $e) {
+             DB::rollback();
             return response()->json([
                 'success' => 0,
-                'message' => 'Failed to fetch data post order',
                 'data' => [
                     'order' => $order,
-                    'detail' => $detail
+                    'detail' => $cart
                 ],
                 'error' => $e->getMessage()
             ], 500);

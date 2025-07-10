@@ -1732,9 +1732,11 @@
                 taxes.push(taxObj)
             });
 
+            
+            
             //console.log(taxes);
             //console.log(table);
-
+                
             var postData = {
                 _token: "{{ csrf_token() }}",
                 nomer : table,
