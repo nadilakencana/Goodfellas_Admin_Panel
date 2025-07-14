@@ -428,7 +428,7 @@ class OrderCustomerController extends Controller
                
 
                 if (!$order) {
-                    $order = new Orders;
+                    $order = new Orders();
                     $order->fill([
                         'name_bill' => $request->customer_name,
                         'kode_pemesanan' => $rand,

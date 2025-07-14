@@ -10,10 +10,7 @@ class Orders extends Model
     use HasFactory;
     protected $table = 'orders';
 
-    protected $fillable = [
-        'kode_pemesanan','id_booking','no_meja','id_user','no_hp','id_status','subtotal',
-        'id_type_payment','id_admin','cash','change_','total'
-    ];
+    protected $guarded = [];
 
     public $timestamps = true;
 
