@@ -433,16 +433,145 @@
         </div>
     </div>
 </div>
+
+	<iframe class="frameHolder" src="{{route('notif')}}" allow="autoplay" style="display:none;"></iframe>
+    {{-- <div class="frameHolder"></div> --}}
 @stop
 
 @section('script')
 
 <script src="{{ asset('asset/assets/js/function_POS.js') }}"></script>
 <script src="{{ asset('asset/assets/js/idle timer check.js') }}"></script>
+<script src="{{asset('asset/assets/js/pusher.min.js')}}"></script>
+<script>
+
+    // Enable pusher logging - don't include this in production
+    Pusher.logToConsole = true;
+
+    var pusher = new Pusher('2370e8d9488988129926', {
+      cluster: 'ap1'
+    });
+
+    var channel = pusher.subscribe('orders');
+    channel.bind('orders-event', function(data) {
+    //    console.log('✅ Event "order.created" DITERIMA:', data);
+
+        const $iframe = $('.frameHolder');
+
+        if ($iframe.length && $iframe[0].contentWindow) {
+            const iframeContentWindow = $iframe[0].contentWindow;
+
+            // Pastikan iframe sudah dimuat sebelum mencoba mengakses isinya
+            $(iframeContentWindow.document).ready(function() {
+                // 2. Cari elemen audio di dalam DOM iframe
+                const $notifAudio = $(iframeContentWindow.document).find('.audioPlace');
+
+                if ($notifAudio.length) {
+                    const notifAudio = $notifAudio[0]; // Dapatkan elemen DOM native dari dalam iframe
+                    console.log('Tipe objek notifAudio (dari dalam iframe):', typeof notifAudio, notifAudio);
+                    console.log('Apakah notifAudio memiliki metode play()?', typeof notifAudio.play);
+
+                    if (typeof notifAudio.play === 'function') {
+                        notifAudio.muted = false;
+                        console.log('🔊 Mencoba memutar suara notifikasi dari dalam iframe...');
+                        notifAudio.play().then(() => {
+                            console.log('✅ Suara notifikasi berhasil diputar dari iframe.');
+                        }).catch(err => {
+                            console.error('🔇 Gagal memutar audio dari iframe:', err);
+                            // Saran: "Pastikan iframe memiliki atribut allow='autoplay'" (Anda sudah punya ini)
+                            // "Pengguna mungkin perlu berinteraksi dengan iframe terlebih dahulu."
+                        });
+                    } else {
+                        console.error("Kesalahan: notifAudio.play BUKANLAH fungsi. Elemen di dalam iframe mungkin bukan audio valid.");
+                    }
+                } else {
+                    console.error("❌ Elemen audio dengan class 'audioPlace' tidak ditemukan di dalam iframe.");
+                }
+            });
+        } else {
+            console.error("❌ Iframe dengan class 'frameHolder' tidak ditemukan atau belum siap.");
+        }
+    });
+
+    // function getNotif(){
+    //    const $audio = $('#notifSound');
+
+    //     // Memeriksa apakah elemen audio ditemukan
+    //     if ($audio.length) { // $audio.length akan > 0 jika elemen ditemukan
+    //         const audio = $audio[0]; // Mengakses elemen DOM native dari objek jQuery
+
+    //         audio.muted = false;
+    //         audio.play().catch(err => console.error('🔇 Gagal play audio:', err));
+    //     } else {
+    //         console.error("Elemen audio dengan ID 'notifSound' tidak ditemukan.");
+    //     }
+       
+    // }
+</script>
 <script>
 
     var currentBillId = 0;
-    
+
+
+    // window.onload = function () {
+    // console.log("window.onload triggered.");
+
+    //     if (!window.Echo) {
+    //         console.error("❌ window.Echo belum tersedia saat window.onload.");
+    //         // Periksa apakah ada error di console terkait pemuatan bootstrap.js atau Vite
+    //         return;
+    //     }
+
+    //     console.log("✅ Echo tersedia:", window.Echo);
+
+    //     window.Echo.connector.pusher.connection.bind('connected', function() {
+    //         console.log('Pusher connected!');
+    //     });
+
+    //     window.Echo.connector.pusher.connection.bind('disconnected', function() {
+    //         console.warn('Pusher disconnected!');
+    //     });
+
+    //     window.Echo.connector.pusher.connection.bind('error', function(err) {
+    //         console.error('Pusher error:', err);
+    //     });
+    //      window.Echo.channel('orders')
+    //         .listen('orders-event', (e) => {
+    //             console.log('✅ Event "order.created" masuk:', e);
+
+    //             // Encode data event 'e' ke dalam query string
+    //             // Ini lebih manual dan perlu penanganan yang hati-hati jika data kompleks
+    //             const params = new URLSearchParams({ orderData: JSON.stringify(e) }).toString();
+    //             const url = `/notif-frame`;
+
+    //             fetch(url, {
+    //                 method: 'GET',
+    //             })
+    //             .then(response => {
+    //                 if (!response.ok) {
+    //                     throw new Error('Network response was not ok ' + response.statusText);
+    //                 }
+    //                 return response.json();
+    //             })
+    //             .then(data => {
+    //                 console.log('🎉 Route notifikasi berhasil dipanggil (GET):', data);
+    //                 // let audio = document.getElementById('notifSound');
+    //                 // if (audio) {
+    //                 //     audio.muted = false;
+    //                 //     audio.play().catch(err => console.error('🔇 Gagal play audio:', err));
+    //                 // } else {
+    //                 //     console.error("Elemen audio dengan ID 'notifSound' tidak ditemukan.");
+    //                 // }
+    //             })
+    //             .catch(error => {
+    //                 console.error('❌ Ada masalah saat memanggil route notifikasi (GET):', error);
+    //             });
+    //         });
+
+    //     console.log("🎧 Listener 'order.created' untuk channel 'orders' sudah terpasang.");
+    // };
+
+
     $(()=>{
 
         var throttledButtonClick;

@@ -10,7 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class OrderCustomerCreate
+class OrderCustomerCreate implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -39,6 +39,6 @@ class OrderCustomerCreate
 
     public function broadcastAs(): string
     {
-        return 'order.created';
+        return 'orders-event';
     }
 }

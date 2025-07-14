@@ -14,8 +14,9 @@
     <link rel="stylesheet" href="{{ asset('asset/daterangepicker-master/daterangepicker.css') }}">
     {{--  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">  --}}
     <link rel="stylesheet" href="{{ asset('asset/assets/css/custom.css') }}">
-
+    {{-- @vite(['resources/js/app.js']) --}}
     <script src="{{ asset('asset/tamplate/plugins/jquery/jquery-3.7.1.min.js') }}"></script>
+   
 
 </head>
 <body class="hold-transition dark-mode sidebar-mini layout-fixed layout-navbar-fixed layout-footer-fixed">
@@ -63,11 +64,8 @@
 
     <script src="{{ asset('asset/assets/js/custom_js.js') }}"></script>
     <script src="{{ asset('asset/tamplate/plugins/moment/moment.min.js') }}"></script>
-    {{--  <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>  --}}
     <script src="{{ asset('asset/daterangepicker-master/daterangepicker.min.js') }}"></script>
-    {{--  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>  --}}
     <script src="{{ asset('asset/assets/js/luxon.min.js') }}"></script>
-    {{--  <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>  --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 

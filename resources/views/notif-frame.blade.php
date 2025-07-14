@@ -17,7 +17,7 @@
 </head>
 <body class="hold-transition dark-mode sidebar-mini layout-fixed layout-navbar-fixed layout-footer-fixed">
 	<audio class="audioPlace" controls autoplay>
-		<source src="{{ asset('asset/assets/audio_notif.wav') }}" type="audio/wav">
+		<source src="{{ asset('asset/assets/Audio_Order.wav') }}" type="audio/wav">
 	</audio>
     
     <script src="{{ asset('asset/tamplate/plugins/jquery/jquery.min.js') }}"></script>

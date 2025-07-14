@@ -75,7 +75,7 @@
                     </div>
                     <div class="order-data">
                         <div class="txt-order-dt">Collected By</div>
-                        <div class="txt-order-dt">{{ $detail->admin->nama }}</div>
+                        <div class="txt-order-dt">@if(isset($detail->admin->nama)) {{ $detail->admin->nama }}  @else - @endif</div>
                     </div>
                     <div class="order-data">
                         <div class="txt-order-dt">Member Name</div>

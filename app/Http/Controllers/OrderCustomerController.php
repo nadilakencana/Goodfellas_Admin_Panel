@@ -21,6 +21,8 @@ use App\Models\Orders;
 use App\Models\Additional_menu_detail;
 use App\Events\OrderCustomerCreate;
 use App\Models\TaxOrder;
+use Illuminate\Support\Facades\Log;
+
 class OrderCustomerController extends Controller
 {
 
@@ -387,24 +389,66 @@ class OrderCustomerController extends Controller
                 
                 $rand = $this->kode_pesanan->kodePesanan();
                 $meja = Session::get('meja');
+               
 
-                $order = new Orders;
-                $order->name_bill = $request->customer_name;
-                $order->id_booking = $request->id_booking;
-                $order->kode_pemesanan = $rand;
-                $order->no_meja = $meja;
-                $order->subtotal = $request->subtotal;
-                $order->total_order = $request->total;
-                $order->tanggal = $date;
+               
+                $order = Orders::where('name_bill', $request->customer_name)
+                    ->where('no_meja', $meja)
+                    ->where('id_status', 1)
+                    ->where('deleted', 0)
+                    ->first();
 
-                if (!empty($paymentId)) {
-                    $order->id_status = 2;
-                } else {
-                    $order->id_status = 1;
+                $edit = $order ? true : false;
+
+                $taxes = Taxes::all();
+                $txs = [];
+                $totalTax = 0;
+                if($order){
+                    $subtotal = $request->subtotal + $order->subtotal;
+                    foreach($taxes as $tx){
+                         $nominalTax = 0;
+                        $desimalTax = $tx->tax_rate / 100;
+                        $nominalTax = $subtotal * $desimalTax;
+                        $totalTax += $nominalTax;
+
+                        $txs[]= [
+                            'xid' => $tx->id,
+                            'nominal' => $nominalTax
+                        ];
+                    }
+
+                    $total = $subtotal + $totalTax; 
+
+                }
+              
+               
+
+
+                // dd($total, $subtotal);
+               
+
+                if (!$order) {
+                    $order = new Orders;
+                    $order->fill([
+                        'name_bill' => $request->customer_name,
+                        'kode_pemesanan' => $rand,
+                        'no_meja' => $meja,
+                        'subtotal' => $request->subtotal,
+                        'total_order' => $request->total,
+                        'tanggal' => $date,
+                        'id_status' => 1,
+                        'updated_at' => now(),
+                        'created_at' => now(),
+                    ]);
+                } else{
+                    $order->updated_at = now();
+                    $order->subtotal = $subtotal;
+                    $order->total_order = $total;
+
+                    $OrderTaxs = TaxOrder::where('id_order', $order->id)->delete();
                 }
 
-                $order->created_at = now();
-                $order->updated_at = now();
+                
 
                 $order->save();
 
@@ -452,9 +496,13 @@ class OrderCustomerController extends Controller
                     }
                 }
                 // }
-               
+                if(!$order){
+                     $Tax = $request->tax;
+                }else{
+                    $Tax = $txs;
+                }
 
-                $Tax = $request->tax;
+               
                 // dd($Tax);
 
                 foreach ($Tax as $taxs) {
@@ -474,9 +522,9 @@ class OrderCustomerController extends Controller
 
                 Session::forget('cart');
 
-                // event(new OrderCustomerCreate($order));
-
-                 DB::commit();
+                event(new OrderCustomerCreate($order->toArray()));
+                Log::info('Event OrderCustomerCreate dikirim', ['order' => $order->id]);
+                DB::commit();
                 return response()->json([
                     'success' => 1,
                     'message' => 'Your order on proses',
@@ -490,10 +538,10 @@ class OrderCustomerController extends Controller
              DB::rollback();
             return response()->json([
                 'success' => 0,
-                'data' => [
-                    'order' => $order,
-                    'detail' => $cart
-                ],
+                // 'data' => [
+                //     'order' => $order,
+                //     'detail' => $cart
+                // ],
                 'error' => $e->getMessage()
             ], 500);
         }
