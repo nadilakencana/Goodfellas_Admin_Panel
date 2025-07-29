@@ -1,4 +1,4 @@
-  <div class="col-12 px-0 col-sm-8 col-md-4 fixed-bottom mx-auto p-0">
+  <div class="col-12 px-0 col-sm-8 col-md-8 col-lg-8 fixed-bottom mx-auto p-0">
       {{-- <div class="col-12 px-0 col-sm-8 col-md-4 mx-auto fixed-bottom"> --}}
           <div class="px-4 py-3 bg-white h-100  shadow"
               style="border-top-left-radius: 23px; border-top-right-radius: 23px;">

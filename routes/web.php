@@ -281,6 +281,7 @@ Route::controller(OrderCustomerController::class)->group(function(){
     Route::post('delete-item-cart', 'hapus')->name('Order.customer.itemDelete');
     Route::post('edit-item-cart', 'editOrder')->name('Order.customer.itemEdit');
     Route::post('Order-customer/post', 'PostOrderCustomer')->name('Qr-table.post-order');
+     Route::get('menu/search', 'searchMenu')->name('Order.customer.search');
 });
 
 Route::controller(QrCodeController::class)->group(function(){
@@ -288,5 +289,6 @@ Route::controller(QrCodeController::class)->group(function(){
     Route::get('create-Qr', 'CraateQRTable')->name('Qr-table.form');
     Route::post('post-Qr', 'PostQRTable')->name('Qr-table.post');
     Route::get('QR-download', 'QRDetail')->name('Qr-table.download');
+   
     
 });

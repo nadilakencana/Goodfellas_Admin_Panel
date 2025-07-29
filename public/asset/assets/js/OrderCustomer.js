@@ -1,6 +1,72 @@
- const localhost = 'http://192.168.89.161:8000';
- const Token = $('meta[name="csrf-token"]').attr('content');
- 
+const localhost = 'http://192.168.1.22:8000';
+const Token = $('meta[name="csrf-token"]').attr('content');
+const mejaSession = $('.session-meja').attr('content');
+
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('search_menu');
+    const resultsContainer = document.getElementById('search-results-dropdown');
+    let searchTimeout;
+
+    function renderResults(data) {
+        resultsContainer.innerHTML = '';
+
+        if ((!data.data || data.data.length === 0)) {
+            resultsContainer.style.display = 'none';
+            return;
+        }
+
+        // Tampilkan hasil produk
+        if (data.data && data.data.length > 0) {
+            resultsContainer.style.display = 'block';
+            data.data.forEach(item => {
+                const imageUrl = item.image ? `/asset/assets/image/menu/${item.image}` : `/asset/assets/image/menu/drink.png`;
+                resultsContainer.innerHTML += `
+                    <div class="result-item">
+                        <img src="${imageUrl}" alt="${item.nama_menu}">
+                        <div class="info gap-3">
+                            <div class="name">${item.nama_menu}</div>
+                             <span class="pt-2">Rp. ${item.harga}</span>
+                        </div>
+                       
+                        <div class="btn-add-menu cursor-pointer" xid="${item.encrypted_id}">
+                            <img src="/asset/assets/image/icon/btn_Add.png" alt="" width="30" height="30">
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        
+    }
+
+    // Event listener untuk input
+    searchInput.addEventListener('keyup', () => {
+        clearTimeout(searchTimeout);
+        const keyword = searchInput.value;
+
+        if (keyword.length < 2) {
+            resultsContainer.style.display = 'none';
+            return;
+        }
+
+        searchTimeout = setTimeout(() => {
+            fetch(`${localhost}/menu/search?search=${keyword}`) 
+                .then(response => response.json())
+                .then(data => {
+                    renderResults(data);
+                    // console.log(data)
+                })
+                .catch(error => console.error('Error:', error));
+        }, 100); // Debounce 300ms
+    });
+
+    // Sembunyikan dropdown jika klik di luar area
+    document.addEventListener('click', function(event) {
+        if (!resultsContainer.contains(event.target)) {
+            resultsContainer.style.display = 'none';
+        }
+    });
+});
  
  $(() => {
     // Dropdown Sub Categori
@@ -18,7 +84,7 @@
     // end Dropdown Sub Categori
 
     // popUp Additional
-    $('.btn-add-menu').on('click', function(){
+    $('body').on('click','.btn-add-menu' ,function(){
         let tgt = $(this).attr('xid');
         additional(tgt, 'add', null);
         console.log(tgt)
@@ -282,21 +348,40 @@ function addToCart(idx, action, key){
     if(valid == true){
         $.post(URL, postData).done(function(data){
             if(data.success === 0){
-                alert(data.message);
-                // console.log(postData, data);
+                // alert(data.message);
+               Swal.fire({
+                    title: 'Faild!',
+                    text: data.message,
+                    icon: 'error',
+                })
 
             }else{
-                alert(data.message);
+                Swal.fire({
+					title: 'Success!',
+					text: data.message,
+					icon: 'success',
+				})
+                // alert(data.message);
                 window.location.reload();
                 // console.log(postData, data);
             }
         }).fail(function(err){
             console.log('error', err)
             console.log(postData, err);
-            alert('faild add this item to cart, please cek your order item again');
+            Swal.fire({
+				title: 'Faild!',
+				text: 'faild add this item to cart, please cek your order item again',
+				icon: 'error',
+			})
+            // alert('faild add this item to cart, please cek your order item again');
         })
     }else{
-        alert('please select one varian item');
+        new swal({
+			// title: 'Faild!',
+			text: 'please select one varian item',
+			icon: 'question',
+		})
+        // alert('please select one varian item');
     }
 
     
@@ -313,9 +398,19 @@ function ItemDelete(xid){
 
     $.post(URL, postData).done(function(data){
         if(data.success === 0 ){
-            alert(data.message);
+             Swal.fire({
+					title: 'Faild!',
+					text: data.message,
+					icon: 'error',
+				})
+            // alert(data.message);
         }else{
-            alert(data.message);
+             Swal.fire({
+					title: 'Success!',
+					text: data.message,
+					icon: 'success',
+				})
+            // alert(data.message);
             window.location.reload();
             
         }
@@ -328,7 +423,7 @@ function ItemDelete(xid){
 function postOrder(){
     let valid = true;
     const URL = localhost + '/Order-customer/post';
-
+    
     let customerName = $('input[name="customer_name"]').val();
     let subtotal = $('span.subtotal').attr('nominal');
     let $tax = $('.tax-total');
@@ -358,7 +453,21 @@ function postOrder(){
 
     if(customerName == ''){
         valid = false;
+        Swal.fire({
+			// title: 'Success!',
+			text: 'plase input your name in column name, If you have previously opened a bill, please enter the same name as the previous bill',
+			icon: 'question',
+		});
 
+    }
+
+    if (!mejaSession) { 
+        valid = false;
+        Swal.fire({
+            // title: 'Faild!',
+            text: 'Table number not found. Please rescan the QR Code at your table.',
+            icon: 'question',
+        });
     }
 
    
@@ -366,9 +475,19 @@ function postOrder(){
     if(valid == true){
         $.post(URL, postData).done(function(data){
         if(data.success === 0 ){
+                Swal.fire({
+					title: 'Faild!',
+					text: data.message,
+					icon: 'Error',
+				})
                 alert(data.message);
             }else{
-                alert(data.message);
+               Swal.fire({
+					title: 'Success!',
+					text: data.message,
+					icon: 'success',
+				})
+                // alert(data.message);
                 window.location.reload();
                 
             }
@@ -376,8 +495,6 @@ function postOrder(){
             console.log('error',data);
             
         });
-    }else{
-        alert('plase input your name in column name');
     }
 
 }

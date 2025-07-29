@@ -113,7 +113,10 @@ class POSController extends Controller
 
     public function DataBill()
     {
-        $billOrder = Orders::where('id_status', '1')->where('deleted', 0)->get();
+        // $billOrder = Orders::where('id_status', '1')->where('deleted', 0)->get();
+         $billOrder = Orders::where('id_status', '1')
+        ->select(['id','name_bill', 'no_meja','kode_pemesanan','id_status','created_at'])
+        ->where('deleted', 0)->get();
 
         return view('POS.part_lain.Daftar-Bill', compact('billOrder'));
     }
@@ -1230,8 +1233,23 @@ class POSController extends Controller
             try {
                 $refBill = $request->refId;
                 // $request->refId;
-                $Bill = Orders::where('id', $refBill)->first();
-                $Details = DetailOrder::where('id_order', $Bill->id)->get();
+
+                $Bill = Orders::with([
+                    'details.Discount_menu_order.discount',
+                    'details.AddOptional_order.optional_Add'
+                ])->find($refBill);
+
+                // $Bill = Orders::where('id', $refBill)->first();
+
+                if (!$Bill) {
+                    return response()->json(['message' => 'Bill tidak ditemukan'], 404);
+                }
+
+               
+                // $Details = DetailOrder::where('id_order', $Bill->id)->get();
+
+                $Details = $Bill->details;
+
                 $orderBill = Session::put('current_order', $Bill->id);
                 $taxs = Taxes::all();
 
@@ -1246,11 +1264,11 @@ class POSController extends Controller
 
                     foreach ($cart->Discount_menu_order as $discounts) {
 
-                        $totalDis = +$discounts->discount->rate_dis;
+                        $totalDis += $discounts->discount->rate_dis;
                     }
                     foreach ($cart->AddOptional_order as $adds) {
 
-                        $totalAdds = +$adds->optional_Add->harga;
+                        $totalAdds += $adds->optional_Add->harga;
                     }
 
 

@@ -26,7 +26,7 @@ class Menu extends Model
     ]; //mendeklarisasi atribut table menu yang harus di isi
 
     public $timestamps = false;
-
+    protected $appends = ['encrypted_id'];
 
  public function scopeFilter($query, array $filters){
 
@@ -55,5 +55,17 @@ class Menu extends Model
 
     public function additional(){
         return $this->belongsTo(GroupModifier::class, 'id_group_modifier','id');
+    }
+
+
+    /**
+     * Membuat atribut virtual 'encrypted_id'.
+     *
+     * @return string
+     */
+    public function getEncryptedIdAttribute()
+    {
+        // Fungsi encrypt() global milik Laravel
+        return encrypt($this->id);
     }
 }

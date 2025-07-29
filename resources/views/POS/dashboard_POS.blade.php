@@ -186,7 +186,7 @@
                                                             $total_sub = 0;
                                                             $total = 0;
 
-                                                            $discountTotal += $cart['total_dis'];
+                                                            $discountTotal += $cart['total_dis'] ?? 0;
                                                             $float_dis = $discountTotal / 100;
                                                             $SubtotalHarga = $cart['harga'] + $cart['harga_addtotal'];
                                                             $totalHarga =
@@ -217,7 +217,7 @@
                                                     @if (!@empty($cart['additional']))
                                                         @foreach ($cart['additional'] as $adds)
                                                             <small class="option add-op"
-                                                                id_adds="{{ $adds['id'] }}">{{ $adds['nama'] }} -
+                                                                id_adds="{{ $adds['id'] }}">{{ $adds['nama'] ?? "Notfound"}}  -
                                                                 {{ $adds['harga'] }}</small>
                                                         @endforeach
                                                     @else
@@ -492,17 +492,17 @@
                                 .then(() => {
                                     console.log('✅ Suara notifikasi berhasil diputar dari iframe.');
 
-                                    // Tunggu sedikit (opsional) agar suara terdengar dulu sebelum alert
+                                   
                                     setTimeout(() => {
                                         alert(
                                             `Check Order Now\nKode: ${data.order.kode_pemesanan}\nNomor Meja: ${data.order.no_meja}`
                                         );
-                                    }, 500); // delay 300ms setelah suara diputar
+                                    }, 500); 
                                 })
                                 .catch(err => {
                                     console.error('🔇 Gagal memutar audio dari iframe:', err);
 
-                                    // Jika gagal, langsung tampilkan alert
+                                    
                                     alert(
                                         `Check Order Now\nKode: ${data.order.kode_pemesanan}\nNomor Meja: ${data.order.no_meja}`
                                     );

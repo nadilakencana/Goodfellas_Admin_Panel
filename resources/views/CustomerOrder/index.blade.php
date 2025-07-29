@@ -11,23 +11,28 @@
     <link rel="stylesheet" href="{{ asset('asset/tamplate/css/bootstrap.min.css') }}">
     <script src="{{ asset('asset/tamplate/js/bootstrap.bundel.min.js') }}"></script>
     <link rel="stylesheet" href="{{ asset('asset/assets/css/styleCustomerPage.css') }}">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-<body style="background-color: rgb(200, 199, 199)">
-    <div class="container-fluid  content-wrapper">
-        <div class="row">
-            <div class="col-12 px-0 col-sm-8 col-md-4 mx-auto">
+    {{-- <link rel="stylesheet" href="{{asset('asset/tamplate/plugins/sweetalert2-11.22.2/package/dis/sweetalert2.min.css')}}"> --}}
+    {{-- <meta name="csrf-token" content="{{ csrf_token() }}"> --}}
+    
+    <body style="background-color: rgb(200, 199, 199)">
+        <div class="container-fluid  content-wrapper">
+            <div class="row">
+                <div class="col-12 px-0 col-sm-8 col-md-8 col-lg-8 mx-auto">
+                    
+                    @include('CustomerOrder.navbar')
+                    <div class="main-content bg-white p-0">
+                        @yield('content_order')
+                    </div>
+                    @include('CustomerOrder.footer-nav')
                 
-                @include('CustomerOrder.navbar')
-                <div class="main-content bg-white p-0">
-                    @yield('content_order')
                 </div>
-                @include('CustomerOrder.footer-nav')
-               
             </div>
         </div>
-    </div>
-</body>
 
-<script src="{{asset('asset/assets/js/OrderCustomer.js')}}"></script>
+        <script src="{{asset('asset/assets/js/sweetalert2@11.js')}}"></script>
+        <script src="{{asset('asset/assets/js/OrderCustomer.js')}}"></script>
+
+    </body>
+
 
 </html>

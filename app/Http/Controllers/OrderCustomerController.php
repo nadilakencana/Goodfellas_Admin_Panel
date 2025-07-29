@@ -390,7 +390,12 @@ class OrderCustomerController extends Controller
                 $rand = $this->kode_pesanan->kodePesanan();
                 $meja = Session::get('meja');
                
-
+                if (!$meja) {
+                    return response()->json([
+                        'success' => 0,
+                        'message' => 'Table number not found. Please rescan the QR Code at your table.'
+                    ], 400); 
+                }
                
                 $order = Orders::where('name_bill', $request->customer_name)
                     ->where('no_meja', $meja)
@@ -545,6 +550,42 @@ class OrderCustomerController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+       
+    }
+
+    public function searchMenu(Request $request){
+        $request->validate([
+            'search' => 'required|string|min:2',
+        ]);
+
+        $search = $request->input('search');
+
+        try{
+
+            $menu = Menu::where('nama_menu', 'LIKE', '%'.$search.'%')
+            ->with(['kategori','subKategori'])
+            ->where('delete_menu', 0)->where('custom', 0)->get();
+            // dd($menu);
+
+            $kategoriIds = $menu->pluck('kategori.id')->unique()->all();
+
+
+            $subkat = SubKategori::whereIn('id_kategori', $kategoriIds)->get();
+
+            return response()->json([
+                'data' => $menu
+            ],200);
+            
+        }catch (\Exception $e){
+            return response()->json([
+                'error' => $e->getMessage()
+
+            ],500);
+        }
+       
+
+        
+        
        
     }
 

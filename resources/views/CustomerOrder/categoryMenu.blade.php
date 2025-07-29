@@ -1,7 +1,10 @@
 @extends('CustomerOrder.index')
 @section('content_order')
     <div class="pt-5">
-        <div class="container py-4">
+        <div class="container py-4 search" id="container_search">
+            
+        </div>
+        <div class="container py-4" id="menu_kat">
             <div class="header d-flex justify-content-between align-items-center">
                 <p class="fw-bold fs-3">{{ $Cat->kategori_nama }}</p>
                 <div class="filter d-flex align-items-center gap-2 position-relative" id="dropdown-cat">

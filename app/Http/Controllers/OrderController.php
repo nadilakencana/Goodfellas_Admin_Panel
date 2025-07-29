@@ -419,7 +419,7 @@ class OrderController extends Controller
             $order->id_admin_deleted = $admin;
             $order->alasan_delete = $request->alasan_delete;
             $order->save();
-             if($order){
+            if($order){
                 $refundOrder = RefundOrder::where('id_order', $order->id)->first();
                 $refundOrder->deleted = 1;
                 $refundOrder->id_admin_delete =  $order->id_admin_deleted;
