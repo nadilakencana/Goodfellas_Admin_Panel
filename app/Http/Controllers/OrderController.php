@@ -464,6 +464,7 @@ class OrderController extends Controller
             $menuDetail = $request->detail_menu;
             $menuRefund = $request->menu;
             $orders = Orders::where('id', $request->order_id)->first();
+            // dd($orders);
             // dd($menuDetail, $menuRefund);
         
             try{
@@ -604,6 +605,7 @@ class OrderController extends Controller
                 })->sum('total_discount');
 
                 $tax_order_pb1 = TaxOrder::where('id_order', $orders->id)->where('id_tax', 1)->first();
+                // dd($tax_order_pb1);
                 $tax_order_pb1->total_tax = $request->tx_pb1;
                 $tax_order_pb1->save();
 

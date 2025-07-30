@@ -1,4 +1,4 @@
-const localhost = 'http://192.168.1.22:8000';
+const localhost = 'http://192.168.89.122:8000';
 const Token = $('meta[name="csrf-token"]').attr('content');
 const mejaSession = $('.session-meja').attr('content');
 

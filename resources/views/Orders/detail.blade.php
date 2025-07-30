@@ -845,6 +845,7 @@
            var $adds = $target.find('.detail-itm .option.add-op');
            var $dis = $target.find('.option.discount');
            var xidOrder = $('.card-body.data').attr('data-id');
+           console.log('data Id order',xidOrder);
            var $tgt_footer = $('.footer-sub-total');
            var subtotal_order = $tgt_footer.find('.txt-price-total.subtotal').attr('data-subtotal');
            var total_order = $tgt_footer.find('.txt-price-total.total').attr('data-total');

@@ -36,7 +36,7 @@ class QrCodeController extends Controller
                     'meja' => 'required'
                 ]);
 
-                $url = 'http://192.168.89.108:8000/Order/Customer';
+                $url = 'http://192.168.89.122:8000/Order/Customer';
 
                 $data = new QRTable();
                 $data->meja = $request->meja;

@@ -405,29 +405,19 @@ class OrderCustomerController extends Controller
 
                 $edit = $order ? true : false;
 
-                $taxes = Taxes::all();
                 $txs = [];
                 $totalTax = 0;
                 if($order){
                     $subtotal = $request->subtotal + $order->subtotal;
-                    foreach($taxes as $tx){
-                         $nominalTax = 0;
-                        $desimalTax = $tx->tax_rate / 100;
-                        $nominalTax = $subtotal * $desimalTax;
-                        $totalTax += $nominalTax;
-
-                        $txs[]= [
-                            'xid' => $tx->id,
-                            'nominal' => $nominalTax
-                        ];
-                    }
-
-                    $total = $subtotal + $totalTax; 
-
+                    $txs = Taxes::all()->map(function($tx) use ($subtotal) {
+                        return ['xid' => $tx->id, 'nominal' => $subtotal * ($tx->tax_rate / 100)];
+                    })->toArray();
+                    $totalTax = array_sum(array_column($txs, 'nominal'));
+                    $total = $subtotal + $totalTax;
                 }
               
                
-
+                // dd($txs, $totalTax, $total);
 
                 // dd($total, $subtotal);
                
@@ -507,8 +497,7 @@ class OrderCustomerController extends Controller
                     $Tax = $txs;
                 }
 
-               
-                // dd($Tax);
+                // dd($Tax, $txs );
 
                 foreach ($Tax as $taxs) {
                     $taxes = new TaxOrder();
