@@ -43,10 +43,10 @@
                   <th>Total Expected</th>
                   <th>Total Actual</th>
                   <th>Difference</th>
-                  <th>Action</th>
+                  <th style="width:200px">Action</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody style="font-size: 12px;">
                 @php $no=1; @endphp
                 @foreach ($sift as $sift )
                 <tr>
@@ -75,11 +75,14 @@
                     Rp.{{number_format( $sift->difference, 0,',','.')}}
 
                   </td>
-                  <td>
-                    <a href="{{ route('print_sift', $sift->id) }}" class="btn btn-primary">Print</a>
+                  <td class="flex " style="display: flex;justify-content:center;gap:10px;font-size:10px">
+                    <a href="{{ route('print_sift', $sift->id) }}" class="btn btn-primary" style="font-size:13px">Print</a>
                     @if(empty($sift->end_time))
-                    <div class="btn btn-danger end_sift" data-type="end_sift" xid="{{ $sift->id }}">
+                    <div class="btn btn-danger end_sift" data-type="end_sift" xid="{{ $sift->id }}" style="font-size:13px">
                       End Sift
+                    </div>
+                    <div class="btn btn-danger delete" data-type="delete" xid="{{ $sift->id }}" style="font-size:13px">
+                      Delete
                     </div>
                     @endif
                   </td>

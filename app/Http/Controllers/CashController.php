@@ -25,12 +25,37 @@ class CashController extends Controller
 
         if(Sentinel::check()){
            $sift = Sift::all();
+           
            return view('cash.dataSiftCash', compact('sift'));
 
        }else{
            return redirect()->route('login');
        }
       
+   }
+
+   public function deleteShift(Request $request){
+        if(Sentinel::check()){
+
+            $sift = Sift::find($request->xid);
+            // $sift->deleted = 1;
+            // $sift->alasan_delete = $request->keterangan;
+            $sift->delete();
+
+            if($sift){
+                $cash = Cash::where('id_sift', $sift->id)->first();
+                // $cash->deleted = 1;
+                $cash->delete();
+            }
+ 
+            return response()->json([
+                'message' => 'Data sift berhasil di hapus'
+            ],200);
+
+
+        }else{
+            return redirect()->route('login');
+        }
    }
 
    public function startSift(Request $request){
@@ -421,6 +446,34 @@ class CashController extends Controller
                return redirect()->back()->with('error', 'End sift Unsuccess to save');
             }
 
+        }else{
+           return redirect()->route('login');
+        }
+    }
+
+    public function DeleteSift(Request $request){
+
+        if(Sentinel::check()){
+           $sift = Sift::findOrFail($request->id);
+           if(!$sift){
+            return response()->json(['message'=> 'Data Sift tidak di temukan'], 403);
+           }
+
+           $cash = Cash::where('created_at', $sift->created_at)->where('tanggal', $sift->tanggal)->get();
+           if($cash){
+                foreach($cash as $cash){
+                    $cash->delete();
+                }
+
+                
+           }
+           $sift->delete();
+
+           return response()->json([
+               'success' => 1,
+               'message' => 'Data Sift berhasil di hapus',
+               'data' => $sift
+           ]);
         }else{
            return redirect()->route('login');
         }

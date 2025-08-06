@@ -24,7 +24,7 @@
                 <div class="tab-navigation">
                     <div class="tab" target-panel="panel1" order="1">Favorite</div>
                     <div class="tab" target-panel="panel2" order="2">All Item</div>
-                    <div class="tab" target-panel="panel3" order="3">Custom</div>
+                    {{-- <div class="tab" target-panel="panel3" order="3">Custom</div> --}}
                 </div>
             </div>
             <div class="row">
@@ -110,7 +110,7 @@
                             </div>
 
                             {{-- custom menu --}}
-                            <div class="panel" data-panel="panel3" panel-order="3">
+                            {{-- <div class="panel" data-panel="panel3" panel-order="3">
                                 <div class="custom-part">
 
                                     <input type="text" id="kalkulator" class="nilai-custom">
@@ -135,7 +135,7 @@
                                             < </span>
                                     </div>
                                 </div>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>
@@ -447,7 +447,7 @@
         </div>
     </div>
 
-    <iframe class="frameHolder" src="{{ route('notif') }}" allow="autoplay" style="display:none;"></iframe>
+    {{-- <iframe class="frameHolder" src="{{ route('notif') }}" allow="autoplay" style="display:none;"></iframe> --}}
     {{-- <div class="frameHolder"></div> --}}
 @stop
 
@@ -524,10 +524,8 @@
 
     </script>
     <script>
-        var currentBillId = 0;
 
-
-
+        let currentBillId = 0;
         $(() => {
 
             var throttledButtonClick;
