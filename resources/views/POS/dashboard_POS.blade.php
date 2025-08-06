@@ -769,6 +769,7 @@
 
             $('.print-act-btn.split-bill').on('click', function() {
                 var idx = $(this).attr('data-xid');
+                console.log(idx);
                 var $server = $('.print-act-btn.split-bill.server');
                 if ($server.length > 0) {
                     getDataDetailSplitServer(idx);
@@ -2267,17 +2268,18 @@
             }
 
             function splitBill($elment, type) {
-                var nomerMeja = $('.nomer-meja').val();
-                var id = $elment.attr('id-item');
-                var $target = $('.itm');
-                var $itm = $target.find('.act-edit input:checked').prop('checked', true);
-                var subTotal = $('.footer-sub-total .txt-price-total.subtotal ').attr('subtotal');
-                var $elm_pb = $('.txt-price-total.PB1');
-                var $elm_service = $('.txt-price-total.Service');
-                var total = $('.footer-sub-total .txt-price-total.total ').attr('total');
-                var $tgt = $itm.closest('.itm-bil');
-                var $adds = $tgt.find('.detail-itm .option.add-op');
-                var $dis = $tgt.find('.option.discount');
+                let $popup = $('.popup-qty');
+                let nomerMeja = $('.nomer-meja').val();
+                let id = $elment.attr('id-item');
+                let $target = $popup.find('.detil-bil .itm-bil .itm');
+                let $itm = $target.find('.part-float-right .act-edit input:checked').prop('checked', true);
+                let subTotal_ = $('.footer-sub-total .txt-price-total.subtotal ').attr('subtotal');
+                let $elm_pb = $('.txt-price-total.PB1');
+                let $elm_service = $('.txt-price-total.Service');
+                let total = $('.footer-sub-total .txt-price-total.total ').attr('total');
+                let $tgt = $itm.closest('.itm-bil');
+                let $adds = $tgt.find('.detail-itm .option.add-op');
+                let $dis = $tgt.find('.option.discount');
 
                 var $targetpayment = $('.pop-payment');
                 var paymentId = $targetpayment.find('.content-payment .part-payment.active').attr('xid');
@@ -2286,7 +2288,7 @@
                 var change_ = $tgrPayment.find('.form-cash input.convert-change').val();
 
                 {{--  total = total.replace(/\./g, '');
-            subTotal = subTotal.replace(/\./g, '');  --}}
+                subTotal_ = subTotal_.replace(/\./g, '');  --}}
 
                 var itms = [];
                 var Adds = [];
@@ -2346,17 +2348,17 @@
                 console.log(TotalRateDis);
 
                 $itm.each(function() {
-                    var $elm = $(this);
-                    var id = $elm.attr('id-item');
-                    var $perent = $elm.closest('.itm-bil');
-                    var price = $perent.find('.price').attr('price');
-                    var discount = $perent.find('.discount').attr('nominal-dis');
-                    var qty = $perent.find('.control-qty input.qty').val();
-                    var $adds = $perent.find('.detail-itm .option.add-op');
-                    var $dis = $perent.find('.option.discount');
-                    var varian = $perent.find('.option.varian-op').attr('data-id');
-                    var itmAds = [];
-                    var itmsDis = [];
+                    let $elm = $(this);
+                    let id = $elm.attr('id-item');
+                    let $perent = $elm.closest('.itm-bil');
+                    let price = $perent.find('.price').attr('price');
+                    let discount = $perent.find('.discount').attr('nominal-dis');
+                    let qty = $perent.find('.control-qty input.qty').val();
+                    let $adds = $perent.find('.detail-itm .option.add-op');
+                    let $dis = $perent.find('.option.discount');
+                    let varian = $perent.find('.option.varian-op').attr('data-id');
+                    let itmAds = [];
+                    let itmsDis = [];
 
                     $adds.each(function() {
                         var $tgtAds = $(this);
@@ -2447,7 +2449,7 @@
 
                 //update Order
 
-                var SubNow = parseInt(subTotal) - totalSplitPrice;
+                var SubNow = parseInt(subTotal_) - totalSplitPrice;
                 //subtotal Db1 jika bill memiliki data item yang di retur
                 var SubTotalDb1 = $('.footer-sub-total .txt-price-total.subtotal ').attr('data-subT');
                 if (SubTotalDb1 !== undefined && SubTotalDb1 !== null && SubTotalDb1 !== "") {

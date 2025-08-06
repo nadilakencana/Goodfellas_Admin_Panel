@@ -958,142 +958,305 @@ class POSController extends Controller
     public function splitBill(Request $request)
     {
         if (Sentinel::check()) {
-            try {
-                $userId = Sentinel::getUser();
-                $admin = $userId->id;
-                $rand = $this->kode_pesanan->kodePesanan();
-                $date = Carbon::now()->format('Y-m-d');
+            
+              // 1. Validasi request dasar
+        $validated = $request->validate([
+            'target_order' => 'required|exists:orders,id',
+            'itms' => 'required|array|min:1',
+            'itms.*.id_item' => 'required|integer',
+            'itms.*.qty' => 'required|integer|min:1',
+        ]);
 
-                $order = Orders::where('id', $request->get('target_order'))->first();
-                $order->subtotal = $request->subtotal;
-                $order->total_order = $request->total;
-                // dd($order);
-                $order->save();
+        // 2. Gunakan Transaksi Database untuk keamanan data
+        DB::beginTransaction();
 
-                $orderNew = new Orders();
-                $orderNew->id_admin = $admin;
-                $orderNew->name_bill = $order->name_bill . '-Split bill';
-                $orderNew->id_booking = $order->id_booking;
-                $orderNew->kode_pemesanan = $rand;
-                $orderNew->no_meja = $order->no_meja;
-                $orderNew->id_status = 1;
-                $orderNew->subtotal = $request->subtotalNew;
-                $orderNew->total_order = $request->totalNew;
-                $orderNew->cash = $request->cash;
-                $orderNew->tanggal = $date;
-                $orderNew->change_ = $request->change;
-                $orderNew->id_type_payment = $request->type_pyment;
-                $orderNew->id_status = 2;
+        try {
+            $userId = Sentinel::getUser()->id;
+            $originalOrder = Orders::find($validated['target_order']);
 
-                //dd($orderNew);
-                if ($orderNew->save()) {
-                    // if($request->has('itms')){
-                    $itms = $request->itms;
-                    // dd($itms);
-                    foreach ($itms as $itm) {
-                        $itmDetail = DetailOrder::where('id', $itm['id_item'])->first();
-
-                        if ($itm['qty'] == $itmDetail->qty) {
-
-                            $itmDetail->id_order = $orderNew->id;
-                            $itmDetail->save();
-                        } else {
-                            // new item if the split bill ID qty is not the same as the old qty
-                            // and bill order id details split new qty in less with old qty and more update also total
-                            // and additional updates of quantity, quantity and likes also order discount details
-
-                            $itmDetail->qty = $itmDetail->qty - $itm['qty'];
-                            $itmDetail->total = $itmDetail->total - $itm['jumlah'];
-
-                            if ($itmDetail->save()) {
-                                $itms_old_adds = Additional_menu_detail::where('id_detail_order', $itmDetail->id)->get();
-
-                                foreach ($itms_old_adds as $adds_old) {
-                                    $update_adds = Additional_menu_detail::where('id', $adds_old->id)->first();
-                                    $priceAdds = OptionModifier::where('id', $update_adds->id_option_additional)->first();
-                                    $update_adds->qty = $itmDetail->qty;
-                                    $update_adds->total = $priceAdds->harga * $itmDetail->qty;
-
-                                    $update_adds->save();
-                                }
-
-                                $itms_old_discount = Discount_detail_order::where('id_detail_order', $itmDetail->id)->get();
-
-                                foreach ($itms_old_discount as $dis_old) {
-                                    $update_dis = Discount_detail_order::where('id', $dis_old->id)->first();
-                                    $rate_dis = Discount::where('id', $update_dis->id_discount)->first();
-                                    $update_dis->total_discount = $itmDetail->total * ($rate_dis->rate_dis / 100);
-
-                                    $update_dis->save();
-                                }
-                            }
-
-                            $itmOrder = new DetailOrder();
-                            $itmOrder->id_order = $orderNew->id;
-                            $itmOrder->harga = $itm['harga'];
-                            $itmOrder->total = $itm['jumlah'];
-                            $itmOrder->id_menu = $itmDetail->id_menu;
-                            $itmOrder->qty = $itm['qty'];
-                            $itmOrder->catatan = $itmDetail->catatan;
-                            $itmOrder->id_sales_type = $itmDetail->id_sales_type;
-                             $itmOrder->id_varian = $itm['varian'];
-
-                            if ($itmOrder->save()) {
-                                if (isset($itm['Adds'])) {
-                                    $Adds = $itm['Adds'];
-
-                                    foreach ($Adds as $itmAdds) {
-                                        $adds = new Additional_menu_detail();
-                                        $adds->id_detail_order = $itmOrder->id;
-                                        $adds->id_option_additional = $itmAdds['id'];
-                                        $adds->qty = $itmOrder->qty;
-                                        $adds->total = $itmAdds['hargaAds'] * $itmOrder->qty;
-
-                                        $adds->save();
-                                    }
-                                }
-
-                                if (isset($itm['Discount'])) {
-                                    $discount = $itm['Discount'];
-
-                                    foreach ($discount as $Itmdis) {
-                                        $dis = new Discount_detail_order();
-                                        $dis->id_detail_order = $itmOrder->id;
-                                        $dis->id_discount = $Itmdis['id'];
-
-                                        $rateDis = $Itmdis['rate'] / 100;
-                                        $nominalDis = $itmOrder->total * $rateDis;
-                                        $dis->total_discount = $nominalDis;
-
-                                        $dis->save();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // }
-                }
-                return response()->json([
-                    'success' => 1,
-                    'message' => 'Data Tersimpan',
-                    'data' => [
-                        'new_order' => $orderNew,
-                        'items' => $itms
-                    ]
-                ], 200);
-            } catch (\Exception $e) {
-                return response()->json([
-                    'message' => 'Failed to split bill',
-                    'data' => [
-                        'new_order' => $orderNew,
-                        'items' => $itms
-                    ],
-                    'error' => $e->getMessage()
-                ], 500);
+            // Validasi tambahan: jangan split bill yang sudah lunas atau dibatalkan
+            if ($originalOrder->id_status != 1) {
+                throw new \Exception('Hanya order dengan status "Open" yang bisa di-split.');
             }
+
+            // 3. Buat Order Baru untuk hasil split
+            $newSplitOrder = new Orders();
+            $newSplitOrder->id_admin = $userId;
+            $newSplitOrder->name_bill = $originalOrder->name_bill . '-Split';
+            $newSplitOrder->kode_pemesanan = $this->kode_pesanan->kodePesanan();
+            $newSplitOrder->no_meja = $originalOrder->no_meja;
+            $newSplitOrder->id_booking = $originalOrder->id_booking;
+            $newSplitOrder->id_status = 2; // Langsung dianggap lunas sesuai alur pembayaran
+            $newSplitOrder->id_type_payment = $request->type_pyment;
+            $newSplitOrder->cash = $request->cash;
+            $newSplitOrder->change_ = $request->change;
+            $newSplitOrder->tanggal = Carbon::now()->format('Y-m-d');
+            // Total dan Subtotal akan dihitung ulang nanti, set ke 0 dulu
+            $newSplitOrder->subtotal = 0;
+            $newSplitOrder->total_order = 0;
+            $newSplitOrder->save();
+
+
+            // 4. Proses setiap item yang akan di-split
+            foreach ($validated['itms'] as $itemToSplit) {
+                $splitQty = (int)$itemToSplit['qty'];
+
+                // Cari item detail di order ASLI. Ini validasi paling penting.
+                $originalItemDetail = DetailOrder::where('id', $itemToSplit['id_item'])
+                    ->where('id_order', $originalOrder->id)
+                    ->first();
+
+                // Jika item tidak ada di order asli, batalkan semua proses
+                if (!$originalItemDetail) {
+                    throw new \Exception("Item dengan ID {$itemToSplit['id_item']} tidak ditemukan pada order ini.");
+                }
+                
+                // Jika kuantitas split lebih besar dari yang ada, batalkan.
+                if($splitQty > $originalItemDetail->qty) {
+                    throw new \Exception("Kuantitas split untuk item {$originalItemDetail->menu->nama_menu} melebihi kuantitas yang ada.");
+                }
+
+                // Jika kuantitas sama (pindah semua item)
+                if ($splitQty == $originalItemDetail->qty) {
+                    $originalItemDetail->id_order = $newSplitOrder->id;
+                    $originalItemDetail->save(); // Relasi (addon, diskon) akan ikut
+                } else {
+                    // Jika kuantitas dibagi (buat item baru, kurangi item lama)
+                    
+                    // a. Buat item detail baru untuk order split
+                    $newItemDetail = $originalItemDetail->replicate(['id']); // Replicate/duplikat data
+                    $newItemDetail->id_order = $newSplitOrder->id;
+                    $newItemDetail->qty = $splitQty;
+                    // Hitung ulang total berdasarkan harga asli dan kuantitas baru
+                    $totalAddonsPerItem = $originalItemDetail->AddOptional_order->sum('optional_Add.harga');
+                    $newItemDetail->total = ($originalItemDetail->harga + $totalAddonsPerItem) * $newItemDetail->qty;
+                    $newItemDetail->save();
+
+                    // b. Duplikat relasi (addons & discounts) untuk item baru
+                    foreach ($originalItemDetail->AddOptional_order as $addon) {
+                        $newAddon = $addon->replicate(['id']);
+                        $newAddon->id_detail_order = $newItemDetail->id;
+                        $newAddon->save();
+                    }
+                    foreach ($originalItemDetail->Discount_menu_order as $discount) {
+                        $newDiscount = $discount->replicate(['id']);
+                        $newDiscount->id_detail_order = $newItemDetail->id;
+                        // Hitung ulang nominal diskon untuk item baru
+                        $rate = $discount->discount->rate_dis / 100;
+                        $newDiscount->total_discount = $newItemDetail->total * $rate;
+                        $newDiscount->save();
+                    }
+
+                    // c. Update item detail lama (kurangi kuantitas dan total)
+                    $originalItemDetail->qty -= $splitQty;
+                    $originalItemDetail->total = ($originalItemDetail->harga + $totalAddonsPerItem) * $originalItemDetail->qty;
+                    $originalItemDetail->save();
+                }
+            }
+
+            // 5. Hitung ulang total akhir untuk KEDUA order. Ini langkah paling aman.
+            $this->recalculateAndUpdateOrderTotals($originalOrder->id);
+            $this->recalculateAndUpdateOrderTotals($newSplitOrder->id);
+            
+            // Jika semua berhasil, commit transaksi
+            DB::commit();
+
+            return response()->json([
+                'success' => 1,
+                'message' => 'Split bill berhasil disimpan.',
+                'data' => [
+                    'new_order' => $newSplitOrder->fresh(), // Ambil data terbaru dari DB
+                    'original_order_id' => $originalOrder->id
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            // Jika ada error, batalkan semua perubahan
+            DB::rollBack();
+
+            Log::error("Split Bill Failed: " . $e->getMessage(), ['request' => $request->all()]);
+
+            return response()->json([
+                'success' => 0,
+                'message' => 'Proses split bill gagal.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
+            // try {
+            //     $userId = Sentinel::getUser();
+            //     $admin = $userId->id;
+            //     $rand = $this->kode_pesanan->kodePesanan();
+            //     $date = Carbon::now()->format('Y-m-d');
+
+            //     $order = Orders::where('id', $request->get('target_order'))->first();
+            //     $order->subtotal = $request->subtotal;
+            //     $order->total_order = $request->total;
+            //     // dd($order);
+            //     $order->save();
+
+            //     $orderNew = new Orders();
+            //     $orderNew->id_admin = $admin;
+            //     $orderNew->name_bill = $order->name_bill . '-Split bill';
+            //     $orderNew->id_booking = $order->id_booking;
+            //     $orderNew->kode_pemesanan = $rand;
+            //     $orderNew->no_meja = $order->no_meja;
+            //     $orderNew->id_status = 1;
+            //     $orderNew->subtotal = $request->subtotalNew;
+            //     $orderNew->total_order = $request->totalNew;
+            //     $orderNew->cash = $request->cash;
+            //     $orderNew->tanggal = $date;
+            //     $orderNew->change_ = $request->change;
+            //     $orderNew->id_type_payment = $request->type_pyment;
+            //     $orderNew->id_status = 2;
+
+            //     //dd($orderNew);
+            //     if ($orderNew->save()) {
+            //         // if($request->has('itms')){
+            //         $itms = $request->itms;
+            //         // dd($itms);
+            //         foreach ($itms as $itm) {
+            //             $itmDetail = DetailOrder::where('id', $itm['id_item'])->where('id_order', $order->id)->first();
+
+            //             if ($itm['qty'] == $itmDetail->qty) {
+
+            //                 $itmDetail->id_order = $orderNew->id;
+            //                 $itmDetail->save();
+            //             } else {
+            //                 // new item if the split bill ID qty is not the same as the old qty
+            //                 // and bill order id details split new qty in less with old qty and more update also total
+            //                 // and additional updates of quantity, quantity and likes also order discount details
+
+            //                 $itmDetail->qty = $itmDetail->qty - $itm['qty'];
+            //                 $itmDetail->total = $itmDetail->total - $itm['jumlah'];
+
+            //                 if ($itmDetail->save()) {
+            //                     $itms_old_adds = Additional_menu_detail::where('id_detail_order', $itmDetail->id)->get();
+
+            //                     foreach ($itms_old_adds as $adds_old) {
+            //                         $update_adds = Additional_menu_detail::where('id', $adds_old->id)->first();
+            //                         $priceAdds = OptionModifier::where('id', $update_adds->id_option_additional)->first();
+            //                         $update_adds->qty = $itmDetail->qty;
+            //                         $update_adds->total = $priceAdds->harga * $itmDetail->qty;
+
+            //                         $update_adds->save();
+            //                     }
+
+            //                     $itms_old_discount = Discount_detail_order::where('id_detail_order', $itmDetail->id)->get();
+
+            //                     foreach ($itms_old_discount as $dis_old) {
+            //                         $update_dis = Discount_detail_order::where('id', $dis_old->id)->first();
+            //                         $rate_dis = Discount::where('id', $update_dis->id_discount)->first();
+            //                         $update_dis->total_discount = $itmDetail->total * ($rate_dis->rate_dis / 100);
+
+            //                         $update_dis->save();
+            //                     }
+            //                 }
+
+            //                 $itmOrder = new DetailOrder();
+            //                 $itmOrder->id_order = $orderNew->id;
+            //                 $itmOrder->harga = $itm['harga'];
+            //                 $itmOrder->total = $itm['jumlah'];
+            //                 $itmOrder->id_menu = $itmDetail->id_menu;
+            //                 $itmOrder->qty = $itm['qty'];
+            //                 $itmOrder->catatan = $itmDetail->catatan;
+            //                 $itmOrder->id_sales_type = $itmDetail->id_sales_type;
+            //                  $itmOrder->id_varian = $itm['varian'];
+
+            //                 if ($itmOrder->save()) {
+            //                     if (isset($itm['Adds'])) {
+            //                         $Adds = $itm['Adds'];
+
+            //                         foreach ($Adds as $itmAdds) {
+            //                             $adds = new Additional_menu_detail();
+            //                             $adds->id_detail_order = $itmOrder->id;
+            //                             $adds->id_option_additional = $itmAdds['id'];
+            //                             $adds->qty = $itmOrder->qty;
+            //                             $adds->total = $itmAdds['hargaAds'] * $itmOrder->qty;
+
+            //                             $adds->save();
+            //                         }
+            //                     }
+
+            //                     if (isset($itm['Discount'])) {
+            //                         $discount = $itm['Discount'];
+
+            //                         foreach ($discount as $Itmdis) {
+            //                             $dis = new Discount_detail_order();
+            //                             $dis->id_detail_order = $itmOrder->id;
+            //                             $dis->id_discount = $Itmdis['id'];
+
+            //                             $rateDis = $Itmdis['rate'] / 100;
+            //                             $nominalDis = $itmOrder->total * $rateDis;
+            //                             $dis->total_discount = $nominalDis;
+
+            //                             $dis->save();
+            //                         }
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //         // }
+            //     }
+            //     return response()->json([
+            //         'success' => 1,
+            //         'message' => 'Data Tersimpan',
+            //         'data' => [
+            //             'new_order' => $orderNew,
+            //             'items' => $itms
+            //         ]
+            //     ], 200);
+            // } catch (\Exception $e) {
+            //     return response()->json([
+            //         'message' => 'Failed to split bill',
+            //         'data' => [
+            //             'new_order' => $orderNew,
+            //             'items' => $itms
+            //         ],
+            //         'error' => $e->getMessage()
+            //     ], 500);
+            // }
         } else {
             return redirect()->route('login');
         }
+    }
+
+    private function recalculateAndUpdateOrderTotals(int $orderId)
+    {
+        $order = Orders::with('details.Discount_menu_order')->find($orderId);
+        if (!$order) {
+            return;
+        }
+
+        // Jika tidak ada item detail lagi, hapus order (untuk order asli yang itemnya pindah semua)
+        if ($order->details->isEmpty()) {
+            $order->delete();
+            return;
+        }
+
+        $sumDetailTotal = $order->details->sum('total');
+        $sumDiscountTotal = 0;
+        foreach($order->details as $detail) {
+            $sumDiscountTotal += $detail->Discount_menu_order->sum('total_discount');
+        }
+
+        $finalSubtotal = $sumDetailTotal - $sumDiscountTotal;
+
+        // Hitung ulang pajak
+        $totalTax = 0;
+        $taxes = Taxes::all(); // Sebaiknya di-cache jika memungkinkan
+        foreach($taxes as $tax) {
+            $totalTax += $finalSubtotal * ($tax->tax_rate / 100);
+        }
+
+        $grandTotal = $finalSubtotal + $totalTax;
+
+        // Update order
+        $order->subtotal = $finalSubtotal;
+        $order->total_order = $grandTotal;
+        $order->save();
+
+        // (Opsional) Update juga data di tabel tax_orders jika ada
     }
 
 
