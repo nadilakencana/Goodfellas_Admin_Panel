@@ -10,7 +10,11 @@ class TaxOrder extends Model
     use HasFactory;
     protected $table = 'tax_order';
 
-    protected $guarded = [];
+    protected $fillable = [
+        'id_order',
+        'id_tax',
+        'total_tax',
+    ]; 
 
     public $timestamps = true;
 

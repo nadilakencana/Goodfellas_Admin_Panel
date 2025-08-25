@@ -222,6 +222,21 @@ a {
     width: 100%;
     object-fit: cover;
 }
+
+.status {
+    padding: 10px;
+    border: 1px solid red;
+    background: #ce3131;
+    color: white;
+    border-radius: 10px;
+}
+.btn-add-menu.cursor-pointer {
+    width: 20%;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
 /* .btn-add{
     cursor: pointer;
 } */

@@ -54,7 +54,7 @@
                                                     @foreach ($itemMenu as $item)
                                                         {{-- @if ($item->id_kategori == 1) --}}
                                                         <div class="item-card-menu" idx="{{ $item->id }}"
-                                                            target-price="{{ $item->harga }}">
+                                                            target-price="{{ $item->harga }}" stok="{{$item->stok}}" status="{{$item->active}}">
                                                             <div class="menu-sub">
                                                                 <div class="icon">
                                                                     <p class="txt-icon">{{ $item->nama_menu }}</p>
@@ -62,7 +62,22 @@
                                                                 <p class="txt-subMenu">{{ $item->nama_menu }}</p>
                                                             </div>
                                                             <div class="harga">
-                                                                <p class="txt-subMenu">{{ $item->harga }}</p>
+                                                                @if($item->kategori->kategori_nama === 'Foods')
+                                                                    @if($item->stok > 0 && $item->active )
+                                                                   <p class="txt-subMenu">{{ $item->harga }}</p>
+                                                                    @else
+                                                                    <div class="status" style="color: rgb(251, 42, 42)">unavailable</div>
+                                                                    @endif
+                                                                @elseif ($item->kategori->kategori_nama === 'Drinks')
+                                                                    @if($item->active !== 0)
+                                                                    <p class="txt-subMenu">{{ $item->harga }}</p>
+                                                                    @else
+                                                                    <div class="status" style="color: rgb(251, 42, 42)">unavailable</div>
+                                                                    @endif
+                                                                @endif
+
+                                                               
+                                                               
                                                             </div>
                                                         </div>
                                                         {{-- @endif --}}
@@ -108,34 +123,6 @@
                                     </div>
                                 </div>
                             </div>
-
-                            {{-- custom menu --}}
-                            {{-- <div class="panel" data-panel="panel3" panel-order="3">
-                                <div class="custom-part">
-
-                                    <input type="text" id="kalkulator" class="nilai-custom">
-
-                                    <div class="kalkulator-tombol" id="tombol-custom">
-
-                                        <span class="tombol">1</span>
-                                        <span class="tombol">2</span>
-                                        <span class="tombol">3</span>
-                                        <span class="tombol" id="nol">000</span>
-                                        <span class="tombol">4</span>
-                                        <span class="tombol">5</span>
-                                        <span class="tombol">6</span>
-                                        <span class="tombol" id="nol">00</span>
-                                        <span class="tombol">7</span>
-                                        <span class="tombol">8</span>
-                                        <span class="tombol">9</span>
-                                        <span class="tombol" id="nol">0</span>
-                                        <span class="add-custom">Add</span>
-                                        <span class="tombol oprator">C</span>
-                                        <span class="tombol oprator">
-                                            < </span>
-                                    </div>
-                                </div>
-                            </div> --}}
                         </div>
                     </div>
                 </div>
@@ -173,7 +160,9 @@
                                             $total_dis = 0;
                                         @endphp
                                         @foreach ($carts as $k => $cart)
-                                            <div class="itm-bil" idx="{{ $cart['id'] }}" xid="{{ $k }}">
+                                            <div class="itm-bil" idx="{{ $cart['id'] }}" xid="{{ $k }}" 
+                                                stok="{{$cart['stok']}}" status="{{$cart['active']}}">
+
                                                 <div class="itm">
                                                     <p class="txt-item">{{ $cart['nama_menu'] }}</p>
                                                     <div class="qty-menu">
@@ -524,10 +513,9 @@
 
     </script>
     <script>
-
-        let currentBillId = 0;
         $(() => {
 
+            let currentBillId = 0;
             var throttledButtonClick;
             var throttledButtonClickDelete;
             var canClick;
@@ -542,6 +530,8 @@
                 var idx = $elm.attr('idx');
                 var $popup = $('.pop-up.additional');
                 var harga = $elm.attr('target-price');
+                let stok = parseInt($elm.attr('stok'));
+                let status = parseInt($elm.attr('status'));
 
                 if (harga.indexOf('.') !== -1) {
                     var harga_ = harga.replace(".", "");
@@ -551,6 +541,14 @@
                 $popup.find('.harga-total').attr('price', harga).text(harga);
                 $popup.find('.card-popup').attr('id-x', idx);
                 $popup.find('.btn-add').attr('x-id', idx);
+
+                if (stok == 0 && status == 0) {
+                    $popup.find('.btn-add').prop('disabled', true).text('tidak tersedia');
+                    $popup.find('.qty').attr('max', stok);
+                } else {
+                    $popup.find('.btn-add').prop('disabled', false);
+                    $popup.find('.qty').attr('max', stok !== 0 ? stok : 100);
+                }
 
                 console.log(idx);
                 getVariasi(idx, 'add', '');
@@ -566,8 +564,7 @@
 
 
             }).on('click', '.act-btn-add', function(e) {
-                currentBillId =
-                0; // gunanya untuk reset state jadi customer / bill baru supaya item yang di add lewat session lagi
+                currentBillId = 0; // gunanya untuk reset state jadi customer / bill baru supaya item yang di add lewat session lagi
             })
 
             $('body').on('click', '.part-category', function() {
@@ -609,6 +606,8 @@
                 //id dari item menu
                 var id = $elm.attr('idx');
                 var idDetail = $elm.attr('id_item_detail');
+                let stok = parseInt($elm.attr('stok'));
+                let status = parseInt($elm.attr('status'));
 
                 var $popup = $('.pop-up.additional');
                 var harga = $elm.find('.price').attr('price');
@@ -1525,14 +1524,19 @@
                         }
                     }).fail(function(data) {
                         console.log('error', data);
+                        alert(data.responseJSON.message);
+                        // location.reload();
+
                         if (type == 'add') {
                             //   addLogLocalStorage('ErrorAdd_Item', 'add Item', data);
                             LogActivity('error add item', data)
                         } else {
                             //   addLogLocalStorage('Erroredit_item', 'edit Item ', data);
                             LogActivity('error edit item', data)
+                          
                         }
 
+                      
                     });
                 }
 
@@ -1604,7 +1608,6 @@
                             LogActivity('Error delete itm bill', data)
                         } else {
 
-
                             LogActivity('success delete item bill', data)
 
                             $('.pop-up.additional').hide();
@@ -1615,7 +1618,9 @@
                                 id_order: data.data.id_order,
                                 id: data.data.id
                             }
+                            // throttledButtonClickDelete(data.data.id, data.data.id_order, $elm);
                             console.log('data delete', data)
+
                             $.post("{{ route('print_item_delete_thermal') }}", dataDelete).done(function(
                                 data) {
                                 if (data.success === 0) {
@@ -1631,9 +1636,6 @@
 
                                         console.log('data each', id, id_order)
                                     })
-
-
-
 
                                     var $custom = $('.panel[data-panel="panel3"] .custom-part');
                                     var $customCategory = $('.content-payment');
@@ -1887,7 +1889,7 @@
 
                     }).fail(function(err) {
                         console.log(err);
-                        alert('Sepertinya kamu melakukan kesalah coba cek kembali');
+                        alert(err.responseJSON.message);
 
                         // addLogLocalStorage('error', 'edit order', err);
                         LogActivity('edit error', err)
@@ -1949,7 +1951,7 @@
                         }
                     }).fail(function(err) {
                         console.log(err);
-                        alert('Sepertinya kamu melakukan kesalah coba cek kembali');
+                        alert(err.responseJSON.message);
                         LogActivity('error order post', data)
                     }).always(function() {
                         // Reset loadPhase and button state

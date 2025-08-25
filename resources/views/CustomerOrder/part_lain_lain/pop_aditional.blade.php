@@ -3,7 +3,7 @@
     <div class="pop-modal mt-auto">
 
         <div class="header d-flex justify-content-between align-items-center p-3">
-            <p class="fw-bold">{{ $itemMenu->nama_menu }}</p>
+            <p class="fw-bold">{{ $itemMenu->nama_menu }} @if($itemMenu->stok > 0) - {{$itemMenu->stok}}portions available @endif</p>
             @php
                
                 if($itemEdit !== 0){
@@ -47,14 +47,15 @@
                         @php
                          $isChecked = false;
                             if ($itemEdit !== 0) {
-                               
-                                foreach ($itemEdit['additional'] as $editAdd) {
-                                   
-                                    if ($editAdd['id'] == $adds->id) {
-                                        $isChecked = true; 
-                                       
-                                    }
+                               if(!empty($itemEdit['additional'])){
+                                    foreach ($itemEdit['additional'] as $editAdd) {
                                     
+                                        if ($editAdd['id'] == $adds->id) {
+                                            $isChecked = true; 
+                                        
+                                        }
+                                        
+                                    }
                                 }
 
                             }
@@ -71,11 +72,20 @@
                 </div>
             </div>
             <div class="jumlah-menu ">
-                <div class="jml-menu d-flex justify-content-between align-items-center gap-3">
+                {{-- <div class="jml-menu d-flex justify-content-between align-items-center gap-3">
                     <div class="btn-minus">-</div>
                     <input class="qty" type="number" name="num-product" min=0 value=@if($itemEdit !== 0) {{$itemEdit['qty']}}  @else 1 @endif max=100>
                     <div class="btn-plus">+</div>
+                </div> --}}
+                <div class="jml-menu d-flex justify-content-between align-items-center gap-3">
+                    <div class="btn-minus">-</div>
+                    <input class="qty" type="number" name="num-product" 
+                        min="1" 
+                        value= @if($itemEdit != 0) "{{$itemEdit['qty']}}" @else "1" @endif 
+                        max= @if($itemMenu->stok !== 0) "{{$itemMenu->stok}}" @else "100" @endif >
+                    <div class="btn-plus">+</div>
                 </div>
+
             </div>
             <div class="tipe-penjualan py-3">
                 <div class="name-additional pb-2">Sales Type | Choose one</div>

@@ -9,7 +9,7 @@ class QRTable extends Model
 {
     use HasFactory;
 
-    protected $table = 'qr_tabel';
+    protected $table = 'qr_table';
     protected $fillable= [
         'meja',
         'link'

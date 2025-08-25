@@ -176,7 +176,7 @@
                             </div>
                         </div>
                         <div class="act-edit">
-                            <input type="checkbox" name="" id-item="{{ $menu->menu->id }}" id_detail="{{$menu->id}} "
+                            <input type="checkbox" name="" id-item="{{ $menu->menu->id }}" id_detail="{{$menu->id}}"
                                 class="check-edit">
                             <span class="checkmark"></span>
                         </div>

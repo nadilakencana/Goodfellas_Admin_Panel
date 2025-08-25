@@ -279,7 +279,26 @@ class POSController extends Controller
 
         if (Sentinel::check()) {
             try {
-                $menu = Menu::where('id', $request->get('id'))->first();
+                $menu = Menu::where('id', $request->get('id'))->where('active', 1)->first();
+                if($menu->kategori->kategori_nama === 'Drinks'){
+                    if (!$menu) {
+                        return response()->json([
+                            'success' => 0,
+                            'message' => 'Menu tidak tersedia silahkan atur ulang menu di data menu'
+                        ], 400); 
+                    }
+                }
+            
+                if($menu->kategori->kategori_nama === 'Foods'){
+                    if ($menu->stok < $request->get('qty')) {
+                            return response()->json([
+                                'success' => 0,
+                                'message' => 'Stok tidak cukup silahkan setting ulang stok'
+                            ], 500); 
+                    }
+                }
+
+               
 
                 $ex = false;
                 $exId = 0;
@@ -293,6 +312,8 @@ class POSController extends Controller
                 $cart[] = array(
                     'id' => $menu->id,
                     'nama_menu' => $menu->nama_menu,
+                    'stok' => $menu->stok,
+                    'active' => $menu->active,
                     'harga' => $request->get('harga'),
                     'qty' => $request->get('qty'),
                     'harga_addtotal' => $request->get('harga_addtotal'),
@@ -324,10 +345,10 @@ class POSController extends Controller
             } catch (\Exception $e) {
                 return response()->json([
                     'message' => 'Failed to fetch data detail order',
-                    'data' => [
-                        'cart' => $cart,
-                        'count' => $count
-                    ],
+                    // 'data' => [
+                    //     'cart' => $cart,
+                    //     'count' => $count
+                    // ],
                     'error' => $e->getMessage()
                 ], 500);
             }
@@ -341,7 +362,26 @@ class POSController extends Controller
 
         if (Sentinel::check()) {
             try {
-                $menu = Menu::where('id', $request->get('id'))->first();
+                $menu = Menu::where('id', $request->get('id'))->where('active', 1)->first();
+                
+                if($menu->kategori->kategori_nama === 'Drinks'){
+                    if (!$menu) {
+                        return response()->json([
+                            'success' => 0,
+                            'message' => 'Menu tidak tersedia silahkan atur ulang menu di data menu'
+                        ], 400); 
+                    }
+                }
+            
+                if($menu->kategori->kategori_nama === 'Foods'){
+                    if ($menu->stok < $request->get('qty')) {
+                            return response()->json([
+                                'success' => 0,
+                                'message' => 'Stok tidak cukup silahkan setting ulang stok'
+                            ], 500); 
+                    }
+                }
+
 
                 $ex = false;
                 $exId = 0;
@@ -440,25 +480,75 @@ class POSController extends Controller
             try {
                 
                 $order = Orders::where('id', $request->get('target_order'))->first();
-                $menu = Menu::where('id', $request->get('id'))->first();
+                $menu = Menu::where('id', $request->get('id'))->where('active', 1)->first();
 
                 if (!empty($request->get('target_detail'))) {
+
+                    if($menu->kategori->kategori_nama === 'Drinks'){
+                        if (!$menu) {
+                            return response()->json([
+                                'success' => 0,
+                                'message' => 'Menu tidak tersedia silahkan atur ulang menu di data menu'
+                            ], 400); 
+                        }
+                    }
+                
+                    if($menu->kategori->kategori_nama === 'Foods'){
+                        if ($menu->stok < $request->get('qty')) {
+                                return response()->json([
+                                    'success' => 0,
+                                    'message' => 'Stok tidak cukup silahkan setting ulang stok'
+                                ], 500); 
+                        }
+                    }
+                                        
                     $detail = DetailOrder::where('id', $request->get('target_detail'))->where('id_order', $request->get('target_order'))->first();
 
                     if ($detail) {
-
 
                         $qty = $detail->qty == $request->get('qty');
                         $varianMenu =  $detail->id_varian == $request->get('variasi');
                         $catatanMenu =  $detail->catatan == $request->get('catatan');
 
                         
-                        if (!($qty && $varianMenu && $catatanMenu)) {
+                        // if (!($qty && $varianMenu && $catatanMenu)) {
+                            
+                        //     $qty_modif = $detail->qty - $request->get('qty');
+
+                        //     if ($detail->update == 0) $detail->update = 1;
+                        //     $detail->last_print = null;
+                        // } else {
+                        //     $detail->last_print = $detail->last_print;
+                        // }
+
+                        $hasChanges = !($qty && $varianMenu && $catatanMenu);
+
+                        if ($hasChanges) {
+                            $qty_diff = $request->get('qty') - $detail->qty;
+                            
+                            // Jika ada perubahan qty, cek dan update stok menu
+                            if ($qty_diff != 0 && $menu->kategori->kategori_nama === 'Foods') {
+                                if ($qty_diff > 0) {
+                                    // Qty bertambah - cek stok cukup
+                                    if ($menu->stok < $qty_diff) {
+                                        return response()->json([
+                                            'success' => 0,
+                                            'message' => 'Stok tidak cukup untuk penambahan qty'
+                                        ], 500);
+                                    }
+                                    // Kurangi stok menu
+                                    $menu->stok -= $qty_diff;
+                                } else {
+                                    // Qty berkurang - tambah kembali stok menu
+                                    $menu->stok += abs($qty_diff);
+                                }
+                                $menu->save();
+                            }
+                            
                             if ($detail->update == 0) $detail->update = 1;
                             $detail->last_print = null;
-                        } else {
-                            $detail->last_print = $detail->last_print;
                         }
+
                     }
                 } else {
                     $detail = new DetailOrder();
@@ -752,6 +842,13 @@ class POSController extends Controller
             try {
                 // Find the detail order by ID
                 $detail = DetailOrder::where('id', $request->get('id'))->first();
+                $menu = Menu::where('id', $detail->id_menu)->first();
+
+                if($detail->menu->id_kategori == 2){
+                    $menu->stok = $menu->stok + $detail->qty ;
+                    $menu->save();
+                }
+
 
                 if (!empty($detail)) {
                     // Delete the detail order
@@ -827,44 +924,7 @@ class POSController extends Controller
                     'error' => $e->getMessage(),
                 ]);
             }
-            // $Details = DetailOrder::where('id', $request->get('id'))->first();
-            // $Details->delete();
-
-            // if($Details->delete()){
-            //         $discount = Discont_detail_order::where('id_detail_order', $request->get('id'))->get();
-            //         foreach($discount as $dis){
-            //             $dis->delete();
-            //         }
-
-            //         $sumDetail = DetailOrder::where('id_order', $request->get('id_order'))->sum('total');
-            //         $sumDis = Discount_detail_order::whereHas('Detail_order', function($query) use ($request){
-            //             $query->where('id_order', $request->get('id_order'));
-            //         })->sum('total_discount');
-
-            //         $subTotal = $sumDetail - $sumDis ;
-
-            //         $taxpb1 = Taxes::where('nama', 'PB1')->first();
-            //         $service = Taxes::where('nama', 'Service Charge')->first();  
-            //         $PB1 = $taxpb1->tax_rate / 100;
-            //         $Service = $service->tax_rate / 100;
-            //         $nominalPb1 =  $subTotal * $PB1;
-            //         $nominalService = $subTotal * $Service;
-
-            //         $gradTotal = $subTotal + $nominalPb1 + $nominalService;
-
-            //         $order = Orders::where('id', $request->get('id_order'))->first();
-            //         $order->subtotal = $subTotal;
-            //         $order->total_order = $gradTotal;
-
-            //         $order->save();
-            //         return response()->json([
-            //             'success' => 1,
-            //             'message' => 'Data berhasil Dihapus',
-            //             'data' => $Details,
-            //             'data_order' => $order,
-
-            //         ]);
-            // }
+           
 
         } else {
             return redirect()->route('login');
@@ -959,7 +1019,6 @@ class POSController extends Controller
     {
         if (Sentinel::check()) {
             
-              // 1. Validasi request dasar
         $validated = $request->validate([
             'target_order' => 'required|exists:orders,id',
             'itms' => 'required|array|min:1',
@@ -967,72 +1026,59 @@ class POSController extends Controller
             'itms.*.qty' => 'required|integer|min:1',
         ]);
 
-        // 2. Gunakan Transaksi Database untuk keamanan data
         DB::beginTransaction();
 
         try {
             $userId = Sentinel::getUser()->id;
             $originalOrder = Orders::find($validated['target_order']);
 
-            // Validasi tambahan: jangan split bill yang sudah lunas atau dibatalkan
             if ($originalOrder->id_status != 1) {
                 throw new \Exception('Hanya order dengan status "Open" yang bisa di-split.');
             }
 
-            // 3. Buat Order Baru untuk hasil split
             $newSplitOrder = new Orders();
             $newSplitOrder->id_admin = $userId;
             $newSplitOrder->name_bill = $originalOrder->name_bill . '-Split';
             $newSplitOrder->kode_pemesanan = $this->kode_pesanan->kodePesanan();
             $newSplitOrder->no_meja = $originalOrder->no_meja;
             $newSplitOrder->id_booking = $originalOrder->id_booking;
-            $newSplitOrder->id_status = 2; // Langsung dianggap lunas sesuai alur pembayaran
+            $newSplitOrder->id_status = 2; 
             $newSplitOrder->id_type_payment = $request->type_pyment;
             $newSplitOrder->cash = $request->cash;
             $newSplitOrder->change_ = $request->change;
             $newSplitOrder->tanggal = Carbon::now()->format('Y-m-d');
-            // Total dan Subtotal akan dihitung ulang nanti, set ke 0 dulu
             $newSplitOrder->subtotal = 0;
             $newSplitOrder->total_order = 0;
             $newSplitOrder->save();
 
 
-            // 4. Proses setiap item yang akan di-split
             foreach ($validated['itms'] as $itemToSplit) {
                 $splitQty = (int)$itemToSplit['qty'];
 
-                // Cari item detail di order ASLI. Ini validasi paling penting.
                 $originalItemDetail = DetailOrder::where('id', $itemToSplit['id_item'])
                     ->where('id_order', $originalOrder->id)
                     ->first();
 
-                // Jika item tidak ada di order asli, batalkan semua proses
                 if (!$originalItemDetail) {
                     throw new \Exception("Item dengan ID {$itemToSplit['id_item']} tidak ditemukan pada order ini.");
                 }
                 
-                // Jika kuantitas split lebih besar dari yang ada, batalkan.
                 if($splitQty > $originalItemDetail->qty) {
                     throw new \Exception("Kuantitas split untuk item {$originalItemDetail->menu->nama_menu} melebihi kuantitas yang ada.");
                 }
 
-                // Jika kuantitas sama (pindah semua item)
                 if ($splitQty == $originalItemDetail->qty) {
                     $originalItemDetail->id_order = $newSplitOrder->id;
-                    $originalItemDetail->save(); // Relasi (addon, diskon) akan ikut
+                    $originalItemDetail->save(); 
                 } else {
-                    // Jika kuantitas dibagi (buat item baru, kurangi item lama)
                     
-                    // a. Buat item detail baru untuk order split
-                    $newItemDetail = $originalItemDetail->replicate(['id']); // Replicate/duplikat data
+                    $newItemDetail = $originalItemDetail->replicate(['id']); 
                     $newItemDetail->id_order = $newSplitOrder->id;
                     $newItemDetail->qty = $splitQty;
-                    // Hitung ulang total berdasarkan harga asli dan kuantitas baru
                     $totalAddonsPerItem = $originalItemDetail->AddOptional_order->sum('optional_Add.harga');
                     $newItemDetail->total = ($originalItemDetail->harga + $totalAddonsPerItem) * $newItemDetail->qty;
                     $newItemDetail->save();
 
-                    // b. Duplikat relasi (addons & discounts) untuk item baru
                     foreach ($originalItemDetail->AddOptional_order as $addon) {
                         $newAddon = $addon->replicate(['id']);
                         $newAddon->id_detail_order = $newItemDetail->id;
@@ -1041,20 +1087,26 @@ class POSController extends Controller
                     foreach ($originalItemDetail->Discount_menu_order as $discount) {
                         $newDiscount = $discount->replicate(['id']);
                         $newDiscount->id_detail_order = $newItemDetail->id;
-                        // Hitung ulang nominal diskon untuk item baru
                         $rate = $discount->discount->rate_dis / 100;
                         $newDiscount->total_discount = $newItemDetail->total * $rate;
                         $newDiscount->save();
                     }
 
-                    // c. Update item detail lama (kurangi kuantitas dan total)
                     $originalItemDetail->qty -= $splitQty;
                     $originalItemDetail->total = ($originalItemDetail->harga + $totalAddonsPerItem) * $originalItemDetail->qty;
                     $originalItemDetail->save();
                 }
             }
 
-            // 5. Hitung ulang total akhir untuk KEDUA order. Ini langkah paling aman.
+            // Copy tax data from original order to split order
+            // $originalTaxOrders = TaxOrder::where('id_order', $originalOrder->id)->get();
+            // foreach ($originalTaxOrders as $taxOrder) {
+            //     $newTaxOrder = new TaxOrder();
+            //     $newTaxOrder->id_order = $newSplitOrder->id;
+            //     $newTaxOrder->id_tax = $taxOrder->id_tax;
+            //     $newTaxOrder->save();
+            // }
+
             $this->recalculateAndUpdateOrderTotals($originalOrder->id);
             $this->recalculateAndUpdateOrderTotals($newSplitOrder->id);
             
@@ -1065,13 +1117,12 @@ class POSController extends Controller
                 'success' => 1,
                 'message' => 'Split bill berhasil disimpan.',
                 'data' => [
-                    'new_order' => $newSplitOrder->fresh(), // Ambil data terbaru dari DB
+                    'new_order' => $newSplitOrder->fresh(), 
                     'original_order_id' => $originalOrder->id
                 ]
             ], 200);
 
         } catch (\Exception $e) {
-            // Jika ada error, batalkan semua perubahan
             DB::rollBack();
 
             Log::error("Split Bill Failed: " . $e->getMessage(), ['request' => $request->all()]);
@@ -1228,7 +1279,6 @@ class POSController extends Controller
             return;
         }
 
-        // Jika tidak ada item detail lagi, hapus order (untuk order asli yang itemnya pindah semua)
         if ($order->details->isEmpty()) {
             $order->delete();
             return;
@@ -1242,27 +1292,42 @@ class POSController extends Controller
 
         $finalSubtotal = $sumDetailTotal - $sumDiscountTotal;
 
-        // Hitung ulang pajak
         $totalTax = 0;
-        $taxes = Taxes::all(); // Sebaiknya di-cache jika memungkinkan
+        $taxes = Taxes::all(); 
         foreach($taxes as $tax) {
-            $totalTax += $finalSubtotal * ($tax->tax_rate / 100);
+            $taxAmount = $finalSubtotal * ($tax->tax_rate / 100);
+            $totalTax += $taxAmount;
+            
+            // Update or create tax order record
+            $taxOrder = TaxOrder::where('id_order', $order->id)
+                              ->where('id_tax', $tax->id)
+                              ->first();
+            if ($taxOrder) {
+                $taxOrder->total_tax = $taxAmount;
+                $taxOrder->save();
+            } else {
+                $newTaxOrder = new TaxOrder();
+                $newTaxOrder->id_order = $order->id;
+                $newTaxOrder->id_tax = $tax->id;
+                $newTaxOrder->total_tax = $taxAmount;
+                $newTaxOrder->save();
+            }
         }
 
         $grandTotal = $finalSubtotal + $totalTax;
 
-        // Update order
         $order->subtotal = $finalSubtotal;
         $order->total_order = $grandTotal;
         $order->save();
+       
 
-        // (Opsional) Update juga data di tabel tax_orders jika ada
     }
 
 
     public function postOrderPOS(Request $request)
     {
         if (Sentinel::check()) {
+
             try {
 
                 $date = Carbon::now()->format('Y-m-d');
@@ -1301,7 +1366,50 @@ class POSController extends Controller
                 $id_order = $order->id;
 
                 foreach ($carts as $cart) {
-                    
+                     // Cek menu dan stok
+                    $menu = Menu::find($cart['id']);
+
+                    if (!$menu) {
+                         return response()->json([
+                            'success' => 0,
+                            'message' => "Menu dengan ID {$cart['id']} tidak ditemukan"
+
+                        ], 400); 
+                    }
+
+                    if($menu->kategori->kategori_nama === 'Foods'){
+                        // Cek ketersediaan menu
+                        if ($menu->stok == 0 && $menu->active == 0) {
+                            return response()->json([
+                                'success' => 0,
+                                'message' => "Menu {$menu->nama_menu} tidak tersedia silahkan setting ulang menu"
+
+                            ], 400); 
+                        }
+                        
+                        // Cek stok mencukupi
+                        if ($menu->active == 1 && $menu->stok < $cart['qty']) {
+                            return response()->json([
+                                'success' => 0,
+                                'message' => "Stok menu {$menu->nama_menu} tidak mencukupi. silahkan setting ulang menu"
+
+                            ], 400); 
+                        }
+                    }
+
+                    if($menu->kategori->kategori_nama === 'Drinks'){
+                        // Cek ketersediaan menu
+                        if ($menu->active == 0) {
+                            return response()->json([
+                                'success' => 0,
+                                'message' => "Menu {$menu->nama_menu}  tidak tersedia silahkan setting ulang menu."
+
+                            ], 400); 
+                        }
+
+                    }
+                   
+
                     $detail = new DetailOrder;
                     $detail->id_order = $id_order;
                     $detail->id_menu = $cart['id'];
@@ -1320,7 +1428,20 @@ class POSController extends Controller
                     $detail->updated_at = now();
                     // dd($order, $detail );
 
-                    if ($detail->save()) {
+                    if($menu->kategori->kategori_nama === 'Foods'){    
+                        // Update stok menu
+                        $newStok = $menu->stok - $cart['qty'];
+                        $menu->stok = $newStok;
+                        $menu->save();
+                    }
+                    // Jika stok habis, nonaktifkan menu
+                    // if ($newStok == 0) {
+                    //     $menu->active = 0;
+                    // }
+                    
+                    
+                    $detail->save();
+                    if ($detail) {
                         if (isset($cart['additional'])) {
                             foreach ($cart['additional'] as $adds) {
                                 $additional = new Additional_menu_detail();
@@ -1368,7 +1489,7 @@ class POSController extends Controller
                     'message' => 'Order di Proses',
                     'data' => [
                         'order' => $order,
-                        'detail' => $detail
+                        // /'detail' => $detail
                     ],
 
                 ], 200);
@@ -1378,7 +1499,7 @@ class POSController extends Controller
                     'message' => 'Failed to fetch data post order',
                     'data' => [
                         'order' => $order,
-                        'detail' => $detail
+                        // /'detail' => $detail
                     ],
                     'error' => $e->getMessage()
                 ], 500);

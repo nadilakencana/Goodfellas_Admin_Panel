@@ -241,6 +241,7 @@ class OrderController extends Controller
 
     }
 
+
     // Sales Type
 
     public function salestype(){
@@ -419,14 +420,31 @@ class OrderController extends Controller
             $order->id_admin_deleted = $admin;
             $order->alasan_delete = $request->alasan_delete;
             $order->save();
+
             if($order){
                 $refundOrder = RefundOrder::where('id_order', $order->id)->first();
-                $refundOrder->deleted = 1;
-                $refundOrder->id_admin_delete =  $order->id_admin_deleted;
-                $refundOrder->alasan_delete= $order->alasan_delete;
-                $refundOrder->deleted_at= $date;
-                $refundOrder->save();
+                if($refundOrder){
+                    $refundOrder->deleted = 1;
+                    $refundOrder->id_admin_delete =  $order->id_admin_deleted;
+                    $refundOrder->alasan_delete= $order->alasan_delete;
+                    $refundOrder->deleted_at= $date;
+                    $refundOrder->save();
+                }
+               
+
+                $detail_item = DetailOrder::where('id_order', $order->id)->get();
+
+                foreach($detail_item as $detail){
+                    // update menu 
+                   $menu = Menu::where('id', $detail->id_menu)->first();
+
+                    if($detail->menu->id_kategori == 2){
+                        $menu->stok = $menu->stok + $detail->qty ;
+                        $menu->save();
+                    }
+                }
             }
+
             $detail = [
                 'id' => $order->id,
                 'name' => $order->name, // example property
@@ -464,19 +482,15 @@ class OrderController extends Controller
             $menuDetail = $request->detail_menu;
             $menuRefund = $request->menu;
             $orders = Orders::where('id', $request->order_id)->first();
-            // dd($orders);
-            // dd($menuDetail, $menuRefund);
+            
         
             try{
                 
                 DB::beginTransaction();
-                // dd($menuRefund);
                 $refundOrder = new RefundOrder();
-                // dd($refundOrder);
                 $refundOrder->id_order = $orders->id;
                 $refundOrder->name_bill = 'Refund-'.$orders->kode_pemesanan;
                 $refundOrder->kode_refund = $this->kodePesanan();
-                // dd($refundOrder->kode_refund);
                 $refundOrder->subtotal = $request->subTotalrefund;
                 $refundOrder->total_retur = $request->TotalRefund;
                 $refundOrder->id_admin = $admin;
@@ -486,6 +500,15 @@ class OrderController extends Controller
 
                 if($refundOrder){
                     foreach ($menuRefund as $refund) {
+
+                        $menu = Menu::where('id', $refund['id_menu'])->first();
+
+                        // update ulang stok
+                        if($menu->id_kategori == 2){
+                            $menu->stok = $menu->stok + $refund['qty'] ;
+                            $menu->save();
+                        }
+
                     
                             $itmRefund = new RefundOrderMenu();   
                             $itmRefund->id_order = $refund['id_order'];
@@ -499,6 +522,8 @@ class OrderController extends Controller
                             $itmRefund->id_admin = $admin;
                             $itmRefund->alasan_refund = $refund['alasan'];
                             $itmRefund->tanggal = Carbon::now()->toDateTimeString();
+
+
                             $itmRefund->save();
                     
                             if($itmRefund){

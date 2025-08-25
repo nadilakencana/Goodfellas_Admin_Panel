@@ -24,7 +24,7 @@
             <div class="jumlah-menu">
                 <div class="jml-menu">
                     <div class="btn-minus">-</div>
-                    <input class="qty" type="number" name="num-product" min=0 value=1 max=100>
+                    <input class="qty" type="number" name="num-product" min="1" value="1" max="">
                     <div class="btn-plus">+</div>
                 </div>
             </div>

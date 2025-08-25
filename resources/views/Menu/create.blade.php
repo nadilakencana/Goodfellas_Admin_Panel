@@ -73,8 +73,19 @@
 
                   <small class="text-danger">{{ $message }}</small>
 
-              @enderror
+            @enderror
 
+        </div>
+        <div class="form-group">
+            <label for="" class="form-label">Stok Menu</label>
+            <input type="number" class="form-control @error('stok') is-invalid @enderror " id="exampleInputEmail1" placeholder="Promo" name="stok">
+            @error('stok')
+                  <small class="text-danger">{{ $message }}</small>
+            @enderror
+        </div>
+        <div class="form-group sw-custom">
+             <label for="" class="form-label">Menu Active</label>
+             <input type="checkbox" name="active" id="swbtn" class="toggle" value="1">
         </div>
         <div class="form-group">
             <label for="" class="form-label">Promo</label>
@@ -119,6 +130,7 @@
                 @endforeach
             </select>
         </div>
+        
         <div class="form-group">
             <label>Additional</label>
             <select class="custom-select rounded-0" aria-label="Default select example" name="id_group_modifier" id="exampleSelectRounded0" >

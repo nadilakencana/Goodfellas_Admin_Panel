@@ -61,6 +61,18 @@ class MenuController extends Controller
             $menu->image= $request->image;
             $menu->custom= false;
             $menu->id_group_modifier= $request->id_group_modifier;
+            $menu->stok= $request->stok;
+
+            if($request->active == null){
+                $menu->active= 0;
+            }else{
+                $menu->active= $request->active;
+            }
+            
+            $menu->id_kategori = $request->id_kategori;
+            $menu->id_sub_kategori = $request->id_sub_kategori;
+            $menu->promo = $request->promo;
+            $menu->custom= false;
 
             if($file = $request->hasFile('image')){
                 $file =$request->file('image');
@@ -72,35 +84,22 @@ class MenuController extends Controller
                 $file->move($destination, $fileName);
                 $menu->image = $fileName;
             }
+
             // dd($menu);
 
             if( $menu->save()){
                 if($request->has('variasi')){
                     $var_menu = $request->variasi;
-                    // dd($option);
                     foreach($var_menu as $variasi){
-                        // dd($option_modif);
                         $var = new VarianMenu();
                         $var->id_menu = $menu->id;
                         $var->nama = $variasi['nama'];
                         $var->harga = $variasi['harga'];
-                       // dd($var);
                         $var->save();
-
                         $variasi[] = [$variasi];
                     }
                 }
 
-                // dd($var_menu);
-                // $localServerUrl = 'https://admin.goodfellas.id/api/new-menu';
-
-                // $dataArray = $menu->toArray();
-
-                // $response = Http::post($localServerUrl, [
-                //     'Menu' => $dataArray,
-                //     'variasi' => $variasi
-                // ]);
-                // dd($response->body());
                 return redirect()->route('menu')->with('Success', 'Menu Berhasil Di Tambahkan ');
             }else{
 
@@ -155,6 +154,12 @@ class MenuController extends Controller
             $menu->promo = $request->promo;
             $menu->custom= false;
             $menu->id_group_modifier= $request->id_group_modifier;
+            $menu->stok= $request->stok;
+           if($request->active == null){
+                $menu->active= 0;
+            }else{
+                $menu->active= $request->active;
+            }
 
             // $menu->image = $request->image;
             if($file = $request->hasFile('image')){
@@ -206,16 +211,16 @@ class MenuController extends Controller
                     }
                 }
                 //  dd($var);
-                $localServerUrl = 'https://admin.goodfellas.id/api/update-data-menu';
+                // $localServerUrl = 'https://admin.goodfellas.id/api/update-data-menu';
                 // $dataMenu = Menu::with('varian', 'varian.Menu','additional')->get();
 
                 $menu = $menu->toArray();
 
                 //   dd($variasi_menu);
-                $response = Http::post($localServerUrl, [
-                    'Menu' => $menu,
-                    'variasi' => $variasi_menu,
-                ]);
+                // $response = Http::post($localServerUrl, [
+                //     'Menu' => $menu,
+                //     'variasi' => $variasi_menu,
+                // ]);
                 //dd($response->body());
                 return redirect()->route('menu')->with('Success', 'Menu Berhasil Di Update');
             }else{

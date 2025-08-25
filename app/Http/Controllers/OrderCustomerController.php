@@ -46,53 +46,28 @@ class OrderCustomerController extends Controller
         Session::put('meja', $meja);
         Session::save();
 
+        $thresholds = [20, 10, 1];
+        $topSellingItems = collect();
 
-        $topSellingItems = DetailOrder::select('id_menu', DB::raw('SUM(qty) as total_qty'), DB::raw('AVG(harga) as avg_price'))
-            ->whereHas('order', function ($query) use ($startDate, $endDate) {
-                $query->where('id_status', 2)
-                    ->where('deleted', 0)
-                    ->whereBetween('tanggal', [$startDate, $endDate]);
-            })
-            ->groupBy('id_menu')
-            ->orderByDesc('total_qty')
-            ->with('menu') // Assuming you have a product relation to get the product details
-            ->get();
-        
-            $topSellingItems = $topSellingItems->filter(function ($item) {
-                return $item->total_qty >= 20;
-            });
+        foreach ($thresholds as $threshold) {
+            $topSellingItems = DetailOrder::select('id_menu', DB::raw('SUM(qty) as total_qty'), DB::raw('AVG(harga) as avg_price'))
+                ->whereHas('order', function ($query) use ($startDate, $endDate) {
+                    $query->where('id_status', 2)
+                        ->where('deleted', 0)
+                        ->whereBetween('tanggal', [$startDate, $endDate]);
+                })
+                ->groupBy('id_menu')
+                ->having('total_qty', '>=', $threshold)
+                ->orderByDesc('total_qty')
+                ->with('menu')
+                ->get();
             
-            if ($topSellingItems->isEmpty()) {
-                $topSellingItems = DetailOrder::select('id_menu', DB::raw('SUM(qty) as total_qty'), DB::raw('AVG(harga) as avg_price'))
-                    ->whereHas('order', function ($query) use ($startDate, $endDate) {
-                        $query->where('id_status', 2)
-                            ->where('deleted', 0)
-                            ->whereBetween('tanggal', [$startDate, $endDate]);
-                    })
-                    ->groupBy('id_menu')
-                    ->orderByDesc('total_qty')
-                    ->with('menu') // Assuming you have a product relation to get the product details
-                    ->get()
-                    ->filter(function ($item) {
-                        return $item->total_qty >= 10;
-                    });
+            if ($topSellingItems->isNotEmpty()) {
+                break;
             }
-            
-            if ($topSellingItems->isEmpty()) {
-                $topSellingItems = DetailOrder::select('id_menu', DB::raw('SUM(qty) as total_qty'), DB::raw('AVG(harga) as avg_price'))
-                    ->whereHas('order', function ($query) use ($startDate, $endDate) {
-                        $query->where('id_status', 2)
-                            ->where('deleted', 0)
-                            ->whereBetween('tanggal', [$startDate, $endDate]);
-                    })
-                    ->groupBy('id_menu')
-                    ->orderByDesc('total_qty')
-                    ->with('menu') // Assuming you have a product relation to get the product details
-                    ->get()
-                    ->filter(function ($item) {
-                        return $item->total_qty >= 1;
-                    });
-            }
+        }
+
+           
 
         return view('CustomerOrder.main_content', compact('topSellingItems','Category','subCategory', 'typeOrder'));
     }
@@ -159,7 +134,26 @@ class OrderCustomerController extends Controller
    public function AddTocart(Request $request){
         try {
 
-            $menu = Menu::where('id', $request->get('id'))->first();
+            $menu = Menu::where('id', $request->get('id'))->where('active', 1)->first();
+
+            if($menu->kategori->kategori_nama === 'Drinks'){
+                if (!$menu) {
+                    return response()->json([
+                        'success' => 0,
+                        'message' => 'This menu is currently unavailable.'
+                    ], 400); 
+                }
+            }
+           
+            if($menu->kategori->kategori_nama === 'Foods'){
+                if ($menu->stok < $request->get('qty')) {
+                        return response()->json([
+                            'success' => 0,
+                            'message' => 'sorry there is not enough stock.'
+                        ], 500); 
+                }
+            }
+
             if($request->get('variasi') !== 0){
                 $varian = VarianMenu::where('id', $request->get('variasi'))->first();
             }else{
@@ -175,9 +169,6 @@ class OrderCustomerController extends Controller
             $currentPrice = $menu->harga;
             $harga_menu = 0;
 
-
-            
-           
 
             $cart[] = array(
                 'id' => $menu->id,
@@ -224,98 +215,106 @@ class OrderCustomerController extends Controller
     public function editOrder(Request $request)
     {
 
-       
-            try {
-                $menu = Menu::where('id', $request->get('id'))->first();
-                if($request->get('variasi') !== 0){
-                    $varian = VarianMenu::where('id', $request->get('variasi'))->first();
-                }else{
-                    $varian= '';
+        try {
+            $menu = Menu::where('id', $request->get('id'))->where('active', 1)->first();
+            if($menu->kategori->kategori_nama === 'Drinks'){
+                if (!$menu) {
+                    return response()->json([
+                        'success' => 0,
+                            'message' => 'This menu is currently unavailable.'
+                        ], 400); 
                 }
-                 $typeSales = SalesType::find($request->get('id_type_sales'));
-                $ex = false;
-                $exId = 0;
-                $cart = Session::get('cart');
-                // $option = Session::get('option');
-
-                if ($cart) {
-                    foreach ($cart as $key => $value) {
-                        if ($key == $request->get('key')) {
-                            $ex = true;
-                            $exId = $key;
-                            //dd($request->get('key'));
-
-                        }
+            }
+        
+            if($menu->kategori->kategori_nama === 'Foods'){
+                if ($menu->stok < $request->get('qty')) {
+                        return response()->json([
+                            'success' => 0,
+                            'message' => 'sorry there is not enough stock.'
+                        ], 500); 
+                }
+            }
+            if($request->get('variasi') !== 0){
+                $varian = VarianMenu::where('id', $request->get('variasi'))->first();
+            }else{
+                $varian= '';
+            }
+             $typeSales = SalesType::find($request->get('id_type_sales'));
+            $ex = false;
+            $exId = 0;
+            $cart = Session::get('cart');
+            // $option = Session::get('option');
+            if ($cart) {
+                foreach ($cart as $key => $value) {
+                    if ($key == $request->get('key')) {
+                        $ex = true;
+                        $exId = $key;
+                        //dd($request->get('key'));
                     }
                 }
-
-
-                $count = 0;
-                $currentPrice = 0;
-
-                $currentPrice = $menu->harga;
-                if ($ex == false) {
-                    $cart[] = array(
-                        'id' => $menu->id,
-                        'nama_menu' => $menu->nama_menu,
-                        'image' => $menu->image,
-                        'harga' => $request->get('harga'),
-                        'qty' => $request->get('qty'),
-                        'harga_addtotal' => $request->get('harga_addtotal'),
-                        'variasi_id' => $varian ? $varian->id : '',
-                        'var_name' => $varian ? $varian->nama : '',
-                        'additional' => $request->get('additional'),
-                        'discount' => $request->get('discount'),
-                        'catatan' => $request->get('catatan'),
-                        'type_id' => $typeSales->id,
-                        'type_name' => $typeSales->name,
-                        
-                    );
-                } else {
-                    $oldData = $cart[$exId];
-                    $cart[$exId] = array(
-                        'id' =>  $menu->id,
-                        'nama_menu' => $menu->nama_menu,
-                        'image' => $menu->image,
-                        'harga' => $request->get('harga'),
-                        'qty' => $request->get('qty'),
-                        'harga_addtotal' => $request->get('harga_addtotal'),
-                        'variasi_id' => $varian ? $varian->id : '',
-                        'var_name' => $varian ? $varian->nama : '',
-                        'additional' =>  $request->get('additional'),
-                        'discount' => $request->get('discount'),
-                        'catatan' =>  $request->get('catatan'),
-                        'type_id' => $typeSales->id,
-                        'type_name' => $typeSales->name,
-                        
-                    );
-                }
-
-
-                //dd($cart['additional']['nama']);
-                Session::put('cart', $cart);
-                Session::save();
-                $cart = Session::get('cart');
-                $count = count($cart);
-                return response()->json([
-                    'success' => 1,
-                    'message' => 'Data terupdate',
-                    'data' => [
-                        'cart' => $cart,
-                        'count' => $count
-                    ],
-
-                ], 200);
-            } catch (\Exception $e) {
-                return response()->json([
-                    'message' => 'Failed to fetch edit item bill',
-                    'data' => [
-                        'cart' => $cart,
-                        'count' => $count
-                    ],
-                    'error' => $e->getMessage()
-                ], 500);
             }
+            $count = 0;
+            $currentPrice = 0;
+            $currentPrice = $menu->harga;
+            if ($ex == false) {
+                $cart[] = array(
+                    'id' => $menu->id,
+                    'nama_menu' => $menu->nama_menu,
+                    'image' => $menu->image,
+                    'harga' => $request->get('harga'),
+                    'qty' => $request->get('qty'),
+                    'harga_addtotal' => $request->get('harga_addtotal'),
+                    'variasi_id' => $varian ? $varian->id : '',
+                    'var_name' => $varian ? $varian->nama : '',
+                    'additional' => $request->get('additional'),
+                    'discount' => $request->get('discount'),
+                    'catatan' => $request->get('catatan'),
+                    'type_id' => $typeSales->id,
+                    'type_name' => $typeSales->name,
+                    
+                );
+            } else {
+                $oldData = $cart[$exId];
+                $cart[$exId] = array(
+                    'id' =>  $menu->id,
+                    'nama_menu' => $menu->nama_menu,
+                    'image' => $menu->image,
+                    'harga' => $request->get('harga'),
+                    'qty' => $request->get('qty'),
+                    'harga_addtotal' => $request->get('harga_addtotal'),
+                    'variasi_id' => $varian ? $varian->id : '',
+                    'var_name' => $varian ? $varian->nama : '',
+                    'additional' =>  $request->get('additional'),
+                    'discount' => $request->get('discount'),
+                    'catatan' =>  $request->get('catatan'),
+                    'type_id' => $typeSales->id,
+                    'type_name' => $typeSales->name,
+                    
+                );
+            }
+            //dd($cart['additional']['nama']);
+            Session::put('cart', $cart);
+            Session::save();
+            $cart = Session::get('cart');
+            $count = count($cart);
+            return response()->json([
+                'success' => 1,
+                'message' => 'Data terupdate',
+                'data' => [
+                    'cart' => $cart,
+                    'count' => $count
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch edit item bill',
+                'data' => [
+                    'cart' => $cart,
+                    'count' => $count
+                ],
+                'error' => $e->getMessage()
+            ], 500);
+        }
        
     }
 
@@ -384,6 +383,7 @@ class OrderCustomerController extends Controller
     {
        DB::beginTransaction();
         try {
+            // dd($request->tax);
 
                 $date = Carbon::now()->format('Y-m-d');
                 
@@ -403,115 +403,103 @@ class OrderCustomerController extends Controller
                     ->where('deleted', 0)
                     ->first();
 
-                $edit = $order ? true : false;
-
+                $edit = (bool) $order;
+                $subtotal = $request->subtotal;
+                $total = $request->total;
                 $txs = [];
-                $totalTax = 0;
-                if($order){
-                    $subtotal = $request->subtotal + $order->subtotal;
-                    $txs = Taxes::all()->map(function($tx) use ($subtotal) {
-                        return ['xid' => $tx->id, 'nominal' => $subtotal * ($tx->tax_rate / 100)];
-                    })->toArray();
-                    $totalTax = array_sum(array_column($txs, 'nominal'));
-                    $total = $subtotal + $totalTax;
-                }
-              
-               
-                // dd($txs, $totalTax, $total);
 
-                // dd($total, $subtotal);
-               
-
-                if (!$order) {
-                    $order = new Orders();
-                    $order->fill([
+                if ($order) {
+                    $subtotal += $order->subtotal;
+                    $txs = Taxes::all()->map(fn($tx) => [
+                        'xid' => $tx->id,
+                        'nominal' => $subtotal * ($tx->tax_rate / 100)
+                    ])->toArray();
+                    $total = $subtotal + array_sum(array_column($txs, 'nominal'));
+                    TaxOrder::where('id_order', $order->id)->delete();
+                    $order->update([
+                        'subtotal' => $subtotal,
+                        'total_order' => $total
+                    ]);
+                } else {
+                    $order = Orders::create([
                         'name_bill' => $request->customer_name,
                         'kode_pemesanan' => $rand,
                         'no_meja' => $meja,
-                        'subtotal' => $request->subtotal,
-                        'total_order' => $request->total,
+                        'subtotal' => $subtotal,
+                        'total_order' => $total,
                         'tanggal' => $date,
-                        'id_status' => 1,
-                        'updated_at' => now(),
-                        'created_at' => now(),
+                        'id_status' => 1
                     ]);
-                } else{
-                    $order->updated_at = now();
-                    $order->subtotal = $subtotal;
-                    $order->total_order = $total;
-
-                    $OrderTaxs = TaxOrder::where('id_order', $order->id)->delete();
                 }
-
-                
-
-                $order->save();
 
                 $carts = Session::get('cart');
-                // dd($carts);
-                $cart = is_array($carts);
-                $id_order = $order->id;
+                $menuIds = array_column($carts, 'id');
+                $menus = Menu::with('kategori')->whereIn('id', $menuIds)->get()->keyBy('id');
                 $details = [];
-                // if (is_array($carts) || is_object($carts)){
+
                 foreach ($carts as $cart) {
+                    $menu = $menus->get($cart['id']);
+                    if (!$menu) {
+                        throw new \Exception("Menu dengan ID {$cart['id']} tidak ditemukan");
+                    }
                     
-                    $detail = new DetailOrder;
-                    $detail->id_order = $id_order;
-                    $detail->id_menu = $cart['id'];
-                    $detail->qty = $cart['qty'];
-                    $detail->harga = $cart['harga'];
-                    $detail->id_varian = ($cart['variasi_id'] === '' || $cart['variasi_id'] === null) ? null : $cart['variasi_id'];
-
-                    if (empty($cart['type_id'])) {
-                        $detail->id_sales_type =  '4';
-                    } else {
-                        $detail->id_sales_type =  $cart['type_id'];
-                    }
-
-                    $detail->catatan = $cart['catatan'];
-                    $detail->total = ($cart['harga'] + $cart['harga_addtotal']) * $cart['qty'];
-                    $detail->created_at = now();
-                    $detail->updated_at = now();
-
-                    // return dd($order, $detail );
-                    $detail->save();
-                    if ($detail) {
-                        $details[] = $detail;
-                        if (isset($cart['additional'])) {
-                            foreach ($cart['additional'] as $adds) {
-                                $additional = new Additional_menu_detail();
-                                $additional->id_detail_order = $detail['id'];
-                                $additional->id_option_additional = $adds['id'];
-                                $additional->qty = $detail['qty'];
-                                $additional->total = $adds['harga'] * $detail['qty'];
-                                $additional->save();
-                            }
+                    $kategori = $menu->kategori->kategori_nama;
+                    if ($kategori === 'Foods') {
+                        if (!$menu->active || ($menu->active && $menu->stok < $cart['qty'])) {
+                            return response()->json([
+                                'success' => 0,
+                                'message' => $menu->stok < $cart['qty'] 
+                                    ? "This Menu {$menu->nama_menu} is not sufficient."
+                                    : "This Menu {$menu->nama_menu} is currently unavailable."
+                            ], 400);
                         }
-                        
+                        $menu->decrement('stok', $cart['qty']);
+                    } elseif ($kategori === 'Drinks' && !$menu->active) {
+                        return response()->json([
+                            'success' => 0,
+                            'message' => "This Menu {$menu->nama_menu} is currently unavailable."
+                        ], 400);
+                    }
+                    
+                    
+                    
+                    $detail = DetailOrder::create([
+                        'id_order' => $order->id,
+                        'id_menu' => $cart['id'],
+                        'qty' => $cart['qty'],
+                        'harga' => $cart['harga'],
+                        'id_varian' => empty($cart['variasi_id']) ? null : $cart['variasi_id'],
+                        'id_sales_type' => $cart['type_id'] ?: '4',
+                        'catatan' => $cart['catatan'],
+                        'total' => ($cart['harga'] + $cart['harga_addtotal']) * $cart['qty']
+                    ]);
+
+                    $details[] = $detail;
+
+                    if (!empty($cart['additional'])) {
+                        $additionals = array_map(fn($add) => [
+                            'id_detail_order' => $detail->id,
+                            'id_option_additional' => $add['id'],
+                            'qty' => $detail->qty,
+                            'total' => $add['harga'] * $detail->qty,
+                            'created_at' => now(),
+                            'updated_at' => now()
+                        ], $cart['additional']);
+                        Additional_menu_detail::insert($additionals);
                     }
                 }
-                // }
-                if(!$order){
-                     $Tax = $request->tax;
-                }else{
-                    $Tax = $txs;
-                }
 
-                // dd($Tax, $txs );
-
-                foreach ($Tax as $taxs) {
-                    $taxes = new TaxOrder();
-                    $taxes->id_order  =  $id_order;
-                    $taxes->id_tax = $taxs['xid'];
-                    $taxes->total_tax = $taxs['nominal'];
-                    // dd($taxes);
-                    $taxes->save();
-                }
-
-
-                $detail = DetailOrder::where('id_order', $order->id)->get();
-                if(empty($detail)){
-                    $detail = 0;
+                $Tax = $edit ? $txs : $request->tax;
+                // dd($Tax);
+                if ($Tax) {
+                    $taxData = array_map(fn($tax) => [
+                        'id_order' => $order->id,
+                        'id_tax' => $tax['xid'],
+                        'total_tax' => $tax['nominal'],
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ], $Tax);
+                    TaxOrder::insert($taxData);
                 }
 
                 Session::forget('cart');
@@ -524,9 +512,8 @@ class OrderCustomerController extends Controller
                     'message' => 'Your order on proses',
                     'data' => [
                         'order' => $order,
-                        'detail' => $detail
-                    ],
-
+                        'detail' => $details ?: 0
+                    ]
                 ], 200);
         } catch (\Exception $e) {
              DB::rollback();

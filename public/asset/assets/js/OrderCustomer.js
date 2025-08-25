@@ -20,19 +20,65 @@ document.addEventListener('DOMContentLoaded', function () {
             resultsContainer.style.display = 'block';
             data.data.forEach(item => {
                 const imageUrl = item.image ? `/asset/assets/image/menu/${item.image}` : `/asset/assets/image/menu/drink.png`;
-                resultsContainer.innerHTML += `
-                    <div class="result-item">
-                        <img src="${imageUrl}" alt="${item.nama_menu}">
-                        <div class="info gap-3">
-                            <div class="name">${item.nama_menu}</div>
-                             <span class="pt-2">Rp. ${item.harga}</span>
+                if(item.id_kategori == 1){
+                    if(item.active == 1){
+                        resultsContainer.innerHTML += `
+                        <div class="result-item">
+                            <img src="${imageUrl}" alt="${item.nama_menu}">
+                            <div class="info gap-3">
+                                <div class="name">${item.nama_menu}</div>
+                                <span class="pt-2">Rp. ${item.harga}</span>
+                            </div>
+                        
+                            <div class="btn-add-menu cursor-pointer" xid="${item.encrypted_id}">
+                                <img src="/asset/assets/image/icon/btn_Add.png" alt="" width="30" height="30">
+                            </div>
                         </div>
-                       
-                        <div class="btn-add-menu cursor-pointer" xid="${item.encrypted_id}">
-                            <img src="/asset/assets/image/icon/btn_Add.png" alt="" width="30" height="30">
+                        `;
+                    }else{
+                        resultsContainer.innerHTML += `
+                        <div class="result-item">
+                            <img src="${imageUrl}" alt="${item.nama_menu}">
+                            <div class="info gap-3">
+                                <div class="name">${item.nama_menu}</div>
+                                <span class="pt-2">Rp. ${item.harga}</span>
+                            </div>
+                        
+                            <div class="status">unavailable</div>
                         </div>
-                    </div>
-                `;
+                        `;
+                    }
+                }else if(item.id_kategori == 2){
+                    if(item.stok > 0 || item.active == 1){
+                        resultsContainer.innerHTML += `
+                        <div class="result-item">
+                            <img src="${imageUrl}" alt="${item.nama_menu}">
+                            <div class="info gap-3">
+                                <div class="name">${item.nama_menu}</div>
+                                <span class="pt-2">Rp. ${item.harga}</span>
+                            </div>
+                        
+                            <div class="btn-add-menu cursor-pointer" xid="${item.encrypted_id}">
+                                <img src="/asset/assets/image/icon/btn_Add.png" alt="" width="30" height="30">
+                            </div>
+                        </div>
+                        `;
+                    }else{
+                        resultsContainer.innerHTML += `
+                        <div class="result-item">
+                            <img src="${imageUrl}" alt="${item.nama_menu}">
+                            <div class="info gap-3">
+                                <div class="name">${item.nama_menu}</div>
+                                <span class="pt-2">Rp. ${item.harga}</span>
+                            </div>
+                        
+                            <div class="status">unavailable</div>
+                        </div>
+                        `;
+                    }
+                }
+               
+                                
             });
         }
 
@@ -127,15 +173,27 @@ document.addEventListener('DOMContentLoaded', function () {
     $('body').on('click', '.jumlah-menu .btn-plus', function (e) {
         e.preventDefault();
         const $input = $(this).siblings('input.qty');
+        var max = parseInt($input.attr('max'));
+
         let value = parseInt($input.val()) || 1;
 
-        if (value < 100) {
+        if (value < max) {
             value++;
         }
 
         $input.val(value);
         recountNominal();
     });
+
+    $('body').on('input', '.qty', function() {
+        var max = parseInt($(this).attr('max'));
+        var value = parseInt($(this).val());
+        
+        if (value > max) {
+            $(this).val(max);
+        }
+    });
+    
 
     $('body').on('click','.itm-var',function(e){
         var elm = $(this);
@@ -450,6 +508,7 @@ function postOrder(){
         total: grand_total,
         tax: taxes
     }
+    console.log(postData);
 
     if(customerName == ''){
         valid = false;
@@ -474,7 +533,7 @@ function postOrder(){
 
     if(valid == true){
         $.post(URL, postData).done(function(data){
-        if(data.success === 0 ){
+        if(data.success == 0 ){
                 Swal.fire({
 					title: 'Faild!',
 					text: data.message,
@@ -493,7 +552,11 @@ function postOrder(){
             }
         }).fail(function(data){
             console.log('error',data);
-            
+            Swal.fire({
+					title: 'Faild!',
+					text: data.responseJSON.message,
+					icon: 'Error',
+			})
         });
     }
 

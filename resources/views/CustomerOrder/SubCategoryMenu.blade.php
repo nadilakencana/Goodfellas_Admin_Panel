@@ -36,10 +36,29 @@
                                 
                                 <span class="pt-2">Rp. {{ $itm->harga }}</span>
                             </div>
-                            <div class="btn-add-menu cursor-pointer" xid="{{encrypt($itm->id)}}">
+                            {{-- <div class="btn-add-menu cursor-pointer" xid="{{encrypt($itm->id)}}">
                                 <img src="{{ asset('asset/assets/image/icon/btn_Add.png') }}" alt="" width="30"
                                     height="30">
-                            </div>
+                            </div> --}}
+                            @if($itm->kategori->kategori_nama === 'Foods')
+                                @if($itm->stok > 0 && $itm->active )
+                                <div class="btn-add-menu cursor-pointer" xid="{{encrypt($itm->id)}}">
+                                    <img src="{{ asset('asset/assets/image/icon/btn_Add.png') }}" alt="" width="30"
+                                        height="30">
+                                </div>
+                                @else
+                                <div class="status">unavailable</div>
+                                @endif
+                            @elseif ($itm->kategori->kategori_nama === 'Drinks')
+                                @if($itm->active !== 0)
+                                <div class="btn-add-menu cursor-pointer" xid="{{encrypt($itm->id)}}">
+                                    <img src="{{ asset('asset/assets/image/icon/btn_Add.png') }}" alt="" width="30"
+                                        height="30">
+                                </div>
+                                @else
+                                <div class="status">unavailable</div>
+                                @endif
+                            @endif
                         </div>
                     @endforeach
 
