@@ -77,9 +77,9 @@
                                 <p class="nama-menu">
                                     {{ $mn->nama_menu }}
                                 </p>
-                                <div class="image">
+                                {{-- <div class="image">
                                     <img src="{{ asset('asset/assets/image/menu/'.$mn->image) }}" alt="" srcset="">
-                                </div>
+                                </div> --}}
                             </div>
                         </td>
                         <td>{{  $mn->harga}}</td>

@@ -41,18 +41,6 @@ class POSController extends Controller
     public function __construct(KodePesananService $kode_pesanan){
         $this->kode_pesanan = $kode_pesanan;
     }
-    
-    // public function kodePesanan($length = 5)
-    // {
-    //     $str = '';
-    //     $charecters = array_merge(range('A', 'Z'), range('a', 'z'));
-    //     $max = count($charecters) - 1;
-    //     for ($i = 0; $i < $length; $i++) {
-    //         $rand = mt_rand(0, $max);
-    //         $str .= $charecters[$rand];
-    //     }
-    //     return $str;
-    // }
 
 
     public function POSdashboard()
@@ -106,9 +94,44 @@ class POSController extends Controller
                 'totalDis',
 
             ));
+
+            //  return view('POS.dashboard_POS_optimized', compact(
+            //     'itemMenu',
+            //     'Category',
+            //     'subCategory',
+            //     'discount',
+            //     'payment',
+            //     'typeOrder',
+            //     'taxs',
+            //     'carts',
+            //     'subtotal',
+            //     'customItem',
+            //     'billOrder',
+            //     // 'billServer',
+            //     'totalDis',
+
+            // ));
         } else {
             return redirect()->route('login');
         }
+    }
+
+    public function MenuCheckCategory(Request $request){
+        $id = $request->id;
+        // $active = true;
+        $menu = Menu::with('kategori')->find($id);
+
+
+        if(!$menu){
+            return response()->json([
+                'message' => 'Menu not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'kategori berhasil di ambil',
+            'data' => $menu,
+        ],200);
     }
 
     public function DataBill()
@@ -407,6 +430,8 @@ class POSController extends Controller
                 if ($ex == false) {
                     $cart[] = array(
                         'id' => $menu->id,
+                        'stok' => $menu->stok,
+                        'active' => $menu->active,
                         'nama_menu' => $menu->nama_menu,
                         'harga' => $request->get('harga'),
                         'qty' => $request->get('qty'),
@@ -425,6 +450,8 @@ class POSController extends Controller
                     $oldData = $cart[$exId];
                     $cart[$exId] = array(
                         'id' =>  $menu->id,
+                        'stok' => $menu->stok,
+                        'active' => $menu->active,
                         'nama_menu' => $menu->nama_menu,
                         'harga' => $request->get('harga'),
                         'qty' => $request->get('qty'),
@@ -484,23 +511,23 @@ class POSController extends Controller
 
                 if (!empty($request->get('target_detail'))) {
 
-                    if($menu->kategori->kategori_nama === 'Drinks'){
-                        if (!$menu) {
-                            return response()->json([
-                                'success' => 0,
-                                'message' => 'Menu tidak tersedia silahkan atur ulang menu di data menu'
-                            ], 400); 
-                        }
-                    }
+                    // if($menu->kategori->kategori_nama === 'Drinks'){
+                    //     if (!$menu) {
+                    //         return response()->json([
+                    //             'success' => 0,
+                    //             'message' => 'Menu tidak tersedia silahkan atur ulang menu di data menu'
+                    //         ], 400); 
+                    //     }
+                    // }
                 
-                    if($menu->kategori->kategori_nama === 'Foods'){
-                        if ($menu->stok < $request->get('qty')) {
-                                return response()->json([
-                                    'success' => 0,
-                                    'message' => 'Stok tidak cukup silahkan setting ulang stok'
-                                ], 500); 
-                        }
-                    }
+                    // if($menu->kategori->kategori_nama === 'Foods'){
+                    //     if ($menu->stok < $request->get('qty')) {
+                    //             return response()->json([
+                    //                 'success' => 0,
+                    //                 'message' => 'Stok tidak cukup silahkan setting ulang stok'
+                    //             ], 500); 
+                    //     }
+                    // }
                                         
                     $detail = DetailOrder::where('id', $request->get('target_detail'))->where('id_order', $request->get('target_order'))->first();
 
@@ -1328,6 +1355,9 @@ class POSController extends Controller
     {
         if (Sentinel::check()) {
 
+            DB::beginTransaction();
+
+
             try {
 
                 $date = Carbon::now()->format('Y-m-d');
@@ -1483,6 +1513,8 @@ class POSController extends Controller
                     $detail = 0;
                 }
 
+                 DB::commit();
+
                 Session::forget('cart');
                 return response()->json([
                     'success' => 1,
@@ -1494,6 +1526,7 @@ class POSController extends Controller
 
                 ], 200);
             } catch (\Exception $e) {
+                DB::rollback();
                 return response()->json([
                     'success' => 0,
                     'message' => 'Failed to fetch data post order',

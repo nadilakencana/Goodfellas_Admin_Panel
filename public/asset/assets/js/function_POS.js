@@ -41,6 +41,7 @@ $(() => {
             $('.option-discount input:checked').prop('checked', false);
         }
     });
+    
     $('.pop-up .header-card-popup .close').on('click', function () {
 
         var $custom = $('.panel[data-panel="panel3"] .custom-part');
@@ -478,13 +479,9 @@ tombol.addEventListener('click', function (e) {
 // document.addEventListener("DOMContentLoaded", function() {
 document.querySelectorAll("body .search-allmenu").forEach(function (searchBar) {
     searchBar.addEventListener("keyup", function (event) {
-        var id = this.id;
         var key = this.value;
-        console.log(id);
         console.log(key);
-        if (event.key === 'Enter') {
-            searchItem(id);
-        }
+        searchItem(key);
     });
 });
 // });    
@@ -503,40 +500,19 @@ function CekCashNominal(){
 }
 
 //search item menu
-function searchItem(idSearch) {
-    // Cek apakah elemen dengan idSearch ada
-    var element = document.querySelector('.search-allmenu[id="' + idSearch + '"]');
-    console.log(element)
+function searchItem(searchValue) {
+    var normalizedSearch = searchValue.toLowerCase();
+    var cards = document.querySelectorAll(".item-card-menu");
 
-    if (element) {
-        // Ambil nilai input pencarian
-        if (element.tagName === "DIV") {
-            var searchValue = element.textContent.toLowerCase();
+    cards.forEach(function (card) {
+        var cardText = card.textContent.toLowerCase();
+        
+        if (cardText.indexOf(normalizedSearch) !== -1) {
+            card.style.display = "flex";
         } else {
-            var searchValue = element.value.toLowerCase();
+            card.style.display = "none";
         }
-
-        // Ambil semua card
-        // var targetData = document.querySelector('[data-search="' + idSearch + '"]');
-        var cards = document.querySelectorAll(".item-card-menu");
-
-        // Iterasi melalui setiap card
-        cards.forEach(function (card) {
-            // Ambil teks di dalam card
-            var cardText = card.textContent.toLowerCase();
-
-            // Cek apakah teks pencarian ada di dalam teks card
-            if (cardText.indexOf(searchValue) !== -1) {
-                // Jika ditemukan, tampilkan card
-                card.style.display = "flex";
-            } else {
-                // Jika tidak ditemukan, sembunyikan card
-                card.style.display = "none";
-            }
-        });
-    } else {
-        console.log("Elemen dengan ID '" + idSearch + "' tidak ditemukan.");
-    }
+    });
 }
 
 

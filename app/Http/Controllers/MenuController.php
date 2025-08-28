@@ -95,6 +95,7 @@ class MenuController extends Controller
                         $var->id_menu = $menu->id;
                         $var->nama = $variasi['nama'];
                         $var->harga = $variasi['harga'];
+                        $var->active = $variasi['active'];
                         $var->save();
                         $variasi[] = [$variasi];
                     }

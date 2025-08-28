@@ -85,7 +85,7 @@
         </div>
         <div class="form-group sw-custom">
              <label for="" class="form-label">Menu Active</label>
-             <input type="checkbox" name="active" id="swbtn" class="toggle" value="1">
+             <input type="checkbox" name="active" id="swbtn" class="toggle" value="1" checked>
         </div>
         <div class="form-group">
             <label for="" class="form-label">Promo</label>
@@ -219,7 +219,7 @@
 
             $form.append(
                 `<div class="row option" xid="${idx}">`+
-                    `<div class="col-sm-5">`+
+                    `<div class="col-sm-3">`+
                         `<div class="form-group variasi">`+
                             `<label for="" class="form-label">Variasi</label>`+
                             `<input type="text" class="form-control nama" id="exampleInputEmail1" placeholder="Name"  name="variasi[${idx}][nama]" xid="${idx}">`+
@@ -228,13 +228,19 @@
                            ` @enderror`+
                         `</div>`+
                     `</div>`+
-                    `<div class="col-sm-5">`+
+                    `<div class="col-sm-3">`+
                         `<div class="form-group variasi">`+
                             `<label for="" class="form-label">Price</label>`+
                             `<input type="text" class="form-control harga" id="exampleInputEmail1" placeholder="Price" name="variasi[${idx}][harga]" xid="${idx}">`+
                             `@error('harga')`+
                                 `<small class="text-danger"></small>`+
                             `@enderror`+
+                        `</div>`+
+                    `</div>`+
+                    `<div class="col-sm-3">`+
+                        `<div class="form-group variasi">`+
+                            `<label for="" class="form-label">Varian Active</label>`+
+                            `<input type="checkbox" name="variasi[${idx}][active]" id="swbtn" class="toggle" value="1" checked>`+
                         `</div>`+
                     `</div>`+
                     `<div class="col-sm-2 mt-4">`+

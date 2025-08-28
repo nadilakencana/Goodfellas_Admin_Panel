@@ -170,6 +170,7 @@ Route::post('modify-bill', [POSController::class, 'modifyBill'])->name('billModi
 Route::post('Order-Update', [POSController::class, 'updateOrder'])->name('updateorder');
 Route::post('/update-item-order', [POSController::class, 'editOrder'])->name('edit-item');
 Route::post('delete-modify', [POSController::class, 'deletemodify'])->name('Delete-item');
+Route::get('ketegori-cek', [POSController::class, 'MenuCheckCategory'])->name('kategori-cek');
 
 // log activity
 Route::post('activity-log', [POSController::class, 'Action_log'])->name('action-log');

@@ -487,6 +487,7 @@ class OrderController extends Controller
             try{
                 
                 DB::beginTransaction();
+                
                 $refundOrder = new RefundOrder();
                 $refundOrder->id_order = $orders->id;
                 $refundOrder->name_bill = 'Refund-'.$orders->kode_pemesanan;

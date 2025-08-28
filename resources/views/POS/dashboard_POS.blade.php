@@ -524,14 +524,13 @@
             canClick = true;
             canClickDelete = true;
 
-
+            //klik menu
             $('body').on('click', '.item-card-menu', function() {
                 var $elm = $(this);
                 var idx = $elm.attr('idx');
                 var $popup = $('.pop-up.additional');
                 var harga = $elm.attr('target-price');
-                let stok = parseInt($elm.attr('stok'));
-                let status = parseInt($elm.attr('status'));
+                
 
                 if (harga.indexOf('.') !== -1) {
                     var harga_ = harga.replace(".", "");
@@ -542,17 +541,12 @@
                 $popup.find('.card-popup').attr('id-x', idx);
                 $popup.find('.btn-add').attr('x-id', idx);
 
-                if (stok == 0 && status == 0) {
-                    $popup.find('.btn-add').prop('disabled', true).text('tidak tersedia');
-                    $popup.find('.qty').attr('max', stok);
-                } else {
-                    $popup.find('.btn-add').prop('disabled', false);
-                    $popup.find('.qty').attr('max', stok !== 0 ? stok : 100);
-                }
-
+                
+                hendelCheckKategori(idx)
                 console.log(idx);
                 getVariasi(idx, 'add', '');
                 getAdditional(idx, 'add', '');
+               
                 $('.pop-up.additional').fadeIn();
 
             });
@@ -644,6 +638,7 @@
                     dis, qty, typeSales, note
                 )
 
+                hendelCheckKategori(id)
                 getVariasi(id, 'edit', arrkey);
                 getAdditional(id, 'edit', arrkey);
 
@@ -678,25 +673,6 @@
                 $popup.find('.catatan-menu textarea').val(note);
 
             })
-
-
-            $('.itmn-subcategory.discount').on('click', function() {
-                $('.sub-content').addClass('hidden');
-                getDataMenuDiscount();
-            });
-
-            $('.itmn-subcategory.allmenu').on('click', function() {
-                $('.sub-content').addClass('hidden');
-                getmenuAll();
-            });
-
-            $('.itmn-subcategory.menusub').on('click', function() {
-                var idx = $(this).attr('idx');
-                $('.sub-content').addClass('hidden');
-                getmenuSub(idx);
-
-            });
-
 
 
             //menampilkan detail bill yang di klik
@@ -842,8 +818,6 @@
 
             })
 
-
-
             $('.card-popup .btn-add').on('click', function() {
                 var idx = $(this).attr('x-id');
                 var key = $(this).attr('key');
@@ -900,7 +874,6 @@
                 POSorder($button);
             });
 
-
             var $disBill = $('body .popup-daftar-discount');
             var $tgtDisBill = $disBill.find('.option-discount input[type="checkbox"]');
             console.log($tgtDisBill);
@@ -909,7 +882,6 @@
                 discountBill()
                 console.log('get dis')
             });
-
 
             function checkCheckboxes() {
                 // Periksa apakah ada checkbox yang dicentang
@@ -1137,18 +1109,15 @@
                             checkVariantSelection()
                             console.log('data ada', result.data)
                             $target.append('<div class="name-additional">Varian| Choose one</div>');
-                            $.each(result.data, function(key, value) {
-
-                                $target.append(
-                                    ' <div class="option-varian" idx="' + value.id + '">' +
-                                    '<p class="varian">' + value.nama + '</p>' +
-                                    '<p class="harga-varian" harga=' + value.harga + '>' +
-                                    parseInt(value.harga).toLocaleString("id-ID") + '</p>' +
-
-                                    '</div>'
-                                );
-
-                            });
+                            const html = result.data.map(value => {
+                                const disableAttr = value.active == 1 ? '' : ' disable';
+                                const formattedPrice = parseInt(value.harga).toLocaleString("id-ID");
+                                return `<div class="option-varian" idx="${value.id}"${disableAttr}>
+                                    <p class="varian">${value.nama}</p>
+                                    <p class="harga-varian" harga="${value.harga}">${formattedPrice}</p>
+                                </div>`;
+                            }).join('');
+                            $target.append(html);
                             $target.show();
 
                             if (type == 'edit') {
@@ -1540,6 +1509,53 @@
                     });
                 }
 
+            }
+
+            // cek kategori menu 
+            function hendelCheckKategori(id){
+                const URL = "{{route('kategori-cek')}}";
+
+                $.ajax({
+                    url: URL,
+                    data: { id: id },
+                    method: 'GET',
+                    dataType: 'json',
+                    
+                    success: function(result) {
+                        console.log(result);
+                        const $target = $('.pop-up.additional');
+                        const $btnAdd = $target.find('.btn-add');
+
+                        let category = result.data.kategori.kategori_nama;
+                        console.log(category)
+                        
+                        if (category == 'Foods') {
+                            let stok = result.data.stok;
+                            if(stok <= 0){
+                                $btnAdd.prop('disabled', true).text('tidak tersedia');
+                                console.log('food tidak tersedia')
+                            } else {
+                                $btnAdd.prop('disabled', false).text('add');
+                                
+                            }
+
+                            $target.find('.jumlah-menu input.qty').attr('max', stok);
+                        } else if(category == 'Drinks') {
+                            if(result.data.active == 0){
+                                $btnAdd.prop('disabled', true).text('tidak tersedia');
+                                console.log('drink tidak tersedia')
+                            } else {
+                                $btnAdd.prop('disabled', false).text('add');
+                            }
+
+                            $target.find('.jumlah-menu input.qty').attr('max', 100);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error loading additional options:', error);
+                        $('.additional-menu').html('<div class="error">Error loading options</div>');
+                    }
+                });
             }
 
 
@@ -3187,6 +3203,26 @@
 
 
             }
+
+
+
+
+            // $('.itmn-subcategory.discount').on('click', function() {
+            //     $('.sub-content').addClass('hidden');
+            //     getDataMenuDiscount();
+            // });
+
+            // $('.itmn-subcategory.allmenu').on('click', function() {
+            //     $('.sub-content').addClass('hidden');
+            //     getmenuAll();
+            // });
+
+            // $('.itmn-subcategory.menusub').on('click', function() {
+            //     var idx = $(this).attr('idx');
+            //     $('.sub-content').addClass('hidden');
+            //     getmenuSub(idx);
+
+            // });
 
         });
     </script>
