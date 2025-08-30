@@ -188,13 +188,22 @@
             addRowOption(idxRow);
         });
 
-         $('.sw-custom .toggle').on('change', function(e){
+        $('.sw-custom .toggle').on('change', function(e){
 				var state = $(this).prop('checked');
 				if(state){
 					$(this).attr('value',1)
 				}else{
 					$(this).attr('value', 0)
 				}
+		});
+
+        $('.varian .toggle').on('change', function(e){
+			var state = $(this).prop('checked');
+			if(state){
+				$(this).attr('value',1)
+			}else{
+				$(this).attr('value', 0)
+			}
 		});
 
         //hapus row
@@ -213,6 +222,8 @@
             }
 
         });
+
+
         function addRowOption(idx){
             var $content = $('.card-primary');
             var $form = $content.find('form .card-body');
