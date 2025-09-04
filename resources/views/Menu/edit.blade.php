@@ -150,6 +150,11 @@
             <select class="custom-select rounded-0" aria-label="Default select example" name="id_group_modifier" id="exampleSelectRounded0" >
                     @if(!($menu->id_group_modifier ) ==  null)
                     <option value="{{ $menu->id_group_modifier }}" selected>{{ $menu->additional->name }}</option>
+                        @foreach ( $additional as $add )
+                        <option value="{{ $add ->id }}">
+                            {{ $add  -> name}}
+                        </option>
+                        @endforeach
                     @else
                         <option value="">--Pilih Addtional--</option>
                         @foreach ( $additional as $add )
@@ -161,43 +166,8 @@
 
             </select>
         </div>
-        <div class="card-header mt-2 gap-3">
-            <h3 class="card-title">Variasi Menu</h3>
-            <div class="btn btn-primary ml-5 add-option" > +Add Option</div>
-        </div>
-        @foreach ($variasi as $k => $var )
-        <div class="row option" xid="{{ $k }}">
-            <div class="col-sm-5">
-                <div class="form-group variasi">
-                    <label for="" class="form-label">Variasi</label>
-                       <input type="hidden" name="variasi[{{ $k }}][id]" value="{{ $var->id }}"/>
-                        <input type="text" name="variasi[{{ $k }}][id_menu]" value="{{ $var->id_menu }}" style="display:none" />
-                    <input type="text" class="form-control nama" id="exampleInputEmail1" placeholder="Name" name="variasi[{{ $k }}][nama]" xid="{{ $k }}" value="{{ $var->nama }}">
-                    @error('nama')
-                        <small class="text-danger">{{ $message }}</small>
-                    @enderror
-                </div>
-            </div>
-            <div class="col-sm-5">
-                <div class="form-group variasi">
-                    <label for="" class="form-label">Price</label>
-                    <input type="text" class="form-control harga" id="exampleInputEmail1" placeholder="Price" name="variasi[{{ $k }}][harga]" xid="{{ $k }}" value="{{ $var->harga }}">
-                    @error('harga')
-                        <small class="text-danger">{{ $message }}</small>
-                    @enderror
-                </div>
-            </div>
-            <div class="col-sm-2 mt-4 ">
-                <div class="btn btn-danger hapus" xid="{{ $k }}">Delete</div>
-            </div>
-        </div>
-        <div class="data-variasi">
-            <input type="text" name="variasi[{{ $k }}][id]" value="{{ $var->id }}" style="display:none" />
-            <input type="text" class="form-control nama" id="exampleInputEmail1" placeholder="Name" name="variasi[{{ $k }}][nama]" xid="{{ $k }}" value="{{ $var->nama }}" style="display:none">
-            <input type="text" name="variasi[{{ $k }}][id_menu]" value="{{ $var->id_menu }}" style="display:none" />
-            <input type="text" class="form-control harga" id="exampleInputEmail1" placeholder="Price" name="variasi[{{ $k }}][harga]" xid="{{ $k }}" value="{{ $var->harga }}" style="display:none">
-        </div>
-        @endforeach
+       
+       
 
         <div class="form-group">
           <label for="exampleInputFile">Image Menu</label>
@@ -211,6 +181,45 @@
             @enderror
           </div>
         </div>
+        <div class="card-header mt-2 gap-3">
+            <h3 class="card-title">Variasi Menu</h3>
+            <div class="btn btn-primary ml-5 add-option" > +Add Option</div>
+        </div>
+         @foreach ($variasi as $k => $var )
+        <div class="row option" xid="{{ $k }}">
+            <div class="col-sm-3">
+                <div class="form-group variasi">
+                    <label for="" class="form-label">Variasi</label>
+                       <input type="hidden" name="variasi[{{ $k }}][id]" value="{{ $var->id }}"/>
+                       <input type="text" name="variasi[{{ $k }}][id_menu]" value="{{ $var->id_menu }}" style="display:none" />
+                       <input type="text" class="form-control nama" id="exampleInputEmail1" placeholder="Name" name="variasi[{{ $k }}][nama]" xid="{{ $k }}" value="{{ $var->nama }}">
+                    @error('nama')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group variasi">
+                    <label for="" class="form-label">Price</label>
+                    <input type="text" class="form-control harga" id="exampleInputEmail1" placeholder="Price" name="variasi[{{ $k }}][harga]" xid="{{ $k }}" value="{{ $var->harga }}">
+                    @error('harga')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="form-group variasi">
+                    <label for="" class="form-label">Varian Active</label>
+                    <input type="hidden" name="variasi[{{ $k }}][active]" value="0">
+                    <input type="checkbox" name="variasi[{{ $k }}][active]" id="swbtn" class="toggle" xid="{{ $k }}" value="1" @if($var->active == 1) checked @endif>
+                </div>
+            </div>
+            <div class="col-sm-2 mt-4 ">
+                <div class="btn btn-danger hapus" xid="{{ $k }}">Delete</div>
+            </div>
+        </div>
+
+        @endforeach
 
       </div>
 
@@ -220,7 +229,7 @@
 
       <div class="card-footer">
 
-        <button type="submit" class="btn btn-primary">Edit Data</button>
+        <button type="submit" class="btn btn-primary update">Edit Data</button>
 
       </div>
 
@@ -250,42 +259,22 @@
         });
         @endif
 
-        $('.variasi input.nama').on('input', function(){
-            var value = $(this).val();
-            var xid = $(this).attr('xid');
 
-            var $target = $(`.data-variasi input[name="variasi[${xid}][nama]"]`);
-            if($target.length){
-                console.log('target di temukan');
-                $target.val(value);
-            }else{
-                console.log('target tidak ada');
-            }
-        });
 
-        $('.sw-custom .toggle').on('change', function(e){
-				var state = $(this).prop('checked');
-				if(state){
-					$(this).attr('value',1)
-				}else{
-					$(this).attr('value', 0)
-				}
+        $('body').on('change', '.toggle', function(){
+			$(this).attr('value', $(this).prop('checked') ? 1 : 0);
 		});
 
          $('body').on('click','.row.option .hapus' ,function(){
             var $elm = $(this);
             var idx = $elm.attr('xid');
 
-            var $content = $('.card-primary');
-            var $form = $content.find('form .card-body');
-
             let konfirmasi = confirm('sure you want to delete this line?');
 
             if(konfirmasi){
-                $form.find(`.row.option[xid="${idx}"]`).remove();
-                $form.find(`.data-variasi input.nama[name="variasi[${idx}][nama]"][xid="${idx}"]`).val('Delete');
+                $elm.closest('.row.option').remove();
+                $(`.row.option input.nama[name="variasi[${idx}]][nama]"]`).val('Delete');
             }
-
         });
 
 
@@ -295,22 +284,23 @@
 
             $form.append(
                 `<div class="row option" xid="${idx}">`+
-                    `<div class="col-sm-5">`+
+                    `<div class="col-sm-3">`+
                         `<div class="form-group variasi">`+
                             `<label for="" class="form-label">Variasi</label>`+
-                            `<input type="text" class="form-control nama" id="exampleInputEmail1" placeholder="Name"  name="variasi[${idx}][nama]" xid="${idx}">`+
-                            `@error('nama')`+
-                                `<small class="text-danger"></small>`+
-                           ` @enderror`+
+                            `<input type="text" class="form-control nama" placeholder="Name" name="variasi[${idx}][nama]" xid="${idx}">`+
                         `</div>`+
                     `</div>`+
-                    `<div class="col-sm-5">`+
+                    `<div class="col-sm-3">`+
                         `<div class="form-group variasi">`+
                             `<label for="" class="form-label">Price</label>`+
-                            `<input type="text" class="form-control harga" id="exampleInputEmail1" placeholder="Price" name="variasi[${idx}][harga]" xid="${idx}">`+
-                            `@error('harga')`+
-                                `<small class="text-danger"></small>`+
-                            `@enderror`+
+                            `<input type="text" class="form-control harga" placeholder="Price" name="variasi[${idx}][harga]" xid="${idx}">`+
+                        `</div>`+
+                    `</div>`+
+                    `<div class="col-sm-3">`+
+                        `<div class="form-group variasi">`+
+                            `<label for="" class="form-label">Varian Active</label>`+
+                            `<input type="hidden" name="variasi[${idx}][active]" value="0">`+
+                            `<input type="checkbox" name="variasi[${idx}][active]" class="toggle" value="1" checked>`+
                         `</div>`+
                     `</div>`+
                     `<div class="col-sm-2 mt-4">`+
@@ -318,8 +308,10 @@
                     `</div>`+
                 `</div>`
                 );
-
         }
+
+
+
 
 
     });

@@ -190,9 +190,13 @@ class MenuController extends Controller
                                 $var->id_menu = $menu->id;
                                 $var->nama = $variasi['nama'];
                                 $var->harga = $variasi['harga'];
+                                if($variasi['active'] == null){
+                                     $var->active= 0;
+                                }else{
+                                    $var->active= $variasi['active'];
+                                }
+                                // $var->active = $variasi['active'];
                                 $var->save();
-
-                                //  $variasi_menu[] = [$variasi];
 
                             }
 
@@ -201,9 +205,12 @@ class MenuController extends Controller
                             $var->id_menu = $menu->id;
                             $var->nama = $variasi['nama'];
                             $var->harga = $variasi['harga'];
+                            if($variasi['active'] == null){
+                                 $var->active= 0;
+                            }else{
+                                $var->active= $variasi['active'];
+                            }
                             $var->save();
-
-
 
                         }
 
@@ -211,18 +218,9 @@ class MenuController extends Controller
                     $variasi_menu[] = [$variasi];
                     }
                 }
-                //  dd($var);
-                // $localServerUrl = 'https://admin.goodfellas.id/api/update-data-menu';
-                // $dataMenu = Menu::with('varian', 'varian.Menu','additional')->get();
-
+                
                 $menu = $menu->toArray();
 
-                //   dd($variasi_menu);
-                // $response = Http::post($localServerUrl, [
-                //     'Menu' => $menu,
-                //     'variasi' => $variasi_menu,
-                // ]);
-                //dd($response->body());
                 return redirect()->route('menu')->with('Success', 'Menu Berhasil Di Update');
             }else{
                 return redirect()->back()->with('faild', 'Menu gagal di Update');

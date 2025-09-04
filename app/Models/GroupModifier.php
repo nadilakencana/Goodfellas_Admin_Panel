@@ -13,4 +13,8 @@ class GroupModifier extends Model
     protected $guarded = [];
 
     public $timestamps = true;
+
+    public function OptionModifier(){
+        return $this->hasMany(OptionModifier::class, 'id_group_modifier', 'id');
+    }
 }

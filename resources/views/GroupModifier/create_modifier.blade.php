@@ -29,7 +29,7 @@
                 <div class="btn btn-primary ml-5 add-option" > +Add Option</div>
             </div>
             <div class="row option" xid="0">
-                <div class="col-sm-5">
+                <div class="col-sm-3">
                     <div class="form-group option-modifier">
                         <label for="" class="form-label">Option Name</label>
                         <input type="text" class="form-control nama_option" id="exampleInputEmail1" placeholder="Name" name="option_modif[0][name]" xid="0">
@@ -38,7 +38,7 @@
                         @enderror
                     </div>
                 </div>
-                <div class="col-sm-5">
+                <div class="col-sm-3">
                     <div class="form-group option-modifier">
                         <label for="" class="form-label">Price</label>
                         <input type="text" class="form-control harga" id="exampleInputEmail1" placeholder="Price" name="option_modif[0][harga]" xid="0">
@@ -47,6 +47,12 @@
                         @enderror
                     </div>
                 </div>
+                <div class="col-sm-3">
+                    <div class="form-group option-modifier">
+                        <label for="" class="form-label">Modifier Active</label>
+                        <input type="checkbox" name="option_modif[0][active]" id="swbtn" class="toggle" xid="0" value="1" checked>
+                    </div>
+                </div>  
                 <div class="col-sm-2 mt-4 ">
                     <div class="btn btn-danger hapus" xid="0">Delete</div>
                 </div>
@@ -67,6 +73,7 @@
 
             <input type="hidden" name="option_modif[0][name]" class="op_name" />
             <input type="hidden" name="option_modif[0][harga]" class="op_harga" />
+            <input type="hidden" name="option_modif[0][active]" class="op_active" value="0"/>
 
         </form>
     </div>
@@ -90,6 +97,10 @@
             e.stopPropagation();
             e.preventDefault();
         })
+        
+        $('body').on('change', '.toggle', function(){
+			$(this).attr('value', $(this).prop('checked') ? 1 : 0);
+		});
 
         function addRowOption(idx){
             var $content = $('.card-body');
@@ -97,10 +108,11 @@
 
             $form.append(`<input type="hidden" name="option_modif[${idx}][name]" class="op_name">`);
             $form.append(`<input type="hidden" name="option_modif[${idx}][harga]" class="op_harga">`);
+            $form.append(`<input type="hidden" name="option_modif[${idx}][active]" class="op_active" value='0'>`);
 
             $content.append(
                 `<div class="row option" xid="${idx}">`+
-                    `<div class="col-sm-5">`+
+                    `<div class="col-sm-3">`+
                         `<div class="form-group option-modifier">`+
                             `<label for="" class="form-label">Option Name</label>`+
                             `<input type="text" class="form-control nama_option" id="exampleInputEmail1" placeholder="Name" name="option_modif[${idx}][name]" xid="${idx}">`+
@@ -109,13 +121,19 @@
                            ` @enderror`+
                         `</div>`+
                     `</div>`+
-                    `<div class="col-sm-5">`+
+                    `<div class="col-sm-3">`+
                         `<div class="form-group option-modifier">`+
                             `<label for="" class="form-label">Price</label>`+
                             `<input type="text" class="form-control harga" id="exampleInputEmail1" placeholder="Price" name="option_modif[${idx}][harga]" xid="${idx}">`+
                             `@error('harga')`+
                                 `<small class="text-danger"></small>`+
                             `@enderror`+
+                        `</div>`+
+                    `</div>`+
+                    `<div class="col-sm-3">`+
+                        `<div class="form-group variasi">`+
+                            `<label for="" class="form-label">Modifier Active</label>`+
+                            `<input type="checkbox" name="option_modif[${idx}][active]" id="swbtn" class="toggle" value="1" checked>`+
                         `</div>`+
                     `</div>`+
                     `<div class="col-sm-2 mt-4">`+
@@ -140,6 +158,7 @@
 
                 $form.find(`input[name="option_modif[${idx}][name]"]`).remove();
                 $form.find(`input[name="option_modif[${idx}][harga]"]`).remove();
+                $form.find(`input[name="option_modif[${idx}][active]"]`).remove();
             }
 
         });
@@ -162,9 +181,11 @@
 
             var namaOption = $elm.find(`.form-group.option-modifier input[name="option_modif[${idx}][name]"]`).val();
             var hargaOption = $elm.find(`.form-group.option-modifier input[name="option_modif[${idx}][harga]"]`).val();
+            var activeOption = $elm.find(`.form-group.option-modifier input[name="option_modif[${idx}][active]"]`).val();
 
             $form.find(`input[name="option_modif[${idx}][name]"]`).val(namaOption);
             $form.find(`input[name="option_modif[${idx}][harga]"]`).val(hargaOption);
+            $form.find(`input[name="option_modif[${idx}][active]"]`).val(activeOption);
             //console.log(namaOption, hargaOption, nama);
         });
 

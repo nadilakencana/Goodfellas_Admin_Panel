@@ -188,23 +188,11 @@
             addRowOption(idxRow);
         });
 
-        $('.sw-custom .toggle').on('change', function(e){
-				var state = $(this).prop('checked');
-				if(state){
-					$(this).attr('value',1)
-				}else{
-					$(this).attr('value', 0)
-				}
+        $('body').on('change', '.toggle', function(){
+			$(this).attr('value', $(this).prop('checked') ? 1 : 0);
 		});
 
-        $('.varian .toggle').on('change', function(e){
-			var state = $(this).prop('checked');
-			if(state){
-				$(this).attr('value',1)
-			}else{
-				$(this).attr('value', 0)
-			}
-		});
+
 
         //hapus row
         $('body').on('click','.row.option .hapus' ,function(){
@@ -261,9 +249,6 @@
                 );
 
         }
-
-
-
 
 
     });

@@ -53,6 +53,11 @@ class ModifierController extends Controller
                         $op_mod->id_group_modifier = $modif_group->id;
                         $op_mod->name = $option_modif['name'];
                         $op_mod->harga = $option_modif['harga'];
+                        if($option_modif['active'] == null){
+                            $op_mod->active= 0;
+                        }else{
+                            $op_mod->active= $option_modif['active'];
+                        }
                         $op_mod->save();
 
                     }
@@ -116,6 +121,11 @@ class ModifierController extends Controller
                                 $op_mod->id_group_modifier = $group->id;
                                 $op_mod->name = $option_modif['name'];
                                 $op_mod->harga = $option_modif['harga'];
+                                if($option_modif['active'] == null){
+                                    $op_mod->active= 0;
+                                }else{
+                                    $op_mod->active= $option_modif['active'];
+                                }
                                 $op_mod->save();
                             }
 
@@ -124,6 +134,11 @@ class ModifierController extends Controller
                             $op_mod->id_group_modifier = $group->id;
                             $op_mod->name = $option_modif['name'];
                             $op_mod->harga = $option_modif['harga'];
+                            if($option_modif['active'] == null){
+                                $op_mod->active= 0;
+                            }else{
+                                $op_mod->active= $option_modif['active'];
+                            }
                             $op_mod->save();
                         }
                     }

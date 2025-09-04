@@ -98,7 +98,7 @@ class OrderCustomerController extends Controller
         $xid = $request->ex;
         // dd($xid);
         $dec = decrypt($xid);
-        $itemMenu = Menu::with(['varian','kategori'])->find($dec); 
+        $itemMenu = Menu::with(['varian','kategori','additional'])->find($dec); 
         // dd($itemMenu, $dec, $xid);
         $carts = Session::get('cart');
         $itemEdit= 0 ;
@@ -113,17 +113,25 @@ class OrderCustomerController extends Controller
         // dd($carts);
 
         if ($itemMenu && $itemMenu->varian->isNotEmpty()) {
-            $varian = $itemMenu->varian;
+            $varian = $itemMenu->varian->where('active', 1 );
         } else {
             $varian = null;
         }
        
         if($itemMenu->kategori->kategori_nama == 'Foods'){
-            $additional = OptionModifier::where('id_group_modifier', 15)->get();
+            if($itemMenu->additional){
+                $additional = $itemMenu->additional->OptionModifier()->where('active', 1)->get();
+            }else{
+                $additional = [];
+            }
         }
 
         if($itemMenu->kategori->kategori_nama == 'Drinks'){
-            $additional = OptionModifier::where('id_group_modifier', 16)->get();
+            if($itemMenu->additional){
+                $additional = $itemMenu->additional->OptionModifier()->where('active', 1)->get();
+            }else{
+                $additional = [];
+            }
         }
 
         $type_sales = SalesType::all();

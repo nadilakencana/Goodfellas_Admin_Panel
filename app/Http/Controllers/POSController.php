@@ -269,7 +269,7 @@ class POSController extends Controller
         if (Sentinel::check()) {
             $menu = $request->id_menu;
 
-            $variasi = VarianMenu::where('id_menu', $menu)->get();
+            $variasi = VarianMenu::where('id_menu', $menu)->where('active', 1)->get();
             return response()->json([
                 'success' => 1,
                 'message' => 'get data',
@@ -286,7 +286,7 @@ class POSController extends Controller
         if (Sentinel::check()) {
             $menu = $request->id_menu;
             $itemMenu = Menu::where('id', $menu)->first();
-            $additional =  OptionModifier::where('id_group_modifier', $itemMenu->id_group_modifier)->get();
+            $additional =  OptionModifier::where('id_group_modifier', $itemMenu->id_group_modifier)->where('active', 1)->get();
             return response()->json([
                 'success' => 1,
                 'message' => 'get data',
