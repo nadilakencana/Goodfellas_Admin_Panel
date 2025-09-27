@@ -1,13 +1,36 @@
+{{-- 
+    POS Dashboard View
+    
+    This is the main Point of Sales dashboard interface that handles:
+    - Menu item display and selection
+    - Order management and cart functionality
+    - Payment processing
+    - Bill generation and printing
+    - Real-time order updates via Pusher
+    
+    Dependencies:
+    - jQuery for DOM manipulation and AJAX calls
+    - Pusher for real-time notifications
+    - Toastify for user notifications
+    - Custom CSS and JavaScript files
+--}}
+
 @extends('layout.master')
 @section('content')
+    {{-- Include popup for additional menu options (variants, add-ons, etc.) --}}
     @include('POS.part_lain.popUp_Additional')
+    
+    {{-- Commented out bill list popup - likely replaced by dynamic loading --}}
     {{-- @include('POS.part_lain.Daftar-Bill') --}}
+    
+    {{-- Hidden popup containers for dynamic content loading --}}
     <div class="popup-daftar-bill" style="display: none">
-
+        {{-- Bill list popup content loaded dynamically --}}
     </div>
     <div class="popup-daftar-discount" style="display: none">
-
+        {{-- Discount options popup content loaded dynamically --}}
     </div>
+    {{-- Page Header Section --}}
     <section class="content-header">
         <div class="container-fluid">
             <div class="row">
@@ -18,27 +41,36 @@
         </div>
     </section>
 
+    {{-- Main Content Section --}}
     <section class="content">
         <div class="container-fluid">
+            {{-- Tab Navigation for Menu Categories --}}
             <div class="card-header">
                 <div class="tab-navigation">
+                    {{-- Favorite items tab --}}
                     <div class="tab" target-panel="panel1" order="1">Favorite</div>
+                    {{-- All menu items tab --}}
                     <div class="tab" target-panel="panel2" order="2">All Item</div>
+                    {{-- Custom items tab (currently disabled) --}}
                     {{-- <div class="tab" target-panel="panel3" order="3">Custom</div> --}}
                 </div>
             </div>
             <div class="row">
+                {{-- Left Column: Menu Items Display --}}
                 <div class="col-sm-6">
+                    {{-- Search Bar for Menu Items --}}
                     <div class="bar-search">
                         <input type="text" class="search-allmenu" id="FavMenuSearch" placeholder="Search Menu" autofocus>
                         <div class="img-icon" data-target="FavMenuSearch" id="search1">
-                            <img src="{{ asset('asset/assets/image/icon _search_.png') }}" alt="" srcset=""
+                            <img src="{{ asset('asset/assets/image/icon _search_.png') }}" alt="Search Icon" srcset=""
                                 class="icon">
                         </div>
                     </div>
+                    
+                    {{-- Menu Items Container --}}
                     <div class="card height-card">
                         <div class="tab-panel-container">
-                            {{-- all menu --}}
+                            {{-- Panel 1: Favorite Menu Items --}}
                             <div class="panel active" data-panel="panel1" panel-order="1">
                                 <div class="content-menu">
                                     <div class="kategory-menu">
@@ -48,36 +80,44 @@
                                         <div class="menu-cat" data-type="Fav" order-menu="2">Makanan</div>
                                        
                                     </div> --}}
+                                        {{-- Favorite Menu Items Panel --}}
                                         <div class="tab-panel-menu" data-type="Fav">
                                             <div class="menuKat">
                                                 <div class="item-menu" data-search="FavMenuSearch">
+                                                    {{-- Loop through all menu items --}}
                                                     @foreach ($itemMenu as $item)
+                                                        {{-- Optional category filter (currently commented out) --}}
                                                         {{-- @if ($item->id_kategori == 1) --}}
+                                                        
+                                                        {{-- Individual Menu Item Card --}}
                                                         <div class="item-card-menu" idx="{{ $item->id }}"
                                                             target-price="{{ $item->harga }}" stok="{{$item->stok}}" status="{{$item->active}}">
+                                                            
+                                                            {{-- Menu Item Display --}}
                                                             <div class="menu-sub">
                                                                 <div class="icon">
                                                                     <p class="txt-icon">{{ $item->nama_menu }}</p>
                                                                 </div>
                                                                 <p class="txt-subMenu">{{ $item->nama_menu }}</p>
                                                             </div>
+                                                            
+                                                            {{-- Price and Availability Display --}}
                                                             <div class="harga">
+                                                                {{-- Food items: Check both stock and active status --}}
                                                                 @if($item->kategori->kategori_nama === 'Foods')
                                                                     @if($item->stok > 0 && $item->active )
-                                                                   <p class="txt-subMenu">{{ $item->harga }}</p>
+                                                                        <p class="txt-subMenu">{{ $item->harga }}</p>
                                                                     @else
-                                                                    <div class="status" style="color: rgb(251, 42, 42)">unavailable</div>
+                                                                        <div class="status" style="color: rgb(251, 42, 42)">unavailable</div>
                                                                     @endif
+                                                                {{-- Drink items: Only check active status --}}
                                                                 @elseif ($item->kategori->kategori_nama === 'Drinks')
                                                                     @if($item->active !== 0)
-                                                                    <p class="txt-subMenu">{{ $item->harga }}</p>
+                                                                        <p class="txt-subMenu">{{ $item->harga }}</p>
                                                                     @else
-                                                                    <div class="status" style="color: rgb(251, 42, 42)">unavailable</div>
+                                                                        <div class="status" style="color: rgb(251, 42, 42)">unavailable</div>
                                                                     @endif
                                                                 @endif
-
-                                                               
-                                                               
                                                             </div>
                                                         </div>
                                                         {{-- @endif --}}
@@ -89,23 +129,26 @@
 
                                 </div>
                             </div>
-                            {{-- menu favorite --}}
+                            {{-- Panel 2: All Menu Items by Category --}}
                             <div class="panel" data-panel="panel2" panel-order="2">
                                 <div class="content-menu">
                                     <div class="sub-content ">
+                                        {{-- All Menu Items Option --}}
                                         <div class="itmn-subcategory allmenu">
                                             <div class="menu-sub">
                                                 <div class="icon-menu">
                                                     <img src="{{ asset('asset/assets/image/icon/icon _list_ white.png') }}"
-                                                        alt="" srcset="">
+                                                        alt="List Icon" srcset="">
                                                 </div>
                                                 <p class="txt-subMenu">All Menu</p>
                                             </div>
                                             <div class="icon-arrow">
                                                 <img src="{{ asset('asset/assets/image/icon/icon _chevron arrow.png') }}"
-                                                    alt="">
+                                                    alt="Arrow Icon">
                                             </div>
                                         </div>
+                                        
+                                        {{-- Loop through subcategories --}}
                                         @foreach ($subCategory as $sub)
                                             <div class="itmn-subcategory menusub" idx={{ $sub->id }}>
                                                 <div class="menu-sub">
@@ -116,7 +159,7 @@
                                                 </div>
                                                 <div class="icon-arrow">
                                                     <img src="{{ asset('asset/assets/image/icon/icon _chevron arrow.png') }}"
-                                                        alt="">
+                                                        alt="Arrow Icon">
                                                 </div>
                                             </div>
                                         @endforeach
@@ -126,107 +169,137 @@
                         </div>
                     </div>
                 </div>
-                {{-- view list order/bill --}}
+                
+                {{-- Right Column: Order Details and Bill Management --}}
                 <div class="col-sm-6 detail-order">
 
+                    {{-- Order Management Card --}}
                     <div class="card p-2 height-card-2">
+                        {{-- Header with Action Buttons --}}
                         <div class="header-part">
+                            {{-- Bill List Button --}}
                             <div class="menu-icon-list-bil">
                                 <img src="{{ asset('asset/assets/image/icon/icon _clipboard list_ white.png') }}"
-                                    alt="">
+                                    alt="Bill List Icon">
                                 <small class="txt-icon">Daftar Bil</small>
                             </div>
+                            
+                            {{-- Delete Order Button --}}
                             <div class="menu-delete">
-                                <img src="{{ asset('asset/assets/image/icon/Delete.png') }}" alt="">
+                                <img src="{{ asset('asset/assets/image/icon/Delete.png') }}" alt="Delete Icon">
                                 <small class="txt-icon">Delete Order</small>
                             </div>
+                            
+                            {{-- Discount List Button --}}
                             <div class="menu-discount">
-                                <img src="{{ asset('asset/assets/image/icon/Discount.png') }}" alt="">
+                                <img src="{{ asset('asset/assets/image/icon/Discount.png') }}" alt="Discount Icon">
                                 <small class="txt-icon">Daftar Discount</small>
                             </div>
+                            
+                            {{-- Display Order Toggle Button --}}
                             <div class="act-btn-add">
                                 Display Order
                             </div>
                         </div>
+                        {{-- Order Details Display Area --}}
                         <div class="view-detail-ord">
+                            {{-- Check if cart session exists --}}
                             @if (session()->has('cart'))
                                 <div class="part-order">
+                                    {{-- Table Number Input --}}
                                     <div class="drop-down">
                                         <p class="txt-dropdown" style="margin: 0">Nomer Meja</p>
                                         <input type="text" class="nomer-meja" name="no_meja">
                                     </div>
+                                    
+                                    {{-- Order Items List --}}
                                     <div class="detil-bil">
                                         @php
+                                            // Initialize total discount variable
                                             $total_dis = 0;
                                         @endphp
+                                        
+                                        {{-- Loop through cart items --}}
                                         @foreach ($carts as $k => $cart)
+                                            {{-- Individual Cart Item --}}
                                             <div class="itm-bil" idx="{{ $cart['id'] }}" xid="{{ $k }}" 
                                                 stok="{{$cart['stok']}}" status="{{$cart['active']}}">
 
+                                                {{-- Item Basic Info --}}
                                                 <div class="itm">
                                                     <p class="txt-item">{{ $cart['nama_menu'] }}</p>
                                                     <div class="qty-menu">
                                                         <div class="jumlah">{{ $cart['qty'] }}</div>
                                                     </div>
+                                                    
+                                                    {{-- Price and Actions --}}
                                                     <div class="part-float-right">
                                                         @php
+                                                            // Initialize calculation variables
                                                             $totalHarga = 0;
                                                             $discountTotal = 0;
                                                             $total_sub = 0;
                                                             $total = 0;
 
+                                                            // Calculate discount percentage
                                                             $discountTotal += $cart['total_dis'] ?? 0;
                                                             $float_dis = $discountTotal / 100;
+                                                            
+                                                            // Calculate subtotal (base price + additional items)
                                                             $SubtotalHarga = $cart['harga'] + $cart['harga_addtotal'];
-                                                            $totalHarga =
-                                                                ($cart['harga'] + $cart['harga_addtotal']) *
-                                                                $cart['qty'];
+                                                            
+                                                            // Calculate total price (subtotal * quantity)
+                                                            $totalHarga = ($cart['harga'] + $cart['harga_addtotal']) * $cart['qty'];
+                                                            
+                                                            // Apply discount
                                                             $subtotalDisCount = $totalHarga * $float_dis;
                                                             $total = $totalHarga - $subtotalDisCount;
                                                             $total_sub += $total;
                                                         @endphp
 
+                                                        {{-- Display price if available --}}
                                                         @if (!@empty($cart['harga']))
                                                             <p class="price" price="{{ $cart['harga'] }}">
                                                                 {{ number_format($totalHarga, 0, ',', '.') }}
                                                             </p>
-                                                        @else
                                                         @endif
+                                                        
+                                                        {{-- Delete item button --}}
                                                         <div class="hapus-menu-order" idx="{{ $k }}"> X </div>
                                                     </div>
-
                                                 </div>
+                                                {{-- Item Details (variants, add-ons, discounts, notes) --}}
                                                 <div class="detail-itm">
+                                                    {{-- Display variant if selected --}}
                                                     @if (!@empty($cart['var_name']))
                                                         <small class="option varian-op"
                                                             id_var="{{ $cart['variasi_id'] }}">{{ $cart['var_name'] }}</small>
-                                                    @else
                                                     @endif
 
+                                                    {{-- Display additional items/add-ons --}}
                                                     @if (!@empty($cart['additional']))
                                                         @foreach ($cart['additional'] as $adds)
                                                             <small class="option add-op"
                                                                 id_adds="{{ $adds['id'] }}">{{ $adds['nama'] ?? "Notfound"}}  -
                                                                 {{ $adds['harga'] }}</small>
                                                         @endforeach
-                                                    @else
                                                     @endif
 
-
+                                                    {{-- Display sales type (dine-in, takeaway, etc.) --}}
                                                     @if (!@empty($cart['type_name']))
                                                         <small class="option status_order type_order"
                                                             idx="{{ $cart['type_id'] }}">{{ $cart['type_name'] }}</small>
-                                                    @else
                                                     @endif
 
+                                                    {{-- Display applied discounts --}}
                                                     @if (!@empty($cart['discount']))
                                                         @foreach ($cart['discount'] as $discounts)
                                                             @if (!@empty($cart['total_dis']))
                                                                 @php
+                                                                    // Calculate discount nominal value
                                                                     $nominalDis = 0;
                                                                     $nominalDis = $discounts['nominal'];
                                                                     $total_dis += $nominalDis;
-                                                                    //dd($total_dis);
                                                                 @endphp
                                                             @endif
                                                             <small class="option status_order discount"
@@ -237,9 +310,9 @@
                                                         @endforeach
                                                     @endif
 
+                                                    {{-- Display special notes/instructions --}}
                                                     @if (!@empty($cart['catatan']))
                                                         <small class="option note">{{ $cart['catatan'] }}</small>
-                                                    @else
                                                     @endif
                                                 </div>
 
@@ -249,9 +322,12 @@
                                     </div>
                                 </div>
 
+                                {{-- Bill Summary and Totals --}}
                                 <div class="footer-sub-total">
+                                    {{-- Subtotal Calculation --}}
                                     <div class="total">
                                         @php
+                                            // Calculate subtotal after discounts
                                             $sub_total = 0;
                                             $sub_total = $subtotal - $total_dis;
                                         @endphp
@@ -260,11 +336,14 @@
                                             subtotal="{{ $sub_total }}">{{ number_format($sub_total, 0, '.', '.') }}
                                         </div>
                                     </div>
+                                    
+                                    {{-- Tax Calculations --}}
                                     @php
                                         $totalTax = 0;
                                     @endphp
                                     @foreach ($taxs as $tax)
                                         @php
+                                            // Calculate individual tax amounts
                                             $nominalTax = 0;
                                             $desimalTax = $tax->tax_rate / 100;
                                             $nominalTax = str_replace('.', '', $sub_total) * $desimalTax;
@@ -278,6 +357,7 @@
                                         </div>
                                     @endforeach
 
+                                    {{-- Final Total Calculation --}}
                                     @php
                                         $total = 0;
                                         $total = $sub_total + $totalTax;
@@ -319,6 +399,7 @@
         </div>
     </section>
 
+    {{-- Payment Method Selection Popup --}}
     <div class="pop-payment" style="display: none">
         <div class="card-payment">
             <div class="header-card">
@@ -326,6 +407,7 @@
                 <div class="total-payment"></div>
                 <div class="close">X</div>
             </div>
+            {{-- Payment Options List --}}
             <div class="content-payment">
                 @foreach ($payment as $pay)
                     <div class="part-payment unactive" xid="{{ $pay->id }}">
@@ -333,30 +415,36 @@
                     </div>
                 @endforeach
             </div>
-
         </div>
     </div>
+    {{-- Cash Payment Details Popup --}}
     <div class="payment-nominal" style="display: none">
         <div class="card-payment-nominal">
+            {{-- Payment Header --}}
             <div class="header-card">
                 <div class="nominal" data-nominal="">
                     <div class="nm-payment"></div>
                 </div>
             </div>
+            
+            {{-- Cash Amount Input --}}
             <div class="form-cash">
                 <div class="txt">Cash nominal</div>
                 <input type="text" placeholder="Rp 0" class="cash-nominal-input" oninput="formatRupiah(this)">
                 <input type="hidden" class="convert-cash" value="0">
             </div>
+            
+            {{-- Change Amount Display --}}
             <div class="form-cash">
-                <div class="txt">Changel nominal</div>
+                <div class="txt">Change nominal</div>
                 <input type="text" placeholder="Rp 0" class="change-input" value=""
                     oninput="formatRupiah(this)">
                 <input type="hidden" class="convert-change">
             </div>
+            
+            {{-- Action Buttons --}}
             <div class="footer-card">
-                <div class="tooltip payment" style="display: block;margin-top: -22px;">cash nominal tidak boleh kosong
-                </div>
+                <div class="tooltip payment" style="display: block;margin-top: -22px;">cash nominal tidak boleh kosong</div>
                 <button class="btn btn-selesai btn-payment" data-type="">
                     Selesai
                 </button>
@@ -366,6 +454,7 @@
             </div>
         </div>
     </div>
+    {{-- Bill Naming Popup --}}
     <div class="popup-name-bill" style="display: none">
         <div class="position-card">
             <div class="card-colum-input">
@@ -374,6 +463,7 @@
                     <div class="total-payment"></div>
                     <div class="close">X</div>
                 </div>
+                {{-- Bill Name Input Form --}}
                 <div class="form-group">
                     <label for="" class="form-label">Name Bill</label>
                     <input type="text" class="form-control nameBill">
@@ -385,6 +475,7 @@
         </div>
     </div>
 
+    {{-- Split Bill Quantity Selection Popup --}}
     <div class="popup-qty" style="display: none">
         <div class="position-card">
             <div class="card-colum-input" style="width: 500px;max-height: 450px; height:auto;">
@@ -393,8 +484,9 @@
                     <div class="total-payment"></div>
                     <div class="close">X</div>
                 </div>
+                {{-- Scrollable content area for bill items --}}
                 <div class="cotent-detail" style="overflow: scroll;max-height: 330px;height:auto;">
-
+                    {{-- Dynamic content loaded here --}}
                 </div>
                 <button class="btn btn-selesai" disabled>
                     Oke
@@ -403,6 +495,7 @@
         </div>
     </div>
 
+    {{-- Print Processing Status Popup --}}
     <div class="popup-print" style="display: none">
         <div class="position-card">
             <div class="card-colum-input">
@@ -410,13 +503,12 @@
                     <div class="txt-tittle">Print sedang diproses..</div>
                     <div class="total-payment"></div>
                 </div>
-
                 <p>Tunggu Sebentar..</p>
-
             </div>
         </div>
     </div>
 
+    {{-- Custom Category Selection Popup --}}
     <div class="popup-category-custom" style="display: none">
         <div class="position-card">
             <div class="card-colum-input">
@@ -425,6 +517,7 @@
                     <div class="total-payment"></div>
                     <div class="close">X</div>
                 </div>
+                {{-- Custom Item Categories --}}
                 <div class="content-payment">
                     @foreach ($customItem as $item)
                         <div class="part-category uncative p-1" xid="{{ $item->id }}">
@@ -436,23 +529,35 @@
         </div>
     </div>
 
-    {{-- <iframe class="frameHolder" src="{{ route('notif') }}" allow="autoplay" style="display:none;"></iframe> --}}
-    {{-- <div class="frameHolder"></div> --}}
+    {{-- Hidden iframe for audio notifications --}}
+    <iframe class="frameHolder" src="{{ route('notif') }}" allow="autoplay" style="display:none;"></iframe>
+    <div class="frameHolder"></div>
 @stop
 
+{{-- JavaScript Section --}}
 @section('script')
-
+    {{-- External JavaScript Dependencies --}}
     <script src="{{ asset('asset/assets/js/function_POS.js') }}"></script>
     <script src="{{ asset('asset/assets/js/idle timer check.js') }}"></script>
     <script src="{{ asset('asset/assets/js/pusher.min.js') }}"></script>
+    
+    {{-- 
+        Real-time Order Notifications via Pusher
+        
+        This script handles real-time notifications for new orders
+        using Pusher WebSocket service. When a new order is received,
+        it plays an audio notification and shows an alert.
+    --}}
     <script>
         // Enable pusher logging - don't include this in production
         Pusher.logToConsole = true;
 
+        // Initialize Pusher connection
         var pusher = new Pusher('2370e8d9488988129926', {
             cluster: 'ap1'
         });
 
+        // Subscribe to orders channel and bind event handler
         var channel = pusher.subscribe('orders');
         channel.bind('orders-event', function(data) {
             console.log('✅ Event "order.created" DITERIMA:', data);
@@ -512,19 +617,32 @@
         });
 
     </script>
+    
+    {{-- 
+        Main POS Application JavaScript
+        
+        This script contains all the core functionality for the POS system:
+        - Menu item selection and cart management
+        - Order processing and bill generation
+        - Payment handling and receipt printing
+        - Real-time updates and session management
+        - Split bill functionality
+        - Discount and tax calculations
+    --}}
     <script>
         $(() => {
+            // Global state variables
+            let currentBillId = 0;              // Current active bill ID
+            var throttledButtonClick;           // Throttled print function
+            var throttledButtonClickDelete;     // Throttled delete print function
+            var canClick;                       // Print button state
+            var canClickDelete;                 // Delete print button state
 
-            let currentBillId = 0;
-            var throttledButtonClick;
-            var throttledButtonClickDelete;
-            var canClick;
-            var canClickDelete;
-
+            // Initialize button states
             canClick = true;
             canClickDelete = true;
 
-            //klik menu
+            // Menu item click handler
             $('body').on('click', '.item-card-menu', function() {
                 var $elm = $(this);
                 var idx = $elm.attr('idx');

@@ -194,9 +194,11 @@
 
             var namaOption = $elm.find(`.form-group.option-modifier input[name="option_modif[${idx}][name]"]`).val();
             var hargaOption = $elm.find(`.form-group.option-modifier input[name="option_modif[${idx}][harga]"]`).val();
+            var activeOption = $elm.find(`.form-group.option-modifier input[name="option_modif[${idx}][active]"]`).val();
 
             $form.find(`input[name="option_modif[${idx}][name]"]`).val(namaOption);
             $form.find(`input[name="option_modif[${idx}][harga]"]`).val(hargaOption);
+            $form.find(`input[name="option_modif[${idx}][active]"]`).val(activeOption);
             //console.log(namaOption, hargaOption, nama);
         });
 

@@ -58,7 +58,7 @@ class VipRoomController extends Controller
                     mkdir($destination, 0777, true);
                 }
                 $file->move($destination, $fileName);
-                $room->image = 'https://admin.goodfellas.id/asset/assets/image/room/'.$fileName;
+                $room->image = 'http://127.0.0.1:8080/asset/assets/image/room/'.$fileName;
 
             }
             // dd($room);
@@ -111,7 +111,7 @@ class VipRoomController extends Controller
                 }
                 $file->move($destination, $fileName);
 
-                $room->image = 'https://admin.goodfellas.id/asset/assets/image/room/'.$fileName;
+                $room->image = 'http://127.0.0.1:8080/asset/assets/image/room/'.$fileName;
 
             }
             if($room->save()){
