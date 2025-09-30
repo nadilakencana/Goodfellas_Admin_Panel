@@ -11,6 +11,8 @@ use App\Models\Menu;
 use App\Models\Kategori;
 use App\Models\SubKategori;
 use App\Models\VarianMenu;
+use App\Models\BahanBaku;
+use App\Models\MenuResep;
 use Sentinel;
 use Illuminate\Support\Facades\Http;
 class MenuController extends Controller
@@ -33,7 +35,8 @@ class MenuController extends Controller
             $kat = Kategori::all();
             $sub_kat =SubKategori::all();
             $additional = GroupModifier::all();
-            return view('Menu.create', compact('kat','sub_kat', 'additional'));
+            $bahan_baku = BahanBaku::all();
+            return view('Menu.create', compact('kat','sub_kat', 'additional', 'bahan_baku'));
         }else{
             return redirect()->route('login');
         }
@@ -62,7 +65,9 @@ class MenuController extends Controller
             $menu->custom= false;
             $menu->id_group_modifier= $request->id_group_modifier;
             $menu->stok= $request->stok;
-
+            $menu->stok_minimum = $request->stok_minimun;
+            $menu->tipe_stok = $request->tipe_stok;
+            $menu->id_bahan_baku = $request->id_bahan_baku;
             if($request->active == null){
                 $menu->active= 0;
             }else{
@@ -88,6 +93,15 @@ class MenuController extends Controller
             // dd($menu);
 
             if( $menu->save()){
+                if($menu->kategori->kategori_nama === 'Foods'){
+                    if($menu->tipe_stok === 'Stok Bahan Baku'){
+                        $menu_resep = new MenuResep();
+                        $menu_resep->id_menu = $menu->id;
+                        $menu_resep->id_bahan_baku = $request->id_bahan_baku;
+                        $menu_resep->save();
+                    }
+                }
+                
                 if($request->has('variasi')){
                     $var_menu = $request->variasi;
                     foreach($var_menu as $variasi){
@@ -121,7 +135,8 @@ class MenuController extends Controller
             $sub_kat =SubKategori::all();
             $variasi = VarianMenu::where('id_menu', $menu->id)->get();
             $additional = GroupModifier::all();
-            return view('Menu.edit', compact('menu','kat','sub_kat','variasi','additional'));
+            $bahan_baku = BahanBaku::all();
+            return view('Menu.edit', compact('menu','kat','sub_kat','variasi','additional','bahan_baku'));
         }else{
             return redirect()->route('login');
         }
@@ -156,6 +171,9 @@ class MenuController extends Controller
             $menu->custom= false;
             $menu->id_group_modifier= $request->id_group_modifier;
             $menu->stok= $request->stok;
+            $menu->stok_minimum = $request->stok_minimun;
+            $menu->tipe_stok = $request->tipe_stok;
+            $menu->id_bahan_baku = $request->id_bahan_baku;
            if($request->active == null){
                 $menu->active= 0;
             }else{
@@ -175,6 +193,14 @@ class MenuController extends Controller
             }
 
             if( $menu->save()){
+                if($menu->kategori->kategori_nama === 'Foods'){
+                    if($menu->tipe_stok === 'Stok Bahan Baku'){
+                        $menu_resep = MenuResep::where('id_menu', $menu->id)->first();
+                        $menu_resep->id_menu = $menu->id;
+                        $menu_resep->id_bahan_baku = $request->id_bahan_baku;
+                        $menu_resep->save();
+                    }
+                }
                 if($request->has('variasi')){
                     $var_menu = $request->variasi;
                     // dd($var_menu);
@@ -259,6 +285,103 @@ class MenuController extends Controller
             return redirect()->route('login');
         }
 
+
+    }
+
+
+    public function bahanBaku(){
+        if(Sentinel::check()){
+            $bahan_baku = BahanBaku::all();
+            return view ('Menu.bahanBaku', compact('bahan_baku'));
+        }else{
+            return redirect()->route('login');
+        }
+
+       
+    }
+
+    public function createBahanBaku(){
+        if(Sentinel::check()){
+            return view('Menu.createBahanbaku');
+        }else{
+            return redirect()->route('login');
+        }
+
+    }
+
+    public function pushCreateBahanBaku(Request $request){
+        if(Sentinel::check()){
+            $request->validate([
+                'nama_bahan' => 'required',
+                'stok_porsi' => 'required',
+                'stok_minimum' => 'required',
+            ]);
+
+            $bahan_baku = new BahanBaku();
+            $bahan_baku->nama_bahan = $request->nama_bahan;
+            $bahan_baku->stok_porsi = $request->stok_porsi;
+            $bahan_baku->stok_minimum = $request->stok_minimum;
+
+            if($bahan_baku->save()){
+                return redirect()->route('bahanBaku')->with('Success', 'Bahan Baku Berhasil Di Tambahkan');
+            }else{
+                return redirect()->back()->with('faild', 'Bahan Baku gagal di Tambahkan');
+            }
+        }else{
+            return redirect()->route('login');
+        }
+
+    }
+
+    public function editBahanBaku($id){
+        if(Sentinel::check()){
+            $dec = decrypt($id);
+            $bahan_baku = BahanBaku::where('id', $dec)->first();
+            return view('Menu.editBahanbaku', compact('bahan_baku'));
+        }else{
+            return redirect()->route('login');
+        }
+
+    }
+
+    public function updateBahanBaku(Request $request, $id){
+        if(Sentinel::check()){
+            $request->validate([
+                'nama_bahan' => 'required',
+                'stok_porsi' => 'required',
+                'stok_minimum' => 'required',
+            ]);
+
+            $dec = decrypt($id);
+            $bahan_baku = BahanBaku::where('id', $dec)->first();
+            $bahan_baku->nama_bahan = $request->nama_bahan;
+            $bahan_baku->stok_porsi = $request->stok_porsi;
+            $bahan_baku->stok_minimum = $request->stok_minimum;
+
+            if($bahan_baku->save()){
+                return redirect()->route('bahanBaku')->with('Success', 'Bahan Baku Berhasil Di Update');
+            }else{
+                return redirect()->back()->with('faild', 'Bahan Baku gagal di Update');
+            }
+        }else{
+            return redirect()->route('login');
+        }
+
+    }
+
+    public function deleteBahanBaku(Request $request, $id){
+        if(Sentinel::check()){
+            $dec = decrypt($id);
+            $bahan_baku = BahanBaku::where('id', $dec)->first();
+
+            if($bahan_baku->delete()){
+                return redirect()->back()->with('Success', 'Bahan Baku Berhasil Di Hapus');
+            }else{
+                return redirect()->back()->with('faild', 'Bahan Baku gagal di Hapus');
+            }
+        }else{
+            return redirect()->route('login');
+        }
 
     }
 

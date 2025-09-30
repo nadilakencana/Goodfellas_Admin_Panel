@@ -21,9 +21,11 @@ class Menu extends Model
         'image',
         'id_group_modifier',
         'custom',
-        'stok_tersedia',
+        'stok',
         'stok_minimum',
-        'tipe_stok'
+        'active',
+        'tipe_stok',
+        'id_bahan_baku'
     ]; //mendeklarisasi atribut table menu yang harus di isi
 
     public $timestamps = false;
@@ -62,6 +64,10 @@ class Menu extends Model
         return $this->hasMany(MenuResep::class, 'id_menu', 'id');
     }
 
+    public function bahanBaku(){
+        return $this->hasOneThrough(BahanBaku::class, MenuResep::class, 'id_menu', 'id', 'id', 'id_bahan_baku');
+    }
+
     public function stokLog(){
         return $this->hasMany(StokLog::class, 'id_item', 'id')
                     ->where('tipe', 'menu');
@@ -70,74 +76,46 @@ class Menu extends Model
     // Method untuk cek stok berdasarkan bahan baku
     public function hitungStokDariBahanBaku()
     {
-        if ($this->tipe_stok !== 'bahan_baku') {
-            return $this->stok_tersedia;
+        if ($this->tipe_stok !== 'Stok Bahan Baku') {
+            return $this->stok;
         }
 
-        if ($this->resep->isEmpty()) {
-            return 0;
-        }
-
-        $stokMinimum = PHP_INT_MAX;
-        
-        foreach ($this->resep as $resep) {
-            $bahanBaku = $resep->bahanBaku;
-            if ($resep->porsi_diperlukan > 0) {
-                $stokTersedia = floor($bahanBaku->stok_porsi / $resep->porsi_diperlukan);
-                $stokMinimum = min($stokMinimum, $stokTersedia);
-            } else {
-                $stokMinimum = 0;
-                break;
-            }
-        }
-        
-        return $stokMinimum === PHP_INT_MAX ? 0 : $stokMinimum;
+        $bahanBaku = $this->bahanBaku;
+        return $bahanBaku ? $bahanBaku->stok_porsi : 0;
     }
 
     // Cek apakah menu tersedia (stok cukup)
     public function isStokTersedia($jumlah = 1)
     {
-        if ($this->tipe_stok === 'bahan_baku') {
+        if ($this->tipe_stok === 'Stok Bahan Baku') {
             return $this->hitungStokDariBahanBaku() >= $jumlah;
         } else {
-            return $this->stok_tersedia >= $jumlah;
+            return $this->stok >= $jumlah;
         }
     }
 
     // Cek apakah stok kritis
     public function isStokKritis()
     {
-        $stokAktual = $this->tipe_stok === 'bahan_baku' 
+        $stokAktual = $this->tipe_stok === 'Stok Bahan Baku' 
             ? $this->hitungStokDariBahanBaku() 
-            : $this->stok_tersedia;
+            : $this->stok;
             
         return $stokAktual <= $this->stok_minimum;
     }
 
     // Update stok dengan logging (untuk tipe manual)
-    public function updateStok($jumlah, $tipeTransaksi, $keterangan = null, $orderId = null, $userId = null)
+    public function updateStok($jumlah)
     {
-        if ($this->tipe_stok !== 'manual') {
+        if ($this->tipe_stok !== 'Stok Manual') {
             throw new \Exception('Stok menu ini dikelola berdasarkan bahan baku');
         }
 
-        $stokSebelum = $this->stok_tersedia;
-        $this->stok_tersedia += $jumlah;
+        $stokSebelum = $this->stok;
+        $this->stok += $jumlah;
         $this->save();
 
-        // Log perubahan
-        StokLog::create([
-            'tipe' => 'menu',
-            'id_item' => $this->id,
-            'tipe_transaksi' => $tipeTransaksi,
-            'jumlah_sebelum' => $stokSebelum,
-            'jumlah_perubahan' => $jumlah,
-            'jumlah_sesudah' => $this->stok_tersedia,
-            'keterangan' => $keterangan,
-            'id_order' => $orderId,
-            'created_by' => $userId
-        ]);
-
+    
         return $this;
     }
 

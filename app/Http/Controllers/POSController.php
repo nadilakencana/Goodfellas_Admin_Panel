@@ -34,6 +34,7 @@ use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Facades\DB;
 use App\Models\Aktivity;
 use App\Services\KodePesananService;
+use App\Services\StokService;
 class POSController extends Controller
 {
     protected KodePesananService $kode_pesanan;
@@ -1464,10 +1465,6 @@ class POSController extends Controller
                         $menu->stok = $newStok;
                         $menu->save();
                     }
-                    // Jika stok habis, nonaktifkan menu
-                    // if ($newStok == 0) {
-                    //     $menu->active = 0;
-                    // }
                     
                     
                     $detail->save();

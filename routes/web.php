@@ -82,6 +82,14 @@ Route::get('/edit/menu/{id}', [MenuController::class,'editMenu'])->name('edit.me
 Route::put('/update/push/menu/{id}',[MenuController::class,'UpdateMenu'])->name('update.menu');
 Route::delete('/delete/menu/{id}',[MenuController::class,'deleteMenu'])->name('delete');
 
+Route::controller(MenuController::class)->group(function(){
+    Route::get('bahan-baku','bahanBaku')->name('bahanBaku');
+    Route::get('create/bahan-baku', 'createBahanBaku')->name('create.bahanBaku');
+    Route::post('push/bahan-baku', 'pushCreateBahanBaku')->name('push.bahanBaku');
+    Route::get('edit/bahan-baku/{id}', 'editBahanBaku')->name('edit.bahanBaku');
+    Route::put('update/bahan-baku/{id}', 'updateBahanBaku')->name('update.bahanBaku');
+    Route::delete('delete/bahan-baku/{id}','deleteBahanBaku')->name('delete.bahanBaku');
+});
 // contactUs
 Route::get('data-Contact-Us', [ContactUsController::class, 'dataContact'])->name('contactUs');
 

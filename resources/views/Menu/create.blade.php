@@ -77,10 +77,39 @@
 
         </div>
         <div class="form-group">
+            <label>Type Stok</label>
+            <select class="custom-select rounded-0" name="tipe_stok" id="tipe_stok">
+                <option value="" selected>--Type Stok--</option>
+                <option value="Stok Manual" >Stok Manual</option>
+                <option value="Stok Bahan Baku">Stok Bahan Baku</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="bahan_baku_group" style="display: none;">
+            <label>Bahan Baku</label>
+            <select class="custom-select rounded-0" name="id_bahan_baku" id="id_bahan_baku">
+                <option value="">--Pilih Bahan Baku--</option>
+                @foreach ($bahan_baku as $bahan )
+                    <option value="{{ $bahan->id }}">
+                        {{ $bahan->nama_bahan}}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        
+        <div class="form-group" id="stok_manual_group" style="display: none;">
             <label for="" class="form-label">Stok Menu</label>
-            <input type="number" class="form-control @error('stok') is-invalid @enderror " id="exampleInputEmail1" placeholder="Promo" name="stok">
+            <input type="number" class="form-control @error('stok') is-invalid @enderror" name="stok" placeholder="Stok Menu">
             @error('stok')
-                  <small class="text-danger">{{ $message }}</small>
+                <small class="text-danger">{{ $message }}</small>
+            @enderror
+        </div>
+        
+        <div class="form-group" id="stok_minimum_group" style="display: none;">
+            <label for="" class="form-label">Stok Minimum</label>
+            <input type="number" class="form-control @error('stok_minimum') is-invalid @enderror" name="stok_minimum" placeholder="Minimum Stok">
+            @error('stok_minimum')
+                <small class="text-danger">{{ $message }}</small>
             @enderror
         </div>
         <div class="form-group sw-custom">
@@ -102,11 +131,11 @@
                 @foreach ($kat as $kategori )
                     @if(old('kategori_nama') == $kategori->id)
                     <option value="{{ $kategori->id }}" selected>
-                        {{ $kategori -> kategori_nama}}
+                        {{ $kategori->kategori_nama}}
                     </option>
                     @else
                     <option value="{{ $kategori->id }}">
-                        {{ $kategori -> kategori_nama}}
+                        {{ $kategori->kategori_nama}}
                     </option>
                     @endif
                 @endforeach
@@ -191,6 +220,28 @@
         $('body').on('change', '.toggle', function(){
 			$(this).attr('value', $(this).prop('checked') ? 1 : 0);
 		});
+
+        // Handle stock type change
+        $('#tipe_stok').on('change', function(){
+            var selectedType = $(this).val();
+            
+            if(selectedType === 'Stok Bahan Baku') {
+                $('#bahan_baku_group').show();
+                $('#stok_manual_group').hide();
+                $('#stok_minimum_group').hide();
+            } else if(selectedType === 'Stok Manual') {
+                $('#bahan_baku_group').hide();
+                $('#stok_manual_group').show();
+                $('#stok_minimum_group').show();
+            } else {
+                $('#bahan_baku_group').hide();
+                $('#stok_manual_group').hide();
+                $('#stok_minimum_group').hide();
+            }
+        });
+
+        // Initialize on page load
+        $('#tipe_stok').trigger('change');
 
 
 

@@ -15,23 +15,21 @@ class BahanBaku extends Model
         'nama_bahan',
         'stok_porsi',
         'stok_minimum',
-        'harga_per_porsi'
+        
     ];
 
-    protected $casts = [
-        'harga_per_porsi' => 'decimal:2'
-    ];
+    
 
     public function menuResep()
     {
         return $this->hasMany(MenuResep::class, 'id_bahan_baku', 'id');
     }
 
-    public function stokLog()
+    public function menus()
     {
-        return $this->hasMany(StokLog::class, 'id_item', 'id')
-                    ->where('tipe', 'bahan_baku');
+        return $this->hasManyThrough(Menu::class, MenuResep::class, 'id_bahan_baku', 'id', 'id', 'id_menu');
     }
+
 
     // Cek apakah stok kritis
     public function isStokKritis()
@@ -40,24 +38,11 @@ class BahanBaku extends Model
     }
 
     // Update stok dengan logging
-    public function updateStok($jumlah, $tipeTransaksi, $keterangan = null, $orderId = null, $userId = null)
+    public function updateStok($jumlah)
     {
         $stokSebelum = $this->stok_porsi;
         $this->stok_porsi += $jumlah;
         $this->save();
-
-        // Log perubahan
-        StokLog::create([
-            'tipe' => 'bahan_baku',
-            'id_item' => $this->id,
-            'tipe_transaksi' => $tipeTransaksi,
-            'jumlah_sebelum' => $stokSebelum,
-            'jumlah_perubahan' => $jumlah,
-            'jumlah_sesudah' => $this->stok_porsi,
-            'keterangan' => $keterangan,
-            'id_order' => $orderId,
-            'created_by' => $userId
-        ]);
 
         return $this;
     }

@@ -60,10 +60,11 @@
                     <tr>
                       <th style="width: 10px">NO</th>
                       <th>Menu Name</th>
-                      <th>Price</th>
+                     
                       <th>Category</th>
                       <th>Sub Category</th>
-                      <th>Promo</th>
+                      <th>Bahan Baku</th>
+                      <th>Stok</th>
                       <th>Action</th>
                     </tr>
                   </thead>
@@ -77,15 +78,15 @@
                                 <p class="nama-menu">
                                     {{ $mn->nama_menu }}
                                 </p>
-                                {{-- <div class="image">
-                                    <img src="{{ asset('asset/assets/image/menu/'.$mn->image) }}" alt="" srcset="">
-                                </div> --}}
+                                <p class="nama-menu">
+                                   Rp. {{$mn->harga}}
+                                </p>
                             </div>
                         </td>
-                        <td>{{  $mn->harga}}</td>
                         <td>{{  $mn->kategori->kategori_nama}}</td>
-                        <td>@if(isset($mn->subKategori->sub_kategori)){{ $mn->subKategori->sub_kategori }}@else @endif</td>
-                        <td>{{ $mn->promo }}</td>
+                        <td>@if(isset($mn->subKategori->sub_kategori)){{ $mn->subKategori->sub_kategori }}@else -  @endif</td>
+                        <td>@if(!empty($mn->id_bahan_baku)){{ $mn->bahanBaku->nama_bahan }}@else - @endif</td>
+                        <td>@if(!empty($mn->id_bahan_baku)) {{ $mn->bahanBaku->stok_porsi }} @else {{$mn->stok}} @endif</td>
                         <td>
                             <div class="text-center">
                                 <a href="{{route('edit.menu', encrypt($mn->id))}}" type="button" class="btn btn-block btn-warning mb-2">

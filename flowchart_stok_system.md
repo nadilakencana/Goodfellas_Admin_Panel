@@ -265,25 +265,22 @@ Bahan Baku  │  Menu Manual
                               │ • tipe_stok         │       └─────────────────────┘
                               |                     │
                               └─────────────────────┘                   │ N:1
-                                       │                                │
-                                       │ 1:N                            ▼
-                                       ▼                    ┌─────────────────────┐
-                              ┌─────────────────────┐       │     BAHAN_BAKU      │
-                              │      STOK_LOG       │       ├─────────────────────┤
-                              ├─────────────────────┤   N:1 │ • id (PK)           │
-                              │ • id (PK)           │◄──────┤ • nama_bahan        │
-                              │ • tipe              │       │ • stok_porsi        │
-                              │ • id_item           │       |                     |
-                              │ • jumlah_sebelum    │       └─────────────────────┘
-                              │ • jumlah_perubahan  │                    │
-                              │ • jumlah_sesudah    │                    │ 1:N
-                              │ • keterangan        │                    │
-                              └─────────────────────┘                    │
-                                                                         ▼
+                                                                        │
+                                                                        ▼
                                                             ┌─────────────────────┐
-                                                            │      STOK_LOG       │
-                                                            │   (Bahan Baku)      │
+                                                            │     BAHAN_BAKU      │
+                                                            ├─────────────────────┤
+                                                            │ • id (PK)           │
+                                                            ┤ • nama_bahan        │
+                                                            │ • stok_porsi        │
+                                                            |                     |
                                                             └─────────────────────┘
+                                        
+                            
+                                    
+                                             
+                                                                         
+                                                        
 
 Relationships:
 • KATEGORI (1) ──── (N) MENU

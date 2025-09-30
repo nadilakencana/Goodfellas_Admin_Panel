@@ -54,6 +54,12 @@
                                 <p>Menu</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{{ route('bahanBaku') }}" class="nav-link ">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>Bahan Baku</p>
+                            </a>
+                        </li>
                         @if($admin->level->level =='Developer')
                         <li class="nav-item">
                             <a href="{{ route('kategori') }}" class="nav-link ">

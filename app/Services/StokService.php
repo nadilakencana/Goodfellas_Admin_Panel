@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Menu;
 use App\Models\BahanBaku;
-use App\Models\StokLog;
 use Illuminate\Support\Facades\DB;
 
 class StokService
@@ -20,7 +19,7 @@ class StokService
             return ['success' => false, 'message' => 'Menu tidak ditemukan'];
         }
 
-        if ($menu->tipe_stok === 'bahan_baku') {
+        if ($menu->tipe_stok === 'Stok Bahan Baku') {
             return $this->prosesOrderDenganBahanBaku($menu, $quantity, $orderId);
         } else {
             return $this->prosesOrderManual($menu, $quantity, $orderId);
@@ -32,37 +31,23 @@ class StokService
      */
     private function prosesOrderDenganBahanBaku($menu, $quantity, $orderId = null)
     {
-        DB::beginTransaction();
+        $bahanBaku = $menu->bahanBaku;
+        
+        if (!$bahanBaku) {
+            return ['success' => false, 'message' => 'Bahan baku tidak ditemukan untuk menu ini'];
+        }
+        
+        if ($bahanBaku->stok_porsi < $quantity) {
+            return [
+                'success' => false, 
+                'message' => "Stok bahan baku '{$bahanBaku->nama_bahan}' tidak cukup. Dibutuhkan: {$quantity} porsi, Tersedia: {$bahanBaku->stok_porsi} porsi"
+            ];
+        }
         
         try {
-            // Cek stok bahan baku
-            foreach ($menu->resep as $resep) {
-                $dibutuhkan = $resep->porsi_diperlukan * $quantity;
-                if ($resep->bahanBaku->stok_porsi < $dibutuhkan) {
-                    DB::rollback();
-                    return [
-                        'success' => false, 
-                        'message' => "Stok bahan baku '{$resep->bahanBaku->nama_bahan}' tidak cukup. Dibutuhkan: {$dibutuhkan} porsi, Tersedia: {$resep->bahanBaku->stok_porsi} porsi"
-                    ];
-                }
-            }
-            
-            // Kurangi stok bahan baku
-            foreach ($menu->resep as $resep) {
-                $dibutuhkan = $resep->porsi_diperlukan * $quantity;
-                $resep->bahanBaku->updateStok(
-                    -$dibutuhkan, 
-                    'keluar', 
-                    "Order menu: {$menu->nama_menu} (qty: {$quantity})",
-                    $orderId
-                );
-            }
-            
-            DB::commit();
+            $bahanBaku->updateStok(-$quantity);
             return ['success' => true, 'message' => 'Stok berhasil dikurangi'];
-            
         } catch (\Exception $e) {
-            DB::rollback();
             return ['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()];
         }
     }
@@ -72,23 +57,16 @@ class StokService
      */
     private function prosesOrderManual($menu, $quantity, $orderId = null)
     {
-        if ($menu->stok_tersedia < $quantity) {
+        if ($menu->stok < $quantity) {
             return [
                 'success' => false, 
-                'message' => "Stok menu '{$menu->nama_menu}' tidak cukup. Dibutuhkan: {$quantity}, Tersedia: {$menu->stok_tersedia}"
+                'message' => "Stok menu '{$menu->nama_menu}' tidak cukup. Dibutuhkan: {$quantity}, Tersedia: {$menu->stok}"
             ];
         }
         
         try {
-            $menu->updateStok(
-                -$quantity, 
-                'keluar', 
-                "Order menu (qty: {$quantity})",
-                $orderId
-            );
-            
+            $menu->updateStok(-$quantity);
             return ['success' => true, 'message' => 'Stok berhasil dikurangi'];
-            
         } catch (\Exception $e) {
             return ['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()];
         }
@@ -145,12 +123,12 @@ class StokService
         $bahanBakuKritis = BahanBaku::whereRaw('stok_porsi <= stok_minimum')->get();
         
         // Menu manual kritis
-        $menuManualKritis = Menu::where('tipe_stok', 'manual')
-                                ->whereRaw('stok_tersedia <= stok_minimum')
+        $menuManualKritis = Menu::where('tipe_stok', 'Stok Manual')
+                                ->whereRaw('stok <= stok_minimum')
                                 ->get();
         
         // Menu bahan baku kritis
-        $menuBahanBaku = Menu::where('tipe_stok', 'bahan_baku')
+        $menuBahanBaku = Menu::where('tipe_stok', 'Stok Bahan Baku')
                             ->with('resep.bahanBaku')
                             ->get();
         
@@ -194,9 +172,9 @@ class StokService
                 'menu_id' => $menu->id,
                 'nama_menu' => $menu->nama_menu,
                 'tersedia' => $tersedia,
-                'stok_tersedia' => $menu->tipe_stok === 'bahan_baku' 
+                'stok_tersedia' => $menu->tipe_stok === 'Stok Bahan Baku' 
                     ? $menu->hitungStokDariBahanBaku() 
-                    : $menu->stok_tersedia,
+                    : $menu->stok,
                 'quantity_diminta' => $quantity,
                 'message' => $tersedia ? 'Tersedia' : 'Stok tidak cukup'
             ];
@@ -210,5 +188,73 @@ class StokService
             'semua_tersedia' => $semuaTersedia,
             'detail' => $hasil
         ];
+    }
+
+
+    public function adjustMenuStock($menuId, $oldQty, $newQty, $orderId, $userId, $keterangan)
+    {
+        $difference = $newQty - $oldQty;
+        
+        if ($difference > 0) {
+            // Tambah qty, kurangi stok
+            return $this->reduceMenuStock($menuId, $difference, $orderId, $userId, $keterangan);
+        } elseif ($difference < 0) {
+            // Kurangi qty, tambah stok kembali
+            return $this->restoreMenuStock($menuId, abs($difference), $orderId, $userId, $keterangan);
+        }
+        
+        return ['success' => true, 'message' => 'Tidak ada perubahan quantity'];
+    }
+
+    /**
+     * Kurangi stok menu
+     */
+    public function reduceMenuStock($menuId, $quantity, $orderId = null, $userId = null, $keterangan = null)
+    {
+        $menu = Menu::with('resep.bahanBaku')->find($menuId);
+        
+        if (!$menu) {
+            return ['success' => false, 'message' => 'Menu tidak ditemukan'];
+        }
+
+        if ($menu->tipe_stok === 'Stok Bahan Baku') {
+            return $this->prosesOrderDenganBahanBaku($menu, $quantity, $orderId);
+        } else {
+            return $this->prosesOrderManual($menu, $quantity, $orderId);
+        }
+    }
+
+    /**
+     * Kembalikan stok menu
+     */
+    public function restoreMenuStock($menuId, $quantity, $orderId = null, $userId = null, $keterangan = null)
+    {
+        $menu = Menu::with('resep.bahanBaku')->find($menuId);
+        
+        if (!$menu) {
+            return ['success' => false, 'message' => 'Menu tidak ditemukan'];
+        }
+
+        DB::beginTransaction();
+        
+        try {
+            if ($menu->tipe_stok === 'Stok Bahan Baku') {
+                // Kembalikan stok bahan baku
+                $bahanBaku = $menu->bahanBaku;
+                if ($bahanBaku) {
+                    $bahanBaku->updateStok($quantity);
+                }
+            } else {
+                // Kembalikan stok manual
+                $menu->updateStok($quantity);
+            }
+            
+            DB::commit();
+            return ['success' => true, 'message' => 'Stok berhasil dikembalikan'];
+            
+        } catch (\Exception $e) {
+            DB::rollback();
+            return ['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()];
+        }
     }
 }

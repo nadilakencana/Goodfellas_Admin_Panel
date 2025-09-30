@@ -13,8 +13,7 @@ class MenuResep extends Model
     
     protected $fillable = [
         'id_menu',
-        'id_bahan_baku',
-        'porsi_diperlukan'
+        'id_bahan_baku'
     ];
 
     public function menu()
@@ -25,22 +24,5 @@ class MenuResep extends Model
     public function bahanBaku()
     {
         return $this->belongsTo(BahanBaku::class, 'id_bahan_baku', 'id');
-    }
-
-    // Cek apakah bahan baku cukup untuk jumlah porsi tertentu
-    public function cekStokCukup($jumlahPorsi = 1)
-    {
-        $dibutuhkan = $this->porsi_diperlukan * $jumlahPorsi;
-        return $this->bahanBaku->stok_porsi >= $dibutuhkan;
-    }
-
-    // Hitung berapa porsi maksimal yang bisa dibuat dari bahan baku ini
-    public function hitungMaksimalPorsi()
-    {
-        if ($this->porsi_diperlukan <= 0) {
-            return 0;
-        }
-        
-        return floor($this->bahanBaku->stok_porsi / $this->porsi_diperlukan);
     }
 }
