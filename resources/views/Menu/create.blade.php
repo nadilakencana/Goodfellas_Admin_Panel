@@ -80,7 +80,7 @@
             <label>Type Stok</label>
             <select class="custom-select rounded-0" name="tipe_stok" id="tipe_stok">
                 <option value="" selected>--Type Stok--</option>
-                <option value="Stok Manual" >Stok Manual</option>
+                <option value="manual stok" >Stok Manual</option>
                 <option value="Stok Bahan Baku">Stok Bahan Baku</option>
             </select>
         </div>
@@ -229,7 +229,7 @@
                 $('#bahan_baku_group').show();
                 $('#stok_manual_group').hide();
                 $('#stok_minimum_group').hide();
-            } else if(selectedType === 'Stok Manual') {
+            } else if(selectedType === 'manual stok') {
                 $('#bahan_baku_group').hide();
                 $('#stok_manual_group').show();
                 $('#stok_minimum_group').show();

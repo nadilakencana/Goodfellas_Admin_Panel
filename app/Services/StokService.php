@@ -13,17 +13,27 @@ class StokService
      */
     public function prosesOrder($menuId, $quantity, $orderId = null)
     {
-        $menu = Menu::with('resep.bahanBaku')->find($menuId);
+        $menu = Menu::with(['resep.bahanBaku', 'kategori'])->find($menuId);
         
         if (!$menu) {
             return ['success' => false, 'message' => 'Menu tidak ditemukan'];
         }
 
-        if ($menu->tipe_stok === 'Stok Bahan Baku') {
-            return $this->prosesOrderDenganBahanBaku($menu, $quantity, $orderId);
-        } else {
-            return $this->prosesOrderManual($menu, $quantity, $orderId);
+        // Hanya proses stock untuk Foods yang memiliki tipe_stok
+        if ($menu->kategori->kategori_nama === 'Foods' && $menu->tipe_stok) {
+            // Handle both old and new tipe_stok values
+            $bahanBakuTypes = ['Stok Bahan Baku', 'bahan_baku'];
+            $manualTypes = ['Stok Manual', 'manual', 'manual stok'];
+            
+            if (in_array($menu->tipe_stok, $bahanBakuTypes)) {
+                return $this->prosesOrderDenganBahanBaku($menu, $quantity, $orderId);
+            } elseif (in_array($menu->tipe_stok, $manualTypes)) {
+                return $this->prosesOrderManual($menu, $quantity, $orderId);
+            }
         }
+        
+        // Untuk menu tanpa stock management, langsung return success
+        return ['success' => true, 'message' => 'Menu berhasil diproses'];
     }
 
     /**
@@ -153,7 +163,7 @@ class StokService
         $semuaTersedia = true;
 
         foreach ($items as $item) {
-            $menu = Menu::with('resep.bahanBaku')->find($item['menu_id']);
+            $menu = Menu::with(['resep.bahanBaku', 'kategori'])->find($item['menu_id']);
             $quantity = $item['quantity'];
             
             if (!$menu) {
@@ -166,17 +176,46 @@ class StokService
                 continue;
             }
 
-            $tersedia = $menu->isStokTersedia($quantity);
+            $tersedia = true;
+            $stokTersedia = 'unlimited';
+            $message = 'Tersedia';
+
+            // Cek berdasarkan kategori
+            if ($menu->kategori->kategori_nama === 'Foods') {
+                if (!$menu->active) {
+                    $tersedia = false;
+                    $message = 'Menu tidak aktif';
+                } elseif ($menu->tipe_stok) {
+                    // Hanya cek stock jika menu memiliki tipe_stok
+                    $bahanBakuTypes = ['Stok Bahan Baku', 'bahan_baku'];
+                    $manualTypes = ['Stok Manual', 'manual', 'manual stok'];
+                    
+                    if (in_array($menu->tipe_stok, $bahanBakuTypes)) {
+                        $stokTersedia = $menu->bahanBaku ? $menu->bahanBaku->stok_porsi : 0;
+                    } elseif (in_array($menu->tipe_stok, $manualTypes)) {
+                        $stokTersedia = $menu->stok ?? 0;
+                    }
+                    
+                    if ($stokTersedia < $quantity) {
+                        $tersedia = false;
+                        $message = 'Stok tidak cukup';
+                    }
+                }
+            } elseif ($menu->kategori->kategori_nama === 'Drinks') {
+                if (!$menu->active) {
+                    $tersedia = false;
+                    $message = 'Menu tidak aktif';
+                }
+                // Drinks tidak perlu cek stock
+            }
             
             $hasil[] = [
                 'menu_id' => $menu->id,
                 'nama_menu' => $menu->nama_menu,
                 'tersedia' => $tersedia,
-                'stok_tersedia' => $menu->tipe_stok === 'Stok Bahan Baku' 
-                    ? $menu->hitungStokDariBahanBaku() 
-                    : $menu->stok,
+                'stok_tersedia' => $stokTersedia,
                 'quantity_diminta' => $quantity,
-                'message' => $tersedia ? 'Tersedia' : 'Stok tidak cukup'
+                'message' => $message
             ];
 
             if (!$tersedia) {
@@ -217,11 +256,16 @@ class StokService
             return ['success' => false, 'message' => 'Menu tidak ditemukan'];
         }
 
-        if ($menu->tipe_stok === 'Stok Bahan Baku') {
+        $bahanBakuTypes = ['Stok Bahan Baku', 'bahan_baku'];
+        $manualTypes = ['Stok Manual', 'manual', 'manual stok'];
+        
+        if (in_array($menu->tipe_stok, $bahanBakuTypes)) {
             return $this->prosesOrderDenganBahanBaku($menu, $quantity, $orderId);
-        } else {
+        } elseif (in_array($menu->tipe_stok, $manualTypes)) {
             return $this->prosesOrderManual($menu, $quantity, $orderId);
         }
+        
+        return ['success' => false, 'message' => 'Tipe stok tidak dikenali'];
     }
 
     /**
@@ -238,13 +282,16 @@ class StokService
         DB::beginTransaction();
         
         try {
-            if ($menu->tipe_stok === 'Stok Bahan Baku') {
+            $bahanBakuTypes = ['Stok Bahan Baku', 'bahan_baku'];
+            $manualTypes = ['Stok Manual', 'manual', 'manual stok'];
+            
+            if (in_array($menu->tipe_stok, $bahanBakuTypes)) {
                 // Kembalikan stok bahan baku
                 $bahanBaku = $menu->bahanBaku;
                 if ($bahanBaku) {
                     $bahanBaku->updateStok($quantity);
                 }
-            } else {
+            } elseif (in_array($menu->tipe_stok, $manualTypes)) {
                 // Kembalikan stok manual
                 $menu->updateStok($quantity);
             }

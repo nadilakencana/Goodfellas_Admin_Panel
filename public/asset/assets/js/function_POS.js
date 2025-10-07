@@ -326,36 +326,36 @@ $(() => {
     });
 
     //qty
-    $('body').on('click', 'a.qty-minus', function (e) {
-        e.preventDefault();
-        var $this = $(this);
-        var $input = $this.closest('div').find('input');
-        var value = parseInt($input.val());
+    // $('body').on('click', 'a.qty-minus', function (e) {
+    //     e.preventDefault();
+    //     var $this = $(this);
+    //     var $input = $this.closest('div').find('input');
+    //     var value = parseInt($input.val());
 
-        if (value > 1) {
-            value = value - 1;
-        } else {
-            value = 0;
-        }
+    //     if (value > 1) {
+    //         value = value - 1;
+    //     } else {
+    //         value = 0;
+    //     }
 
-        $input.val(value);
+    //     $input.val(value);
 
-    });
+    // });
 
-    $('body').on('click', 'a.qty-plus', function (e) {
-        e.preventDefault();
-        var $this = $(this);
-        var $input = $this.closest('div').find('input');
-        var value = parseInt($input.val());
+    // $('body').on('click', 'a.qty-plus', function (e) {
+    //     e.preventDefault();
+    //     var $this = $(this);
+    //     var $input = $this.closest('div').find('input');
+    //     var value = parseInt($input.val());
 
-        if (value < 100) {
-            value = value + 1;
-        } else {
-            value = 100;
-        }
+    //     if (value < 100) {
+    //         value = value + 1;
+    //     } else {
+    //         value = 100;
+    //     }
 
-        $input.val(value);
-    });
+    //     $input.val(value);
+    // });
 
     // RESTRICT INPUTS TO NUMBERS ONLY WITH A MIN OF 0 AND A MAX 100
     $('body .control-qty input').on('blur', function () {

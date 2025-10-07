@@ -20,63 +20,96 @@ document.addEventListener('DOMContentLoaded', function () {
             resultsContainer.style.display = 'block';
             data.data.forEach(item => {
                 const imageUrl = item.image ? `/asset/assets/image/menu/${item.image}` : `/asset/assets/image/menu/drink.png`;
-                if(item.id_kategori == 1){
-                    if(item.active == 1){
-                        resultsContainer.innerHTML += `
-                        <div class="result-item">
-                            <img src="${imageUrl}" alt="${item.nama_menu}">
-                            <div class="info gap-3">
-                                <div class="name">${item.nama_menu}</div>
-                                <span class="pt-2">Rp. ${item.harga}</span>
-                            </div>
-                        
-                            <div class="btn-add-menu cursor-pointer" xid="${item.encrypted_id}">
-                                <img src="/asset/assets/image/icon/btn_Add.png" alt="" width="30" height="30">
-                            </div>
-                        </div>
-                        `;
-                    }else{
-                        resultsContainer.innerHTML += `
-                        <div class="result-item">
-                            <img src="${imageUrl}" alt="${item.nama_menu}">
-                            <div class="info gap-3">
-                                <div class="name">${item.nama_menu}</div>
-                                <span class="pt-2">Rp. ${item.harga}</span>
-                            </div>
-                        
-                            <div class="status">unavailable</div>
-                        </div>
-                        `;
-                    }
-                }else if(item.id_kategori == 2){
-                    if(item.stok > 0 || item.active == 1){
-                        resultsContainer.innerHTML += `
-                        <div class="result-item">
-                            <img src="${imageUrl}" alt="${item.nama_menu}">
-                            <div class="info gap-3">
-                                <div class="name">${item.nama_menu}</div>
-                                <span class="pt-2">Rp. ${item.harga}</span>
-                            </div>
-                        
-                            <div class="btn-add-menu cursor-pointer" xid="${item.encrypted_id}">
-                                <img src="/asset/assets/image/icon/btn_Add.png" alt="" width="30" height="30">
-                            </div>
-                        </div>
-                        `;
-                    }else{
-                        resultsContainer.innerHTML += `
-                        <div class="result-item">
-                            <img src="${imageUrl}" alt="${item.nama_menu}">
-                            <div class="info gap-3">
-                                <div class="name">${item.nama_menu}</div>
-                                <span class="pt-2">Rp. ${item.harga}</span>
-                            </div>
-                        
-                            <div class="status">unavailable</div>
-                        </div>
-                        `;
+                // Calculate stock for Foods (id_kategori == 2)
+                let stokTersedia = item.stok || 0;
+                if (item.id_kategori == 2 && item.tipe_stok) {
+                    if (item.tipe_stok === 'Stok Bahan Baku' || item.tipe_stok === 'bahan_baku') {
+                        stokTersedia = item.bahan_baku ? item.bahan_baku.stok_porsi : 0;
                     }
                 }
+
+                // Determine availability
+                let isAvailable = false;
+                if (item.id_kategori == 1) { // Drinks
+                    isAvailable = item.active == 1;
+                } else if (item.id_kategori == 2) { // Foods
+                    isAvailable = stokTersedia > 0 && item.active == 1;
+                }
+
+                const actionElement = isAvailable 
+                    ? `<div class="btn-add-menu cursor-pointer" xid="${item.encrypted_id}">
+                        <img src="/asset/assets/image/icon/btn_Add.png" alt="" width="30" height="30">
+                    </div>`
+                    : `<div class="status">unavailable</div>`;
+
+                resultsContainer.innerHTML += `
+                    <div class="result-item">
+                        <img src="${imageUrl}" alt="${item.nama_menu}">
+                        <div class="info gap-3">
+                            <div class="name">${item.nama_menu}</div>
+                            <span class="pt-2">Rp. ${item.harga}</span>
+                        </div>
+                        ${actionElement}
+                    </div>
+                `;
+                
+                // if(item.id_kategori == 1){
+                //     if(item.active == 1){
+                //         resultsContainer.innerHTML += `
+                //         <div class="result-item">
+                //             <img src="${imageUrl}" alt="${item.nama_menu}">
+                //             <div class="info gap-3">
+                //                 <div class="name">${item.nama_menu}</div>
+                //                 <span class="pt-2">Rp. ${item.harga}</span>
+                //             </div>
+                        
+                //             <div class="btn-add-menu cursor-pointer" xid="${item.encrypted_id}">
+                //                 <img src="/asset/assets/image/icon/btn_Add.png" alt="" width="30" height="30">
+                //             </div>
+                //         </div>
+                //         `;
+                //     }else{
+                //         resultsContainer.innerHTML += `
+                //         <div class="result-item">
+                //             <img src="${imageUrl}" alt="${item.nama_menu}">
+                //             <div class="info gap-3">
+                //                 <div class="name">${item.nama_menu}</div>
+                //                 <span class="pt-2">Rp. ${item.harga}</span>
+                //             </div>
+                        
+                //             <div class="status">unavailable</div>
+                //         </div>
+                //         `;
+                //     }
+                // }else if(item.id_kategori == 2){
+                //     if(item.stok > 0 || item.active == 1){
+                //         resultsContainer.innerHTML += `
+                //         <div class="result-item">
+                //             <img src="${imageUrl}" alt="${item.nama_menu}">
+                //             <div class="info gap-3">
+                //                 <div class="name">${item.nama_menu}</div>
+                //                 <span class="pt-2">Rp. ${item.harga}</span>
+                //             </div>
+                        
+                //             <div class="btn-add-menu cursor-pointer" xid="${item.encrypted_id}">
+                //                 <img src="/asset/assets/image/icon/btn_Add.png" alt="" width="30" height="30">
+                //             </div>
+                //         </div>
+                //         `;
+                //     }else{
+                //         resultsContainer.innerHTML += `
+                //         <div class="result-item">
+                //             <img src="${imageUrl}" alt="${item.nama_menu}">
+                //             <div class="info gap-3">
+                //                 <div class="name">${item.nama_menu}</div>
+                //                 <span class="pt-2">Rp. ${item.harga}</span>
+                //             </div>
+                        
+                //             <div class="status">unavailable</div>
+                //         </div>
+                //         `;
+                //     }
+                // }
                
                                 
             });

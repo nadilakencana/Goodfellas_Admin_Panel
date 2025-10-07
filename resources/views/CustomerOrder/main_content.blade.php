@@ -28,8 +28,13 @@
                             <span class="pt-2">Rp. {{$itm->menu->harga}}</span>
                             
                         </div>
+                        @php
+                            $stokTersedia = $itm->tipe_stok === 'Stok Bahan Baku' 
+                                ? ($itm->bahanBaku ? $itm->bahanBaku->stok_porsi : 0)
+                                : $itm->stok;
+                        @endphp
                         @if($itm->menu->kategori->kategori_nama === 'Foods')
-                                @if($itm->stok > 0 && $itm->active )
+                                @if($stokTersedia > 0 && $itm->active)
                                 <div class="btn-add-menu cursor-pointer" xid="{{encrypt($itm->menu->id)}}">
                                     <img src="{{ asset('asset/assets/image/icon/btn_Add.png') }}" alt="" width="30"
                                         height="30">

@@ -79,7 +79,7 @@
                                         <div class="menu-cat active" data-type="Fav" order-menu="1">Minuman</div>
                                         <div class="menu-cat" data-type="Fav" order-menu="2">Makanan</div>
                                        
-                                    </div> --}}
+                                        </div> --}}
                                         {{-- Favorite Menu Items Panel --}}
                                         <div class="tab-panel-menu" data-type="Fav">
                                             <div class="menuKat">
@@ -90,8 +90,13 @@
                                                         {{-- @if ($item->id_kategori == 1) --}}
                                                         
                                                         {{-- Individual Menu Item Card --}}
+                                                        @php
+                                                            $stokTersedia = $item->tipe_stok === 'Stok Bahan Baku' 
+                                                                ? ($item->bahanBaku ? $item->bahanBaku->stok_porsi : 0)
+                                                                : $item->stok;
+                                                        @endphp
                                                         <div class="item-card-menu" idx="{{ $item->id }}"
-                                                            target-price="{{ $item->harga }}" stok="{{$item->stok}}" status="{{$item->active}}">
+                                                            target-price="{{ $item->harga }}" stok="{{$stokTersedia}}" status="{{$item->active}}">
                                                             
                                                             {{-- Menu Item Display --}}
                                                             <div class="menu-sub">
@@ -103,9 +108,10 @@
                                                             
                                                             {{-- Price and Availability Display --}}
                                                             <div class="harga">
-                                                                {{-- Food items: Check both stock and active status --}}
+                                                                {{-- Food items: Check stock based on tipe_stok --}}
                                                                 @if($item->kategori->kategori_nama === 'Foods')
-                                                                    @if($item->stok > 0 && $item->active )
+                                                                   
+                                                                    @if($stokTersedia > 0 && $item->active)
                                                                         <p class="txt-subMenu">{{ $item->harga }}</p>
                                                                     @else
                                                                         <div class="status" style="color: rgb(251, 42, 42)">unavailable</div>
@@ -726,9 +732,16 @@
                 var harga_ = harga.replace(".", "");
 
                 $popup.find('.harga-total').attr('price', harga).text(harga);
-                $popup.find('.card-popup').attr('id-x', id).attr('key-id', arrkey).attr('id_detail',
-                    idDetail);
-                $popup.find('.btn-add').attr('x-id', id).attr('key', arrkey).attr('id_detail', idDetail)
+                $popup.find('.card-popup')
+                    .attr('id-x', id)
+                    .attr('key-id', arrkey)
+                    .attr('id_detail', idDetail)
+                   
+
+                $popup.find('.btn-add')
+                    .attr('x-id', id)
+                    .attr('key', arrkey)
+                    .attr('id_detail', idDetail)
                     .text('update');
 
 
@@ -1643,30 +1656,34 @@
                         console.log(result);
                         const $target = $('.pop-up.additional');
                         const $btnAdd = $target.find('.btn-add');
+                        const $qtyInput = $target.find('.jumlah-menu input');
+                        
+                        const isEditMode = $btnAdd.attr('id_detail') && $btnAdd.attr('id_detail') !== 'null' && $btnAdd.attr('id_detail') !== '0';
+                        const category = result.data.kategori.kategori_nama;
 
-                        let category = result.data.kategori.kategori_nama;
                         console.log(category)
                         
                         if (category == 'Foods') {
-                            let stok = result.data.stok;
-                            if(stok <= 0){
-                                $btnAdd.prop('disabled', true).text('tidak tersedia');
-                                console.log('food tidak tersedia')
-                            } else {
-                                $btnAdd.prop('disabled', false).text('add');
-                                
-                            }
+                           
+                            
+                            const stok = result.data.tipe_stok === 'Stok Bahan Baku' 
+                            ? (result.data.bahan_baku?.stok_porsi || 0)
+                            : (result.data.stok || 0);
+                
+                            const isAvailable = stok > 0 && result.data.active === 1;
+                            
+                            $btnAdd.prop('disabled', !isEditMode && !isAvailable)
+                                .text(isEditMode ? 'Update' : (isAvailable ? 'Add' : 'Tidak Tersedia'));
+                            
+                            $qtyInput.attr('max', stok);
 
-                            $target.find('.jumlah-menu input.qty').attr('max', stok);
                         } else if(category == 'Drinks') {
-                            if(result.data.active == 0){
-                                $btnAdd.prop('disabled', true).text('tidak tersedia');
-                                console.log('drink tidak tersedia')
-                            } else {
-                                $btnAdd.prop('disabled', false).text('add');
-                            }
-
-                            $target.find('.jumlah-menu input.qty').attr('max', 100);
+                            const isAvailable = result.data.active === 1;
+                
+                            $btnAdd.prop('disabled', !isEditMode && !isAvailable)
+                                .text(isEditMode ? 'Update' : (isAvailable ? 'Add' : 'Tidak Tersedia'));
+                            
+                            $qtyInput.attr('max', 100);
                         }
                     },
                     error: function(xhr, status, error) {
@@ -1752,7 +1769,7 @@
                                 id_order: data.data.id_order,
                                 id: data.data.id
                             }
-                            // throttledButtonClickDelete(data.data.id, data.data.id_order, $elm);
+                            throttledButtonClickDelete(data.data.id, data.data.id_order, $elm);
                             console.log('data delete', data)
 
                             $.post("{{ route('print_item_delete_thermal') }}", dataDelete).done(function(

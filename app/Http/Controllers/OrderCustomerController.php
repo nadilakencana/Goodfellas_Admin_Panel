@@ -154,18 +154,34 @@ class OrderCustomerController extends Controller
             }
            
             if($menu->kategori->kategori_nama === 'Foods'){
-                if ($menu->stok < $request->get('qty')) {
-                        return response()->json([
-                            'success' => 0,
-                            'message' => 'sorry there is not enough stock.'
-                        ], 500); 
-                }
+                if($menu->tipe_stok === 'Stok Bahan Baku'){
+                        if ($menu->bahanBaku->stok_porsi < $request->get('qty')) {
+                            return response()->json([
+                                'success' => 0,
+                                'message' => 'Stok tidak cukup silahkan setting ulang stok'
+                            ], 500); 
+                        }
+                    }else{
+                        if ($menu->stok < $request->get('qty')) {
+                            return response()->json([
+                                'success' => 0,
+                                'message' => 'Stok tidak cukup silahkan setting ulang stok'
+                            ], 500); 
+                        }
+                    }
             }
 
             if($request->get('variasi') !== 0){
                 $varian = VarianMenu::where('id', $request->get('variasi'))->first();
             }else{
                 $varian= '';
+            }
+
+            $stok = 0 ;
+            if($menu->tipe_stok === 'Stok Bahan Baku'){
+                $stok = $menu->bahanBaku->stok_porsi;
+            }else{
+                $stok = $menu->stok;
             }
             
             $typeSales = SalesType::find($request->get('id_type_sales'));
@@ -235,13 +251,23 @@ class OrderCustomerController extends Controller
             }
         
             if($menu->kategori->kategori_nama === 'Foods'){
-                if ($menu->stok < $request->get('qty')) {
-                        return response()->json([
-                            'success' => 0,
-                            'message' => 'sorry there is not enough stock.'
-                        ], 500); 
-                }
+               if($menu->tipe_stok === 'Stok Bahan Baku'){
+                        if ($menu->bahanBaku->stok_porsi < $request->get('qty')) {
+                            return response()->json([
+                                'success' => 0,
+                                'message' => 'Stok tidak cukup silahkan setting ulang stok'
+                            ], 500); 
+                        }
+                    }else{
+                        if ($menu->stok < $request->get('qty')) {
+                            return response()->json([
+                                'success' => 0,
+                                'message' => 'Stok tidak cukup silahkan setting ulang stok'
+                            ], 500); 
+                        }
+                    }
             }
+
             if($request->get('variasi') !== 0){
                 $varian = VarianMenu::where('id', $request->get('variasi'))->first();
             }else{
@@ -453,15 +479,40 @@ class OrderCustomerController extends Controller
                     
                     $kategori = $menu->kategori->kategori_nama;
                     if ($kategori === 'Foods') {
-                        if (!$menu->active || ($menu->active && $menu->stok < $cart['qty'])) {
+                        // if (!$menu->active || ($menu->active && $menu->stok < $cart['qty'])) {
+                        //     return response()->json([
+                        //         'success' => 0,
+                        //         'message' => $menu->stok < $cart['qty'] 
+                        //             ? "This Menu {$menu->nama_menu} is not sufficient."
+                        //             : "This Menu {$menu->nama_menu} is currently unavailable."
+                        //     ], 400);
+                        // }
+                        // $menu->decrement('stok', $cart['qty']);
+                        // Get actual stock based on tipe_stok
+                        
+                        $stokTersedia = $menu->tipe_stok === 'Stok Bahan Baku' 
+                            ? ($menu->bahanBaku ? $menu->bahanBaku->stok_porsi : 0)
+                            : $menu->stok;
+                        
+                        if (!$menu->active || $stokTersedia < $cart['qty']) {
                             return response()->json([
                                 'success' => 0,
-                                'message' => $menu->stok < $cart['qty'] 
-                                    ? "This Menu {$menu->nama_menu} is not sufficient."
-                                    : "This Menu {$menu->nama_menu} is currently unavailable."
+                                'message' => !$menu->active 
+                                    ? "Menu {$menu->nama_menu} tidak tersedia"
+                                    : "Stok menu {$menu->nama_menu} tidak mencukupi. Tersedia: {$stokTersedia}, Dibutuhkan: {$cart['qty']}"
                             ], 400);
                         }
-                        $menu->decrement('stok', $cart['qty']);
+                        
+                        // Use StokService for stock reduction
+                        $stokService = new \App\Services\StokService();
+                        $result = $stokService->prosesOrder($menu->id, $cart['qty'], $orderId ?? null);
+                        
+                        if (!$result['success']) {
+                            return response()->json([
+                                'success' => 0,
+                                'message' => $result['message']
+                            ], 400);
+                        }
                     } elseif ($kategori === 'Drinks' && !$menu->active) {
                         return response()->json([
                             'success' => 0,

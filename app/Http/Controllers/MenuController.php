@@ -170,9 +170,16 @@ class MenuController extends Controller
             $menu->promo = $request->promo;
             $menu->custom= false;
             $menu->id_group_modifier= $request->id_group_modifier;
-            $menu->stok= $request->stok;
-            $menu->stok_minimum = $request->stok_minimun;
             $menu->tipe_stok = $request->tipe_stok;
+
+            if($request->tipe_stok === 'Stok Bahan Baku'){
+                $menu->stok= 0;
+                $menu->stok_minimum = 1;
+            }else{
+                $menu->stok = $request->stok;
+                $menu->stok_minimum = $request->stok_minimun;
+            }
+
             $menu->id_bahan_baku = $request->id_bahan_baku;
            if($request->active == null){
                 $menu->active= 0;
@@ -196,6 +203,9 @@ class MenuController extends Controller
                 if($menu->kategori->kategori_nama === 'Foods'){
                     if($menu->tipe_stok === 'Stok Bahan Baku'){
                         $menu_resep = MenuResep::where('id_menu', $menu->id)->first();
+                        if(!$menu_resep){
+                            $menu_resep = new MenuResep();
+                        }
                         $menu_resep->id_menu = $menu->id;
                         $menu_resep->id_bahan_baku = $request->id_bahan_baku;
                         $menu_resep->save();

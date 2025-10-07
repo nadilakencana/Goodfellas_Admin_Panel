@@ -439,8 +439,19 @@ class OrderController extends Controller
                    $menu = Menu::where('id', $detail->id_menu)->first();
 
                     if($detail->menu->id_kategori == 2){
-                        $menu->stok = $menu->stok + $detail->qty ;
-                        $menu->save();
+                        if ($menu->tipe_stok === 'Stok Bahan Baku'){
+                            $bahanBaku = $menu->bahanBaku()->first();
+                            if ($bahanBaku) {
+                                $bahanBaku->stok_porsi = $bahanBaku->stok_porsi + $detail->qty;
+                                $bahanBaku->save();
+                            }else{
+                                return ['success' => false, 'message' => 'Bahan  tidak ditemukan'];
+        
+                            }
+                        }else{
+                            $menu->stok = $menu->stok + $detail->qty ;
+                            $menu->save();
+                        }
                     }
                 }
             }
@@ -505,9 +516,21 @@ class OrderController extends Controller
                         $menu = Menu::where('id', $refund['id_menu'])->first();
 
                         // update ulang stok
-                        if($menu->id_kategori == 2){
-                            $menu->stok = $menu->stok + $refund['qty'] ;
-                            $menu->save();
+                         $stokService = new \App\Services\StokService();
+                
+                        if($menu->kategori->kategori_nama === 'Foods'){
+                            $result = $stokService->restoreMenuStock(
+                                $menu->id,
+                                $refund['qty'],
+                                $refund['id_order'],
+                                Sentinel::getUser()->id,
+                                "Refund menu: {$menu->nama_menu}"
+                            );
+                            
+                            if (!$result['success']) {
+                                throw new \Exception($result['message']);
+                            }
+                            
                         }
 
                     

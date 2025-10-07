@@ -120,7 +120,7 @@ class POSController extends Controller
     public function MenuCheckCategory(Request $request){
         $id = $request->id;
         // $active = true;
-        $menu = Menu::with('kategori')->find($id);
+        $menu = Menu::with('kategori','bahanBaku')->find($id);
 
 
         if(!$menu){
@@ -314,12 +314,31 @@ class POSController extends Controller
                 }
             
                 if($menu->kategori->kategori_nama === 'Foods'){
-                    if ($menu->stok < $request->get('qty')) {
+
+                    if($menu->tipe_stok === 'Stok Bahan Baku'){
+                        if ($menu->bahanBaku->stok_porsi < $request->get('qty')) {
                             return response()->json([
                                 'success' => 0,
                                 'message' => 'Stok tidak cukup silahkan setting ulang stok'
                             ], 500); 
+                        }
+                    }else{
+                        if ($menu->stok < $request->get('qty')) {
+                            return response()->json([
+                                'success' => 0,
+                                'message' => 'Stok tidak cukup silahkan setting ulang stok'
+                            ], 500); 
+                        }
                     }
+
+                    
+                }
+
+                $stok = 0 ;
+                if($menu->tipe_stok === 'Stok Bahan Baku'){
+                    $stok = $menu->bahanBaku->stok_porsi;
+                }else{
+                    $stok = $menu->stok;
                 }
 
                
@@ -336,7 +355,7 @@ class POSController extends Controller
                 $cart[] = array(
                     'id' => $menu->id,
                     'nama_menu' => $menu->nama_menu,
-                    'stok' => $menu->stok,
+                    'stok' => $stok,
                     'active' => $menu->active,
                     'harga' => $request->get('harga'),
                     'qty' => $request->get('qty'),
@@ -398,11 +417,20 @@ class POSController extends Controller
                 }
             
                 if($menu->kategori->kategori_nama === 'Foods'){
-                    if ($menu->stok < $request->get('qty')) {
+                     if($menu->tipe_stok === 'Stok Bahan Baku'){
+                        if ($menu->bahanBaku->stok_porsi < $request->get('qty')) {
                             return response()->json([
                                 'success' => 0,
                                 'message' => 'Stok tidak cukup silahkan setting ulang stok'
                             ], 500); 
+                        }
+                    }else{
+                        if ($menu->stok < $request->get('qty')) {
+                            return response()->json([
+                                'success' => 0,
+                                'message' => 'Stok tidak cukup silahkan setting ulang stok'
+                            ], 500); 
+                        }
                     }
                 }
 
@@ -423,6 +451,12 @@ class POSController extends Controller
                     }
                 }
 
+                 $stok = 0 ;
+                    if($menu->tipe_stok === 'Stok Bahan Baku'){
+                        $stok = $menu->bahanBaku->stok_porsi;
+                    }else{
+                        $stok = $menu->stok;
+                    }
 
                 $count = 0;
                 $currentPrice = 0;
@@ -431,7 +465,7 @@ class POSController extends Controller
                 if ($ex == false) {
                     $cart[] = array(
                         'id' => $menu->id,
-                        'stok' => $menu->stok,
+                        'stok' => $stok,
                         'active' => $menu->active,
                         'nama_menu' => $menu->nama_menu,
                         'harga' => $request->get('harga'),
@@ -451,7 +485,7 @@ class POSController extends Controller
                     $oldData = $cart[$exId];
                     $cart[$exId] = array(
                         'id' =>  $menu->id,
-                        'stok' => $menu->stok,
+                        'stok' => $stok,
                         'active' => $menu->active,
                         'nama_menu' => $menu->nama_menu,
                         'harga' => $request->get('harga'),
@@ -498,287 +532,452 @@ class POSController extends Controller
         }
     }
 
-    public function modifyBill(Request $request)
-    {
+    // public function modifyBill(Request $request)
+    // {
 
-        if (Sentinel::check()) {
+    //     if (Sentinel::check()) {
 
-            DB::beginTransaction();
+    //         DB::beginTransaction();
 
-            try {
+    //         try {
                 
-                $order = Orders::where('id', $request->get('target_order'))->first();
-                $menu = Menu::where('id', $request->get('id'))->where('active', 1)->first();
+    //             $order = Orders::where('id', $request->get('target_order'))->first();
+    //             $menu = Menu::where('id', $request->get('id'))->where('active', 1)->first();
 
-                if (!empty($request->get('target_detail'))) {
+    //             if (!empty($request->get('target_detail'))) {
 
-                    // if($menu->kategori->kategori_nama === 'Drinks'){
-                    //     if (!$menu) {
-                    //         return response()->json([
-                    //             'success' => 0,
-                    //             'message' => 'Menu tidak tersedia silahkan atur ulang menu di data menu'
-                    //         ], 400); 
-                    //     }
-                    // }
+    //                 // if($menu->kategori->kategori_nama === 'Drinks'){
+    //                 //     if (!$menu) {
+    //                 //         return response()->json([
+    //                 //             'success' => 0,
+    //                 //             'message' => 'Menu tidak tersedia silahkan atur ulang menu di data menu'
+    //                 //         ], 400); 
+    //                 //     }
+    //                 // }
                 
-                    // if($menu->kategori->kategori_nama === 'Foods'){
-                    //     if ($menu->stok < $request->get('qty')) {
-                    //             return response()->json([
-                    //                 'success' => 0,
-                    //                 'message' => 'Stok tidak cukup silahkan setting ulang stok'
-                    //             ], 500); 
-                    //     }
-                    // }
+    //                 // if($menu->kategori->kategori_nama === 'Foods'){
+    //                 //     if ($menu->stok < $request->get('qty')) {
+    //                 //             return response()->json([
+    //                 //                 'success' => 0,
+    //                 //                 'message' => 'Stok tidak cukup silahkan setting ulang stok'
+    //                 //             ], 500); 
+    //                 //     }
+    //                 // }
                                         
-                    $detail = DetailOrder::where('id', $request->get('target_detail'))->where('id_order', $request->get('target_order'))->first();
+    //                 $detail = DetailOrder::where('id', $request->get('target_detail'))->where('id_order', $request->get('target_order'))->first();
 
-                    if ($detail) {
+    //                 if ($detail) {
 
-                        $qty = $detail->qty == $request->get('qty');
-                        $varianMenu =  $detail->id_varian == $request->get('variasi');
-                        $catatanMenu =  $detail->catatan == $request->get('catatan');
+    //                     $qty = $detail->qty == $request->get('qty');
+    //                     $varianMenu =  $detail->id_varian == $request->get('variasi');
+    //                     $catatanMenu =  $detail->catatan == $request->get('catatan');
 
                         
-                        // if (!($qty && $varianMenu && $catatanMenu)) {
+    //                     // if (!($qty && $varianMenu && $catatanMenu)) {
                             
-                        //     $qty_modif = $detail->qty - $request->get('qty');
+    //                     //     $qty_modif = $detail->qty - $request->get('qty');
 
-                        //     if ($detail->update == 0) $detail->update = 1;
-                        //     $detail->last_print = null;
-                        // } else {
-                        //     $detail->last_print = $detail->last_print;
-                        // }
+    //                     //     if ($detail->update == 0) $detail->update = 1;
+    //                     //     $detail->last_print = null;
+    //                     // } else {
+    //                     //     $detail->last_print = $detail->last_print;
+    //                     // }
 
-                        $hasChanges = !($qty && $varianMenu && $catatanMenu);
+    //                     $hasChanges = !($qty && $varianMenu && $catatanMenu);
 
-                        if ($hasChanges) {
-                            $qty_diff = $request->get('qty') - $detail->qty;
+    //                     if ($hasChanges) {
+    //                         $qty_diff = $request->get('qty') - $detail->qty;
                             
-                            // Jika ada perubahan qty, cek dan update stok menu
-                            if ($qty_diff != 0 && $menu->kategori->kategori_nama === 'Foods') {
-                                if ($qty_diff > 0) {
-                                    // Qty bertambah - cek stok cukup
-                                    if ($menu->stok < $qty_diff) {
-                                        return response()->json([
-                                            'success' => 0,
-                                            'message' => 'Stok tidak cukup untuk penambahan qty'
-                                        ], 500);
-                                    }
-                                    // Kurangi stok menu
-                                    $menu->stok -= $qty_diff;
-                                } else {
-                                    // Qty berkurang - tambah kembali stok menu
-                                    $menu->stok += abs($qty_diff);
-                                }
-                                $menu->save();
-                            }
-                            
-                            if ($detail->update == 0) $detail->update = 1;
-                            $detail->last_print = null;
-                        }
-
-                    }
-                } else {
-                    $detail = new DetailOrder();
-                }
-
-                if (!empty($order)) {
-
-                    if (empty($order->id_type_payment)) {
-
-                        $detail->id_order = $order->id;
-                        $detail->id_menu = $menu->id;
-                        $detail->qty = $request->qty;
-                        $detail->harga = $request->harga;
-                        $detail->id_varian = $request->variasi;
-                        $detail->id_sales_type = $request->id_type_sales;
-                        $detail->catatan = $request->catatan;
-
-
-                        $detail->total = ($request['harga'] + $request['harga_addtotal']) * $request['qty'];
-
-                        $detail->save();
-
-                        if ($detail->save()) {
-                            if ($request->has('additional')) {
-
-                                $additionals = Additional_menu_detail::where('id_detail_order', $detail->id)->get();
-                                $isAdditionalMismatch = false;
-
-                                foreach ($additionals as $additional) {
-                                    $foundMatch = false;
-                                    foreach ($request->get('additional') as $reqAdditional) {
-                                        if (
-                                            $additional->id_option_additional == $reqAdditional['id'] &&
-                                            $additional->qty == $reqAdditional['qty']
-                                        ) {
-                                            $foundMatch = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!$foundMatch) {
-                                        $isAdditionalMismatch = true;
-                                        break;
-                                    }
-                                }
+    //                         // Jika ada perubahan qty untuk Foods, gunakan StokService
+    //                         if ($qty_diff != 0 && $menu->kategori->kategori_nama === 'Foods') {
+    //                             $stokService = new \App\Services\StokService();
+    //                             $result = $stokService->adjustMenuStock(
+    //                                 $menu->id,
+    //                                 $detail->qty,
+    //                                 $request->get('qty'),
+    //                                 $order->id,
+    //                                 Sentinel::getUser()->id,
+    //                                 "Modify order qty: {$detail->qty} -> {$request->get('qty')}"
+    //                             );
                                 
-                                if ($isAdditionalMismatch) {
-                                    if ($detail->update == 0) $detail->update = 1;
-                                    $detail->last_print = null;
-                                   
-                                   
-                                }
-                                $detail->save();
+    //                             if (!$result['success']) {
+    //                                 return response()->json([
+    //                                     'success' => 0,
+    //                                     'message' => $result['message']
+    //                                 ], 500);
+    //                             }
+    //                         }
+                            
+    //                         if ($detail->update == 0) $detail->update = 1;
+    //                         $detail->last_print = null;
+    //                     }
 
-                                foreach ($request->additional as $adds) {
-                                    if (!empty($adds['id_detail'])) {
-                                        $additional = Additional_menu_detail::where('id_option_additional', $adds['id'])
-                                            ->where('id_detail_order', $adds['id_detail'])
-                                            ->first();
-                                    } else {
-                                        $additional = null;
-                                    }
-                                    if (empty($additional->id)) {
-                                        $additional = new Additional_menu_detail();
+    //                 }
+    //             } else {
+    //                 $detail = new DetailOrder();
+    //             }
+
+    //             if (!empty($order)) {
+
+    //                 if (empty($order->id_type_payment)) {
+
+    //                     $detail->id_order = $order->id;
+    //                     $detail->id_menu = $menu->id;
+    //                     $detail->qty = $request->qty;
+    //                     $detail->harga = $request->harga;
+    //                     $detail->id_varian = $request->variasi;
+    //                     $detail->id_sales_type = $request->id_type_sales;
+    //                     $detail->catatan = $request->catatan;
+
+
+    //                     $detail->total = ($request['harga'] + $request['harga_addtotal']) * $request['qty'];
+
+    //                     $detail->save();
+
+    //                     if ($detail->save()) {
+    //                         if ($request->has('additional')) {
+
+    //                             $additionals = Additional_menu_detail::where('id_detail_order', $detail->id)->get();
+    //                             $isAdditionalMismatch = false;
+
+    //                             foreach ($additionals as $additional) {
+    //                                 $foundMatch = false;
+    //                                 foreach ($request->get('additional') as $reqAdditional) {
+    //                                     if (
+    //                                         $additional->id_option_additional == $reqAdditional['id'] &&
+    //                                         $additional->qty == $reqAdditional['qty']
+    //                                     ) {
+    //                                         $foundMatch = true;
+    //                                         break;
+    //                                     }
+    //                                 }
+    //                                 if (!$foundMatch) {
+    //                                     $isAdditionalMismatch = true;
+    //                                     break;
+    //                                 }
+    //                             }
+                                
+    //                             if ($isAdditionalMismatch) {
+    //                                 if ($detail->update == 0) $detail->update = 1;
+    //                                 $detail->last_print = null;
+                                   
+                                   
+    //                             }
+    //                             $detail->save();
+
+    //                             foreach ($request->additional as $adds) {
+    //                                 if (!empty($adds['id_detail'])) {
+    //                                     $additional = Additional_menu_detail::where('id_option_additional', $adds['id'])
+    //                                         ->where('id_detail_order', $adds['id_detail'])
+    //                                         ->first();
+    //                                 } else {
+    //                                     $additional = null;
+    //                                 }
+    //                                 if (empty($additional->id)) {
+    //                                     $additional = new Additional_menu_detail();
                                         
-                                        if ($detail->update == 0) $detail->update = 1;
-                                        $detail->last_print = null;
+    //                                     if ($detail->update == 0) $detail->update = 1;
+    //                                     $detail->last_print = null;
                                        
-                                        $detail->save();
-                                    }
-                                    $additional->id_detail_order = $detail->id;
-                                    $additional->id_option_additional = $adds['id'];
-                                    $additional->qty = $adds['qty'];
-                                    $additional->total = $adds['harga'] * $detail->qty;
+    //                                     $detail->save();
+    //                                 }
+    //                                 $additional->id_detail_order = $detail->id;
+    //                                 $additional->id_option_additional = $adds['id'];
+    //                                 $additional->qty = $adds['qty'];
+    //                                 $additional->total = $adds['harga'] * $detail->qty;
 
 
-                                    $additional->save();
+    //                                 $additional->save();
                                     
-                                }
-                            }
-                            if ($request->has('adds_delete')) {
-                                foreach ($request->adds_delete as $addDelete) {
-                                    $additional = Additional_menu_detail::where('id_option_additional', $addDelete['id'])->where('id_detail_order', $addDelete['id_detail'])->first();
-                                    if (!empty($additional)) {
-                                        $additional->delete();
-                                    } else {
-                                        return response()->json(['success' => 1, 'message' => 'Data sudah di hapus']);
-                                    }
-                                }
-                            }
+    //                             }
+    //                         }
+    //                         if ($request->has('adds_delete')) {
+    //                             foreach ($request->adds_delete as $addDelete) {
+    //                                 $additional = Additional_menu_detail::where('id_option_additional', $addDelete['id'])->where('id_detail_order', $addDelete['id_detail'])->first();
+    //                                 if (!empty($additional)) {
+    //                                     $additional->delete();
+    //                                 } else {
+    //                                     return response()->json(['success' => 1, 'message' => 'Data sudah di hapus']);
+    //                                 }
+    //                             }
+    //                         }
 
-                            if ($request->has('discount')) {
+    //                         if ($request->has('discount')) {
                                 
                                 
 
-                                foreach ($request->get('discount') as $discounts) {
-                                    if (!empty($discounts['id_detail'])) {
-                                        $Discount = Discount_detail_order::where('id_discount', $discounts['id'])->where('id_detail_order', $discounts['id_detail'])->first();
+    //                             foreach ($request->get('discount') as $discounts) {
+    //                                 if (!empty($discounts['id_detail'])) {
+    //                                     $Discount = Discount_detail_order::where('id_discount', $discounts['id'])->where('id_detail_order', $discounts['id_detail'])->first();
 
-                                        // If no existing discount is found, create a new one
-                                        if (!$Discount) {
-                                            $Discount = new Discount_detail_order();
-                                        }
-                                    } else {
-                                        $Discount = new Discount_detail_order();
-                                    }
+    //                                     // If no existing discount is found, create a new one
+    //                                     if (!$Discount) {
+    //                                         $Discount = new Discount_detail_order();
+    //                                     }
+    //                                 } else {
+    //                                     $Discount = new Discount_detail_order();
+    //                                 }
 
-                                    $Discount->id_detail_order = $detail->id;
-                                    $Discount->id_discount = $discounts['id'];
-                                    $rateDis = $discounts['percent'] / 100;
-                                    $Discount->total_discount = $discounts['nominal'];
+    //                                 $Discount->id_detail_order = $detail->id;
+    //                                 $Discount->id_discount = $discounts['id'];
+    //                                 $rateDis = $discounts['percent'] / 100;
+    //                                 $Discount->total_discount = $discounts['nominal'];
 
-                                    $Discount->save();
+    //                                 $Discount->save();
                                   
-                                }
-                            }
+    //                             }
+    //                         }
 
-                            if ($request->has('dis_delete')) {
-                                $deleted = false; // Flag to check if any data is deleted
-                                $notDeleted = false; // Flag to check if any data is not deleted
+    //                         if ($request->has('dis_delete')) {
+    //                             $deleted = false; // Flag to check if any data is deleted
+    //                             $notDeleted = false; // Flag to check if any data is not deleted
 
-                                foreach ($request->dis_delete as $DisDelete) {
-                                    $Discount = Discount_detail_order::where('id_discount', $DisDelete['id'])
-                                        ->where('id_detail_order', $DisDelete['id_detail'])
-                                        ->first();
+    //                             foreach ($request->dis_delete as $DisDelete) {
+    //                                 $Discount = Discount_detail_order::where('id_discount', $DisDelete['id'])
+    //                                     ->where('id_detail_order', $DisDelete['id_detail'])
+    //                                     ->first();
 
-                                    if (!empty($Discount)) {
-                                        $Discount->delete();
-                                        $deleted = true;
+    //                                 if (!empty($Discount)) {
+    //                                     $Discount->delete();
+    //                                     $deleted = true;
 
-                                        if ($Discount) {
-                                            if ($detail->update == 0) {
-                                                $detail->update = 1;
-                                            }
-                                            $detail->last_print = $detail->last_print;
-                                            $detail->save();
-                                        }
-                                    } else {
-                                        $notDeleted = true;
-                                    }
-                                }
-                            }
+    //                                     if ($Discount) {
+    //                                         if ($detail->update == 0) {
+    //                                             $detail->update = 1;
+    //                                         }
+    //                                         $detail->last_print = $detail->last_print;
+    //                                         $detail->save();
+    //                                     }
+    //                                 } else {
+    //                                     $notDeleted = true;
+    //                                 }
+    //                             }
+    //                         }
 
-                            $sumDetail = DetailOrder::where('id_order', $request->get('target_order'))->sum('total');
-                            $sumDis = Discount_detail_order::whereHas('Detail_order', function ($query) use ($request) {
-                                $query->where('id_order', $request->get('target_order'));
-                            })->sum('total_discount');
+    //                         $sumDetail = DetailOrder::where('id_order', $request->get('target_order'))->sum('total');
+    //                         $sumDis = Discount_detail_order::whereHas('Detail_order', function ($query) use ($request) {
+    //                             $query->where('id_order', $request->get('target_order'));
+    //                         })->sum('total_discount');
 
-                            $subTotal = $sumDetail - $sumDis;
+    //                         $subTotal = $sumDetail - $sumDis;
 
-                            $taxpb1 = Taxes::where('nama', 'PB1')->first();
-                            $service = Taxes::where('nama', 'Service Charge')->first();
-                            $PB1 = $taxpb1->tax_rate / 100;
-                            $Service = $service->tax_rate / 100;
-                            $nominalPb1 =  $subTotal * $PB1;
-                            $nominalService = $subTotal * $Service;
+    //                         $taxpb1 = Taxes::where('nama', 'PB1')->first();
+    //                         $service = Taxes::where('nama', 'Service Charge')->first();
+    //                         $PB1 = $taxpb1->tax_rate / 100;
+    //                         $Service = $service->tax_rate / 100;
+    //                         $nominalPb1 =  $subTotal * $PB1;
+    //                         $nominalService = $subTotal * $Service;
 
-                            $gradTotal = $subTotal + $nominalPb1 + $nominalService;
+    //                         $gradTotal = $subTotal + $nominalPb1 + $nominalService;
 
-                            $order->subtotal = $subTotal;
-                            $order->total_order = $gradTotal;
+    //                         $order->subtotal = $subTotal;
+    //                         $order->total_order = $gradTotal;
 
-                            $order->save();
-                        }
+    //                         $order->save();
+    //                     }
 
-                        DB::commit();
-                        return response()->json([
-                            'success' => 1,
-                            'message' => 'Data Tersimpan',
-                            'data' => [
-                                'order' => $order,
-                                'detail_order' => [
-                                    'detail_data' => $detail,
-                                ]
-                            ]
-                        ], 200);
-                    } else {
-                         DB::commit();
-                        return response()->json([
-                            'success' => 0,
-                            'message' => 'data order sudah payment',
-                            'data' => $order
-                        ], 200);
-                    }
-                }
-            } catch (\Exception $e) {
-                DB::rollBack();
-                return response()->json([
-                    'message' => 'Failed to fetch data detail order',
-                    'data' => [
-                        'order' => $order,
-                        'detail_order' => [
-                            'detail_data' => $detail,
-                            // 'additional'=> $additional,
-                            // 'discount' => $Discount
-                        ]
-                    ],
-                    'error' => $e->getMessage()
-                ], 500);
-            }
-        } else {
+    //                     DB::commit();
+    //                     return response()->json([
+    //                         'success' => 1,
+    //                         'message' => 'Data Tersimpan',
+    //                         'data' => [
+    //                             'order' => $order,
+    //                             'detail_order' => [
+    //                                 'detail_data' => $detail,
+    //                             ]
+    //                         ]
+    //                     ], 200);
+    //                 } else {
+    //                      DB::commit();
+    //                     return response()->json([
+    //                         'success' => 0,
+    //                         'message' => 'data order sudah payment',
+    //                         'data' => $order
+    //                     ], 200);
+    //                 }
+    //             }
+    //         } catch (\Exception $e) {
+    //             DB::rollBack();
+    //             return response()->json([
+    //                 'message' => 'Failed to fetch data detail order',
+    //                 'data' => [
+    //                     'order' => $order,
+    //                     'detail_order' => [
+    //                         'detail_data' => $detail,
+    //                         // 'additional'=> $additional,
+    //                         // 'discount' => $Discount
+    //                     ]
+    //                 ],
+    //                 'error' => $e->getMessage()
+    //             ], 500);
+    //         }
+    //     } else {
+    //         return redirect()->route('login');
+    //     }
+    // }
+    
+    public function modifyBill(Request $request)
+    {
+        if (!Sentinel::check()) {
             return redirect()->route('login');
         }
+
+        DB::beginTransaction();
+        try {
+            $order = Orders::findOrFail($request->target_order);
+            $menu = Menu::where('id', $request->id)->where('active', 1)->firstOrFail();
+
+            if ($order->id_type_payment) {
+                return response()->json([
+                    'success' => 0,
+                    'message' => 'Order sudah payment'
+                ], 400);
+            }
+
+            $detail = $this->getOrCreateOrderDetail($request, $order, $menu);
+            $this->handleStockAdjustment($request, $detail, $menu, $order);
+            $this->updateOrderDetail($request, $detail, $order);
+            $this->handleAdditionals($request, $detail);
+            $this->handleDiscounts($request, $detail);
+            $this->updateOrderTotals($order);
+
+            DB::commit();
+            return response()->json([
+                'success' => 1,
+                'message' => 'Data tersimpan',
+                'data' => ['order' => $order, 'detail_order' => $detail]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => 0,
+                'message' => 'Gagal memproses data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function getOrCreateOrderDetail($request, $order, $menu)
+    {
+        if ($request->target_detail) {
+            return DetailOrder::where('id', $request->target_detail)
+                            ->where('id_order', $order->id)
+                            ->firstOrFail();
+        }
+        
+        $detail = new DetailOrder();
+        $detail->id_order = $order->id;
+        $detail->id_menu = $menu->id;
+        $detail->id_sales_type = $request->id_type_sales;
+        return $detail;
+    }
+
+    private function handleStockAdjustment($request, $detail, $menu, $order)
+    {
+        if (!$request->target_detail || $menu->kategori->kategori_nama !== 'Foods') {
+            return;
+        }
+
+        $qtyDiff = $request->qty - $detail->qty;
+        if ($qtyDiff == 0) return;
+
+        $stokService = new \App\Services\StokService();
+        $result = $stokService->adjustMenuStock(
+            $menu->id,
+            $detail->qty,
+            $request->qty,
+            $order->id,
+            Sentinel::getUser()->id,
+            "Modify order qty: {$detail->qty} -> {$request->qty}"
+        );
+
+        if (!$result['success']) {
+            throw new \Exception($result['message']);
+        }
+
+        $detail->update = 1;
+        $detail->last_print = null;
+    }
+
+    private function updateOrderDetail($request, $detail, $order)
+    {
+        $detail->qty = $request->qty;
+        $detail->harga = $request->harga;
+        $detail->id_varian = $request->variasi;
+        $detail->catatan = $request->catatan;
+        $detail->total = ($request->harga + ($request->harga_addtotal ?? 0)) * $request->qty;
+        $detail->save();
+    }
+
+    private function handleAdditionals($request, $detail)
+    {
+        if ($request->has('additional')) {
+            foreach ($request->additional as $add) {
+                Additional_menu_detail::updateOrCreate(
+                    [
+                        'id_detail_order' => $detail->id,
+                        'id_option_additional' => $add['id']
+                    ],
+                    [
+                        'qty' => $add['qty'],
+                        'total' => $add['harga'] * $detail->qty
+                    ]
+                );
+            }
+        }
+
+        if ($request->has('adds_delete')) {
+            foreach ($request->adds_delete as $delete) {
+                Additional_menu_detail::where('id_option_additional', $delete['id'])
+                                    ->where('id_detail_order', $delete['id_detail'])
+                                    ->delete();
+            }
+        }
+    }
+
+    private function handleDiscounts($request, $detail)
+    {
+        if ($request->has('discount')) {
+            foreach ($request->discount as $discount) {
+                Discount_detail_order::updateOrCreate(
+                    [
+                        'id_detail_order' => $detail->id,
+                        'id_discount' => $discount['id']
+                    ],
+                    ['total_discount' => $discount['nominal']]
+                );
+            }
+        }
+
+        if ($request->has('dis_delete')) {
+            foreach ($request->dis_delete as $delete) {
+                Discount_detail_order::where('id_discount', $delete['id'])
+                                    ->where('id_detail_order', $delete['id_detail'])
+                                    ->delete();
+            }
+        }
+    }
+
+    private function updateOrderTotals($order)
+    {
+        $sumDetail = DetailOrder::where('id_order', $order->id)->sum('total');
+        $sumDiscount = Discount_detail_order::whereHas('Detail_order', function ($query) use ($order) {
+            $query->where('id_order', $order->id);
+        })->sum('total_discount');
+
+        $subtotal = $sumDetail - $sumDiscount;
+        
+        $pb1Rate = Taxes::where('nama', 'PB1')->value('tax_rate') / 100;
+        $serviceRate = Taxes::where('nama', 'Service Charge')->value('tax_rate') / 100;
+        
+        $pb1Amount = $subtotal * $pb1Rate;
+        $serviceAmount = $subtotal * $serviceRate;
+        
+        $order->update([
+            'subtotal' => $subtotal,
+            'total_order' => $subtotal + $pb1Amount + $serviceAmount
+        ]);
     }
 
     public function updateOrder(Request $request)
@@ -862,6 +1061,7 @@ class POSController extends Controller
             return redirect()->route('login');
         }
     }
+
     public function afterPrintDelete(Request $request)
     {
         if (Sentinel::check()) {
@@ -871,10 +1071,21 @@ class POSController extends Controller
                 // Find the detail order by ID
                 $detail = DetailOrder::where('id', $request->get('id'))->first();
                 $menu = Menu::where('id', $detail->id_menu)->first();
-
-                if($detail->menu->id_kategori == 2){
-                    $menu->stok = $menu->stok + $detail->qty ;
-                    $menu->save();
+                $stokService = new \App\Services\StokService();
+                
+                if ($detail->menu->kategori->kategori_nama === 'Foods' && $detail->menu->tipe_stok) {
+                    $stokService = new \App\Services\StokService();
+                    $result = $stokService->restoreMenuStock(
+                        $detail->id_menu,
+                        $detail->qty,
+                        $detail->id_order,
+                        Sentinel::getUser()->id,
+                        "Delete menu: {$detail->menu->nama_menu}"
+                    );
+                    
+                    if (!$result['success']) {
+                        throw new \Exception($result['message']);
+                    }
                 }
 
 
@@ -1351,191 +1562,145 @@ class POSController extends Controller
 
     }
 
+    // Proses Order
 
     public function postOrderPOS(Request $request)
     {
-        if (Sentinel::check()) {
+        if (!Sentinel::check()) {
+            return redirect()->route('login');
+        }
 
-            DB::beginTransaction();
-
-
-            try {
-
-                $date = Carbon::now()->format('Y-m-d');
-                $userId = Sentinel::getUser();
-                $admin = $userId->id;
-                $rand = $this->kode_pesanan->kodePesanan();
-                $paymentId = $request->Idpayment;
-
-                $order = new Orders;
-                $order->id_admin = $admin;
-                $order->name_bill = $request->nama;
-                $order->id_booking = $request->id_booking;
-                $order->kode_pemesanan = $rand;
-                $order->no_meja = $request->nomer;
-                $order->subtotal = $request->subtotal;
-                $order->total_order = $request->total;
-                $order->tanggal = $date;
-                $order->id_type_payment = $paymentId;
-                $order->cash = $request->cash;
-                $order->change_ = $request->change_;
-                $order->total_order = $request->total;
-
-                if (!empty($paymentId)) {
-                    $order->id_status = 2;
-                } else {
-                    $order->id_status = 1;
-                }
-
-                $order->created_at = now();
-                $order->updated_at = now();
-
-                $order->save();
-
-                $carts = Session::get('cart');
-                //dd($carts);
-                $id_order = $order->id;
-
-                foreach ($carts as $cart) {
-                     // Cek menu dan stok
-                    $menu = Menu::find($cart['id']);
-
-                    if (!$menu) {
-                         return response()->json([
-                            'success' => 0,
-                            'message' => "Menu dengan ID {$cart['id']} tidak ditemukan"
-
-                        ], 400); 
-                    }
-
-                    if($menu->kategori->kategori_nama === 'Foods'){
-                        // Cek ketersediaan menu
-                        if ($menu->stok == 0 && $menu->active == 0) {
-                            return response()->json([
-                                'success' => 0,
-                                'message' => "Menu {$menu->nama_menu} tidak tersedia silahkan setting ulang menu"
-
-                            ], 400); 
-                        }
-                        
-                        // Cek stok mencukupi
-                        if ($menu->active == 1 && $menu->stok < $cart['qty']) {
-                            return response()->json([
-                                'success' => 0,
-                                'message' => "Stok menu {$menu->nama_menu} tidak mencukupi. silahkan setting ulang menu"
-
-                            ], 400); 
-                        }
-                    }
-
-                    if($menu->kategori->kategori_nama === 'Drinks'){
-                        // Cek ketersediaan menu
-                        if ($menu->active == 0) {
-                            return response()->json([
-                                'success' => 0,
-                                'message' => "Menu {$menu->nama_menu}  tidak tersedia silahkan setting ulang menu."
-
-                            ], 400); 
-                        }
-
-                    }
-                   
-
-                    $detail = new DetailOrder;
-                    $detail->id_order = $id_order;
-                    $detail->id_menu = $cart['id'];
-                    $detail->qty = $cart['qty'];
-                    $detail->harga = $cart['harga'];
-                    $detail->id_varian = $cart['variasi_id'];
-                    if (empty($cart['type_id'])) {
-                        $detail->id_sales_type =  '4';
-                    } else {
-                        $detail->id_sales_type =  $cart['type_id'];
-                    }
-
-                    $detail->catatan = $cart['catatan'];
-                    $detail->total = ($cart['harga'] + $cart['harga_addtotal']) * $cart['qty'];
-                    $detail->created_at = now();
-                    $detail->updated_at = now();
-                    // dd($order, $detail );
-
-                    if($menu->kategori->kategori_nama === 'Foods'){    
-                        // Update stok menu
-                        $newStok = $menu->stok - $cart['qty'];
-                        $menu->stok = $newStok;
-                        $menu->save();
-                    }
+        DB::beginTransaction();
+        try {
+            $stokService = new \App\Services\StokService();
+            $carts = Session::get('cart');
+            
+            // Validate stock availability first
+            $cartItems = collect($carts)->map(function($cart) {
+                return ['menu_id' => $cart['id'], 'quantity' => $cart['qty']];
+            })->toArray();
+            
+            $stockCheck = $stokService->cekKetersediaanMenu($cartItems);
+            if (!$stockCheck['semua_tersedia']) {
+                $unavailableItems = collect($stockCheck['detail'])
+                    ->where('tersedia', false)
+                    ->pluck('nama_menu')
+                    ->implode(', ');
                     
-                    
-                    $detail->save();
-                    if ($detail) {
-                        if (isset($cart['additional'])) {
-                            foreach ($cart['additional'] as $adds) {
-                                $additional = new Additional_menu_detail();
-                                $additional->id_detail_order = $detail->id;
-                                $additional->id_option_additional = $adds['id'];
-                                $additional->qty = $detail->qty;
-                                $additional->total = $adds['harga'] * $detail->qty;
-                                $additional->save();
-                            }
-                        }
-                        if (isset($cart['discount'])) {
-                            foreach ($cart['discount'] as $discounts) {
-                                $Discount = new Discount_detail_order();
-                                $Discount->id_detail_order = $detail->id;
-                                $Discount->id_discount = $discounts['id'];
-                                $rateDis = $discounts['percent'] / 100;
-                                $Discount->total_discount = $discounts['nominal'];
-                                // dd($Discount);
-                                $Discount->save();
-                            }
-                        }
-                    }
-                }
-
-                $Tax = $request->taxes;
-
-                foreach ($Tax as $taxs) {
-                    $taxes = new TaxOrder();
-                    $taxes->id_order  =  $id_order;
-                    $taxes->id_tax = $taxs['id'];
-                    $taxes->total_tax = $taxs['nominal'];
-                    // dd($taxes);
-                    $taxes->save();
-                }
-
-
-                $detail = DetailOrder::where('id_order', $order->id)->get();
-                if(empty($detail)){
-                    $detail = 0;
-                }
-
-                 DB::commit();
-
-                Session::forget('cart');
-                return response()->json([
-                    'success' => 1,
-                    'message' => 'Order di Proses',
-                    'data' => [
-                        'order' => $order,
-                        // /'detail' => $detail
-                    ],
-
-                ], 200);
-            } catch (\Exception $e) {
-                DB::rollback();
                 return response()->json([
                     'success' => 0,
-                    'message' => 'Failed to fetch data post order',
-                    'data' => [
-                        'order' => $order,
-                        // /'detail' => $detail
-                    ],
-                    'error' => $e->getMessage()
-                ], 500);
+                    'message' => "Menu tidak tersedia: {$unavailableItems}"
+                ], 400);
             }
-        } else {
-            return redirect()->route('login');
+
+            // Create order
+            $order = $this->createOrder($request);
+            
+            // Process cart items
+            foreach ($carts as $cart) {
+                $menu = Menu::findOrFail($cart['id']);
+                
+                // Process stock ONLY for Foods category that have stock management
+                if ($menu->kategori->kategori_nama === 'Foods' && $menu->tipe_stok) {
+                    $result = $stokService->prosesOrder($menu->id, $cart['qty'], $order->id);
+                    if (!$result['success']) {
+                        throw new \Exception($result['message']);
+                    }
+                }
+                
+                // Create order detail for ALL menus
+                $detail = $this->createOrderDetail($order->id, $cart);
+                
+                // Handle additionals and discounts
+                $this->handleOrderExtras($detail, $cart);
+            }
+
+            // Handle taxes
+            $this->handleOrderTaxes($order->id, $request->taxes);
+
+            DB::commit();
+            Session::forget('cart');
+            
+            return response()->json([
+                'success' => 1,
+                'message' => 'Order berhasil diproses',
+                'data' => ['order' => $order]
+            ]);
+            
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+                'success' => 0,
+                'message' => 'Gagal memproses order',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function createOrder($request)
+    {
+        return Orders::create([
+            'id_admin' => Sentinel::getUser()->id,
+            'name_bill' => $request->nama,
+            'id_booking' => $request->id_booking,
+            'kode_pemesanan' => $this->kode_pesanan->kodePesanan(),
+            'no_meja' => $request->nomer,
+            'subtotal' => $request->subtotal,
+            'total_order' => $request->total,
+            'tanggal' => Carbon::now()->format('Y-m-d'),
+            'id_type_payment' => $request->Idpayment,
+            'cash' => $request->cash,
+            'change_' => $request->change_,
+            'id_status' => $request->Idpayment ? 2 : 1
+        ]);
+    }
+
+    private function createOrderDetail($orderId, $cart)
+    {
+        return DetailOrder::create([
+            'id_order' => $orderId,
+            'id_menu' => $cart['id'],
+            'qty' => $cart['qty'],
+            'harga' => $cart['harga'],
+            'id_varian' => $cart['variasi_id'],
+            'id_sales_type' => $cart['type_id'] ?? '4',
+            'catatan' => $cart['catatan'],
+            'total' => ($cart['harga'] + $cart['harga_addtotal']) * $cart['qty']
+        ]);
+    }
+
+    private function handleOrderExtras($detail, $cart)
+    {
+        if (isset($cart['additional'])) {
+            foreach ($cart['additional'] as $add) {
+                Additional_menu_detail::create([
+                    'id_detail_order' => $detail->id,
+                    'id_option_additional' => $add['id'],
+                    'qty' => $detail->qty,
+                    'total' => $add['harga'] * $detail->qty
+                ]);
+            }
+        }
+
+        if (isset($cart['discount'])) {
+            foreach ($cart['discount'] as $discount) {
+                Discount_detail_order::create([
+                    'id_detail_order' => $detail->id,
+                    'id_discount' => $discount['id'],
+                    'total_discount' => $discount['nominal']
+                ]);
+            }
+        }
+    }
+
+    private function handleOrderTaxes($orderId, $taxes)
+    {
+        foreach ($taxes as $tax) {
+            TaxOrder::create([
+                'id_order' => $orderId,
+                'id_tax' => $tax['id'],
+                'total_tax' => $tax['nominal']
+            ]);
         }
     }
 

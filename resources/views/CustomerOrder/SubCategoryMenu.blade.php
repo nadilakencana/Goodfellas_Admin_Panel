@@ -40,8 +40,13 @@
                                 <img src="{{ asset('asset/assets/image/icon/btn_Add.png') }}" alt="" width="30"
                                     height="30">
                             </div> --}}
+                            @php
+                                $stokTersedia = $itm->tipe_stok === 'Stok Bahan Baku' 
+                                    ? ($itm->bahanBaku ? $itm->bahanBaku->stok_porsi : 0)
+                                    : $itm->stok;
+                            @endphp
                             @if($itm->kategori->kategori_nama === 'Foods')
-                                @if($itm->stok > 0 && $itm->active )
+                                  @if($stokTersedia > 0 && $itm->active)
                                 <div class="btn-add-menu cursor-pointer" xid="{{encrypt($itm->id)}}">
                                     <img src="{{ asset('asset/assets/image/icon/btn_Add.png') }}" alt="" width="30"
                                         height="30">

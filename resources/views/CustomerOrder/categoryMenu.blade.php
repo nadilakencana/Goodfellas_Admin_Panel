@@ -26,6 +26,11 @@
             <div class="content pt-3">
                 <div class="items-menu justify-content-between align-items-center gap-5 py-3">
                     @foreach ($ItemCats as $itm)
+                    @php
+                        $stokTersedia = $itm->tipe_stok === 'Stok Bahan Baku' 
+                            ? ($itm->bahanBaku ? $itm->bahanBaku->stok_porsi : 0)
+                            : $itm->stok;
+                    @endphp
                         <div class="itm-menu d-flex justify-content-between align-items-center gap-5 px-2 py-3">
                             @if (!empty($itm->image))
                                 <div class="img-menu">
@@ -55,7 +60,7 @@
                                 <span class="pt-2">Rp. {{ $itm->harga }}</span>
                             </div>
                             @if($itm->kategori->kategori_nama === 'Foods')
-                                @if($itm->stok > 0 && $itm->active )
+                                @if($stokTersedia > 0 && $itm->active)
                                 <div class="btn-add-menu cursor-pointer" xid="{{encrypt($itm->id)}}">
                                     <img src="{{ asset('asset/assets/image/icon/btn_Add.png') }}" alt="" width="30"
                                         height="30">

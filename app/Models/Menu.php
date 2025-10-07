@@ -107,7 +107,10 @@ class Menu extends Model
     // Update stok dengan logging (untuk tipe manual)
     public function updateStok($jumlah)
     {
-        if ($this->tipe_stok !== 'Stok Manual') {
+        // Handle both old and new tipe_stok values
+        $manualTypes = ['Stok Manual', 'manual', 'manual stok'];
+        
+        if (!in_array($this->tipe_stok, $manualTypes)) {
             throw new \Exception('Stok menu ini dikelola berdasarkan bahan baku');
         }
 
@@ -115,7 +118,6 @@ class Menu extends Model
         $this->stok += $jumlah;
         $this->save();
 
-    
         return $this;
     }
 
