@@ -30,26 +30,26 @@
                         </div>
                         @php
                             $stokTersedia = $itm->tipe_stok === 'Stok Bahan Baku' 
-                                ? ($itm->bahanBaku ? $itm->bahanBaku->stok_porsi : 0)
-                                : $itm->stok;
+                                ? ($itm->menu->bahanBaku ? $itm->menu->bahanBaku->stok_porsi : 0)
+                                : $itm->menu->stok;
                         @endphp
-                        @if($itm->menu->kategori->kategori_nama === 'Foods')
-                                @if($stokTersedia > 0 && $itm->active)
-                                <div class="btn-add-menu cursor-pointer" xid="{{encrypt($itm->menu->id)}}">
-                                    <img src="{{ asset('asset/assets/image/icon/btn_Add.png') }}" alt="" width="30"
-                                        height="30">
-                                </div>
+                            @if($itm->menu->kategori->kategori_nama === 'Foods')
+                                @if($stokTersedia > 0 && $itm->menu->active)
+                                    <div class="btn-add-menu cursor-pointer" xid="{{encrypt($itm->menu->id)}}">
+                                        <img src="{{ asset('asset/assets/image/icon/btn_Add.png') }}" alt="" width="30"
+                                            height="30">
+                                    </div>
                                 @else
-                                <div class="status">unavailable</div>
+                                    <div class="status">unavailable</div>
                                 @endif
                             @elseif ($itm->menu->kategori->kategori_nama === 'Drinks')
-                                @if($itm->active !== 0)
-                                <div class="btn-add-menu cursor-pointer" xid="{{encrypt($itm->menu->id)}}">
-                                    <img src="{{ asset('asset/assets/image/icon/btn_Add.png') }}" alt="" width="30"
-                                        height="30">
-                                </div>
+                                @if($itm->menu->active !== 0)
+                                    <div class="btn-add-menu cursor-pointer" xid="{{encrypt($itm->menu->id)}}">
+                                        <img src="{{ asset('asset/assets/image/icon/btn_Add.png') }}" alt="" width="30"
+                                            height="30">
+                                    </div>
                                 @else
-                                <div class="status">unavailable</div>
+                                    <div class="status">unavailable</div>
                                 @endif
                             @endif
                     </div>

@@ -3,7 +3,12 @@
     <div class="pop-modal mt-auto">
 
         <div class="header d-flex justify-content-between align-items-center p-3">
-            <p class="fw-bold">{{ $itemMenu->nama_menu }} @if($itemMenu->stok > 0) - {{$itemMenu->stok}}portions available @endif</p>
+            @php
+                $stokTersedia = $itemMenu->tipe_stok === 'Stok Bahan Baku' 
+                    ? ($itemMenu->bahanBaku ? $itemMenu->bahanBaku->stok_porsi : 0)
+                    : $itemMenu->stok;
+            @endphp
+            <p class="fw-bold">{{ $itemMenu->nama_menu }} @if($stokTersedia > 0) - {{$stokTersedia}}portions available @endif</p>
             @php
                
                 if($itemEdit !== 0){

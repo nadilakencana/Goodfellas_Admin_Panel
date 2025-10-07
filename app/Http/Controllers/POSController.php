@@ -1338,13 +1338,7 @@ class POSController extends Controller
             }
 
             // Copy tax data from original order to split order
-            // $originalTaxOrders = TaxOrder::where('id_order', $originalOrder->id)->get();
-            // foreach ($originalTaxOrders as $taxOrder) {
-            //     $newTaxOrder = new TaxOrder();
-            //     $newTaxOrder->id_order = $newSplitOrder->id;
-            //     $newTaxOrder->id_tax = $taxOrder->id_tax;
-            //     $newTaxOrder->save();
-            // }
+           
 
             $this->recalculateAndUpdateOrderTotals($originalOrder->id);
             $this->recalculateAndUpdateOrderTotals($newSplitOrder->id);
@@ -1373,139 +1367,7 @@ class POSController extends Controller
             ], 500);
         }
 
-            // try {
-            //     $userId = Sentinel::getUser();
-            //     $admin = $userId->id;
-            //     $rand = $this->kode_pesanan->kodePesanan();
-            //     $date = Carbon::now()->format('Y-m-d');
-
-            //     $order = Orders::where('id', $request->get('target_order'))->first();
-            //     $order->subtotal = $request->subtotal;
-            //     $order->total_order = $request->total;
-            //     // dd($order);
-            //     $order->save();
-
-            //     $orderNew = new Orders();
-            //     $orderNew->id_admin = $admin;
-            //     $orderNew->name_bill = $order->name_bill . '-Split bill';
-            //     $orderNew->id_booking = $order->id_booking;
-            //     $orderNew->kode_pemesanan = $rand;
-            //     $orderNew->no_meja = $order->no_meja;
-            //     $orderNew->id_status = 1;
-            //     $orderNew->subtotal = $request->subtotalNew;
-            //     $orderNew->total_order = $request->totalNew;
-            //     $orderNew->cash = $request->cash;
-            //     $orderNew->tanggal = $date;
-            //     $orderNew->change_ = $request->change;
-            //     $orderNew->id_type_payment = $request->type_pyment;
-            //     $orderNew->id_status = 2;
-
-            //     //dd($orderNew);
-            //     if ($orderNew->save()) {
-            //         // if($request->has('itms')){
-            //         $itms = $request->itms;
-            //         // dd($itms);
-            //         foreach ($itms as $itm) {
-            //             $itmDetail = DetailOrder::where('id', $itm['id_item'])->where('id_order', $order->id)->first();
-
-            //             if ($itm['qty'] == $itmDetail->qty) {
-
-            //                 $itmDetail->id_order = $orderNew->id;
-            //                 $itmDetail->save();
-            //             } else {
-            //                 // new item if the split bill ID qty is not the same as the old qty
-            //                 // and bill order id details split new qty in less with old qty and more update also total
-            //                 // and additional updates of quantity, quantity and likes also order discount details
-
-            //                 $itmDetail->qty = $itmDetail->qty - $itm['qty'];
-            //                 $itmDetail->total = $itmDetail->total - $itm['jumlah'];
-
-            //                 if ($itmDetail->save()) {
-            //                     $itms_old_adds = Additional_menu_detail::where('id_detail_order', $itmDetail->id)->get();
-
-            //                     foreach ($itms_old_adds as $adds_old) {
-            //                         $update_adds = Additional_menu_detail::where('id', $adds_old->id)->first();
-            //                         $priceAdds = OptionModifier::where('id', $update_adds->id_option_additional)->first();
-            //                         $update_adds->qty = $itmDetail->qty;
-            //                         $update_adds->total = $priceAdds->harga * $itmDetail->qty;
-
-            //                         $update_adds->save();
-            //                     }
-
-            //                     $itms_old_discount = Discount_detail_order::where('id_detail_order', $itmDetail->id)->get();
-
-            //                     foreach ($itms_old_discount as $dis_old) {
-            //                         $update_dis = Discount_detail_order::where('id', $dis_old->id)->first();
-            //                         $rate_dis = Discount::where('id', $update_dis->id_discount)->first();
-            //                         $update_dis->total_discount = $itmDetail->total * ($rate_dis->rate_dis / 100);
-
-            //                         $update_dis->save();
-            //                     }
-            //                 }
-
-            //                 $itmOrder = new DetailOrder();
-            //                 $itmOrder->id_order = $orderNew->id;
-            //                 $itmOrder->harga = $itm['harga'];
-            //                 $itmOrder->total = $itm['jumlah'];
-            //                 $itmOrder->id_menu = $itmDetail->id_menu;
-            //                 $itmOrder->qty = $itm['qty'];
-            //                 $itmOrder->catatan = $itmDetail->catatan;
-            //                 $itmOrder->id_sales_type = $itmDetail->id_sales_type;
-            //                  $itmOrder->id_varian = $itm['varian'];
-
-            //                 if ($itmOrder->save()) {
-            //                     if (isset($itm['Adds'])) {
-            //                         $Adds = $itm['Adds'];
-
-            //                         foreach ($Adds as $itmAdds) {
-            //                             $adds = new Additional_menu_detail();
-            //                             $adds->id_detail_order = $itmOrder->id;
-            //                             $adds->id_option_additional = $itmAdds['id'];
-            //                             $adds->qty = $itmOrder->qty;
-            //                             $adds->total = $itmAdds['hargaAds'] * $itmOrder->qty;
-
-            //                             $adds->save();
-            //                         }
-            //                     }
-
-            //                     if (isset($itm['Discount'])) {
-            //                         $discount = $itm['Discount'];
-
-            //                         foreach ($discount as $Itmdis) {
-            //                             $dis = new Discount_detail_order();
-            //                             $dis->id_detail_order = $itmOrder->id;
-            //                             $dis->id_discount = $Itmdis['id'];
-
-            //                             $rateDis = $Itmdis['rate'] / 100;
-            //                             $nominalDis = $itmOrder->total * $rateDis;
-            //                             $dis->total_discount = $nominalDis;
-
-            //                             $dis->save();
-            //                         }
-            //                     }
-            //                 }
-            //             }
-            //         }
-            //         // }
-            //     }
-            //     return response()->json([
-            //         'success' => 1,
-            //         'message' => 'Data Tersimpan',
-            //         'data' => [
-            //             'new_order' => $orderNew,
-            //             'items' => $itms
-            //         ]
-            //     ], 200);
-            // } catch (\Exception $e) {
-            //     return response()->json([
-            //         'message' => 'Failed to split bill',
-            //         'data' => [
-            //             'new_order' => $orderNew,
-            //             'items' => $itms
-            //         ],
-            //         'error' => $e->getMessage()
-            //     ], 500);
-            // }
+           
         } else {
             return redirect()->route('login');
         }
@@ -1637,6 +1499,7 @@ class POSController extends Controller
         }
     }
 
+    // penambahan private hendler
     private function createOrder($request)
     {
         return Orders::create([
