@@ -172,15 +172,13 @@ class MenuController extends Controller
             $menu->id_group_modifier= $request->id_group_modifier;
             $menu->tipe_stok = $request->tipe_stok;
 
-            if($request->tipe_stok === 'Stok Bahan Baku'){
-                $menu->stok= 0;
-                $menu->stok_minimum = 1;
-            }else{
-                $menu->stok = $request->stok;
-                $menu->stok_minimum = $request->stok_minimun;
-            }
+            $isIngredientBased = $request->tipe_stok === 'Stok Bahan Baku';
 
-            $menu->id_bahan_baku = $request->id_bahan_baku;
+            $menu->stok = $isIngredientBased ? 0 : $request->stok;
+            $menu->stok_minimum = $isIngredientBased ? 1 : $request->stok_minimun;
+            $menu->id_bahan_baku = $isIngredientBased ? $request->id_bahan_baku : null;
+
+           
            if($request->active == null){
                 $menu->active= 0;
             }else{
@@ -209,6 +207,12 @@ class MenuController extends Controller
                         $menu_resep->id_menu = $menu->id;
                         $menu_resep->id_bahan_baku = $request->id_bahan_baku;
                         $menu_resep->save();
+                    }else{
+                        $menu_resep = MenuResep::where('id_menu', $menu->id)->first();
+                        if($menu_resep){
+                            $menu_resep->delete();
+                        }
+                    
                     }
                 }
                 if($request->has('variasi')){

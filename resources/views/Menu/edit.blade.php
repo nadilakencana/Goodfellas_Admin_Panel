@@ -55,7 +55,7 @@
         <div class="form-group">
             <label>Type Stok</label>
             <select class="custom-select rounded-0" name="tipe_stok" id="tipe_stok">
-                <option value="manual stok" {{ $menu->tipe_stok == 'manual stok' ? 'selected' : '' }}>Stok Manual</option>
+                <option value="Stok Manual" {{ $menu->tipe_stok == 'Stok Manual' ? 'selected' : '' }}>Stok Manual</option>
                 <option value="Stok Bahan Baku" {{ $menu->tipe_stok == 'Stok Bahan Baku' ? 'selected' : '' }}>Stok Bahan Baku</option>
             </select>
         </div>
@@ -301,7 +301,7 @@
                 $('#bahan_baku_group').show();
                 $('#stok_manual_group').hide();
                 $('#stok_minimum_group').hide();
-            } else if(selectedType === 'manual stok') {
+            } else if(selectedType === 'Stok Manual') {
                 $('#bahan_baku_group').hide();
                 $('#stok_manual_group').show();
                 $('#stok_minimum_group').show();
