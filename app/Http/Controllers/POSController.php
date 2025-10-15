@@ -1432,6 +1432,8 @@ class POSController extends Controller
             return redirect()->route('login');
         }
 
+        // dd($request);
+
         DB::beginTransaction();
         try {
             $stokService = new \App\Services\StokService();

@@ -77,19 +77,16 @@
                 </div>
             </div>
             <div class="jumlah-menu ">
-                {{-- <div class="jml-menu d-flex justify-content-between align-items-center gap-3">
-                    <div class="btn-minus">-</div>
-                    <input class="qty" type="number" name="num-product" min=0 value=@if($itemEdit !== 0) {{$itemEdit['qty']}}  @else 1 @endif max=100>
-                    <div class="btn-plus">+</div>
-                </div> --}}
+                
                 <div class="jml-menu d-flex justify-content-between align-items-center gap-3">
                     <div class="btn-minus">-</div>
                     <input class="qty" type="number" name="num-product" 
                         min="1" 
-                        value= @if($itemEdit != 0) "{{$itemEdit['qty']}}" @else "1" @endif 
-                        max= @if($itemMenu->stok !== 0) "{{$itemMenu->stok}}" @else "100" @endif >
+                        value="{{ $itemEdit != 0 ? $itemEdit['qty'] : 1 }}" 
+                        max="{{ $itemMenu->tipe_stok === 'Stok Bahan Baku' ? ($itemMenu->bahanBaku->stok_porsi ?? 100) : ($itemMenu->stok ?: 100) }}">
                     <div class="btn-plus">+</div>
                 </div>
+
 
             </div>
             <div class="tipe-penjualan py-3">

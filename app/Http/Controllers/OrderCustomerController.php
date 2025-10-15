@@ -185,6 +185,7 @@ class OrderCustomerController extends Controller
             }
             
             $typeSales = SalesType::find($request->get('id_type_sales'));
+
             $ex = false;
             $exId = 0;
             $cart = Session::get('cart');
@@ -196,6 +197,7 @@ class OrderCustomerController extends Controller
 
             $cart[] = array(
                 'id' => $menu->id,
+                'stok' => $stok,
                 'nama_menu' => $menu->nama_menu,
                 'image' => $menu->image,
                 'harga' => $request->get('harga'),
@@ -479,16 +481,6 @@ class OrderCustomerController extends Controller
                     
                     $kategori = $menu->kategori->kategori_nama;
                     if ($kategori === 'Foods') {
-                        // if (!$menu->active || ($menu->active && $menu->stok < $cart['qty'])) {
-                        //     return response()->json([
-                        //         'success' => 0,
-                        //         'message' => $menu->stok < $cart['qty'] 
-                        //             ? "This Menu {$menu->nama_menu} is not sufficient."
-                        //             : "This Menu {$menu->nama_menu} is currently unavailable."
-                        //     ], 400);
-                        // }
-                        // $menu->decrement('stok', $cart['qty']);
-                        // Get actual stock based on tipe_stok
                         
                         $stokTersedia = $menu->tipe_stok === 'Stok Bahan Baku' 
                             ? ($menu->bahanBaku ? $menu->bahanBaku->stok_porsi : 0)
@@ -598,7 +590,7 @@ class OrderCustomerController extends Controller
         try{
 
             $menu = Menu::where('nama_menu', 'LIKE', '%'.$search.'%')
-            ->with(['kategori','subKategori'])
+            ->with(['kategori','subKategori','bahanBaku'])
             ->where('delete_menu', 0)->where('custom', 0)->get();
             // dd($menu);
 

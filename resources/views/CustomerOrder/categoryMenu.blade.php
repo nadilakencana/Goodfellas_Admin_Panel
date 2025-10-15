@@ -26,11 +26,11 @@
             <div class="content pt-3">
                 <div class="items-menu justify-content-between align-items-center gap-5 py-3">
                     @foreach ($ItemCats as $itm)
-                    @php
-                        $stokTersedia = $itm->tipe_stok === 'Stok Bahan Baku' 
-                            ? ($itm->bahanBaku ? $itm->bahanBaku->stok_porsi : 0)
-                            : $itm->stok;
-                    @endphp
+                        @php
+                            $stokTersedia = $itm->tipe_stok === 'Stok Bahan Baku' 
+                                ? ($itm->bahanBaku ? $itm->bahanBaku->stok_porsi : 0)
+                                : $itm->stok;
+                        @endphp
                         <div class="itm-menu d-flex justify-content-between align-items-center gap-5 px-2 py-3">
                             @if (!empty($itm->image))
                                 <div class="img-menu">

@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let searchTimeout;
 
     function renderResults(data) {
+        // console.log(data);
         resultsContainer.innerHTML = '';
 
         if ((!data.data || data.data.length === 0)) {
@@ -23,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Calculate stock for Foods (id_kategori == 2)
                 let stokTersedia = item.stok || 0;
                 if (item.id_kategori == 2 && item.tipe_stok) {
-                    if (item.tipe_stok === 'Stok Bahan Baku' || item.tipe_stok === 'bahan_baku') {
+                    if (item.tipe_stok === 'Stok Bahan Baku') {
                         stokTersedia = item.bahan_baku ? item.bahan_baku.stok_porsi : 0;
                     }
                 }
@@ -53,64 +54,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     </div>
                 `;
                 
-                // if(item.id_kategori == 1){
-                //     if(item.active == 1){
-                //         resultsContainer.innerHTML += `
-                //         <div class="result-item">
-                //             <img src="${imageUrl}" alt="${item.nama_menu}">
-                //             <div class="info gap-3">
-                //                 <div class="name">${item.nama_menu}</div>
-                //                 <span class="pt-2">Rp. ${item.harga}</span>
-                //             </div>
-                        
-                //             <div class="btn-add-menu cursor-pointer" xid="${item.encrypted_id}">
-                //                 <img src="/asset/assets/image/icon/btn_Add.png" alt="" width="30" height="30">
-                //             </div>
-                //         </div>
-                //         `;
-                //     }else{
-                //         resultsContainer.innerHTML += `
-                //         <div class="result-item">
-                //             <img src="${imageUrl}" alt="${item.nama_menu}">
-                //             <div class="info gap-3">
-                //                 <div class="name">${item.nama_menu}</div>
-                //                 <span class="pt-2">Rp. ${item.harga}</span>
-                //             </div>
-                        
-                //             <div class="status">unavailable</div>
-                //         </div>
-                //         `;
-                //     }
-                // }else if(item.id_kategori == 2){
-                //     if(item.stok > 0 || item.active == 1){
-                //         resultsContainer.innerHTML += `
-                //         <div class="result-item">
-                //             <img src="${imageUrl}" alt="${item.nama_menu}">
-                //             <div class="info gap-3">
-                //                 <div class="name">${item.nama_menu}</div>
-                //                 <span class="pt-2">Rp. ${item.harga}</span>
-                //             </div>
-                        
-                //             <div class="btn-add-menu cursor-pointer" xid="${item.encrypted_id}">
-                //                 <img src="/asset/assets/image/icon/btn_Add.png" alt="" width="30" height="30">
-                //             </div>
-                //         </div>
-                //         `;
-                //     }else{
-                //         resultsContainer.innerHTML += `
-                //         <div class="result-item">
-                //             <img src="${imageUrl}" alt="${item.nama_menu}">
-                //             <div class="info gap-3">
-                //                 <div class="name">${item.nama_menu}</div>
-                //                 <span class="pt-2">Rp. ${item.harga}</span>
-                //             </div>
-                        
-                //             <div class="status">unavailable</div>
-                //         </div>
-                //         `;
-                //     }
-                // }
-               
                                 
             });
         }
