@@ -94,9 +94,10 @@
 
                 <div class="option-type d-flex justify-content-center align-items-center gap-4">
                     @foreach ($type_sales as $type)
-                         <div class="nama-option w-100
+                         <div class="nama-option w-100 
                             @php
-                                $isActive = false; 
+                                $isActive = false;
+                                $grabType = strtolower($type->name) === 'grab' ? 'Grab';
 
                                 if ($itemEdit) { 
                                     if (isset($itemEdit['type_name']) && $itemEdit['type_name'] == $type->name) {
@@ -109,7 +110,8 @@
                                     }
                                 }
                             @endphp
-                            {{ $isActive ? 'active' : '' }}" idx="{{ $type->id }}">
+                           
+                            {{ $isActive ? 'active' : '' }}" idx="{{ $type->id }}"  @if($grabType)  style="display: none" @endif>
 
                            {{ $type->name }}
                            </div>

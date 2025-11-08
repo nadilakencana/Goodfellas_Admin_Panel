@@ -80,6 +80,7 @@
                                         <div class="menu-cat" data-type="Fav" order-menu="2">Makanan</div>
                                        
                                         </div> --}}
+                                        
                                         {{-- Favorite Menu Items Panel --}}
                                         <div class="tab-panel-menu" data-type="Fav">
                                             <div class="menuKat">
@@ -3339,25 +3340,6 @@
 
             }
 
-
-
-
-            // $('.itmn-subcategory.discount').on('click', function() {
-            //     $('.sub-content').addClass('hidden');
-            //     getDataMenuDiscount();
-            // });
-
-            // $('.itmn-subcategory.allmenu').on('click', function() {
-            //     $('.sub-content').addClass('hidden');
-            //     getmenuAll();
-            // });
-
-            // $('.itmn-subcategory.menusub').on('click', function() {
-            //     var idx = $(this).attr('idx');
-            //     $('.sub-content').addClass('hidden');
-            //     getmenuSub(idx);
-
-            // });
 
         });
     </script>
